@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Вариант D — Плакат</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --blue: #2550ff;
+    --muted: #5c5c5c;
+    --soft: #f2f2f2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Archivo, sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+  .top {
+    height: 64px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; border-bottom: 3px solid var(--ink);
+  }
+  .logo { font-family: "Archivo Black", sans-serif; font-size: 22px; text-decoration: none; color: inherit; letter-spacing: -0.04em; }
+  .logo em { color: var(--blue); font-style: normal; }
+  .chip { background: var(--blue); color: #fff; padding: 10px 16px; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.04em; }
+  .shell { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 64px); }
+  .side { border-right: 3px solid var(--ink); padding: 28px 22px; background: var(--soft); }
+  .side-label { font-family: "Archivo Black", sans-serif; font-size: 14px; margin-bottom: 18px; letter-spacing: -0.02em; }
+  .nav a {
+    display: block; padding: 14px 0; border-bottom: 2px solid #d8d8d8;
+    text-decoration: none; color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 0.02em;
+  }
+  .nav a small { display: block; font-size: 12px; font-weight: 400; text-transform: none; color: #888; margin-top: 4px; letter-spacing: 0; }
+  .nav a.on { color: var(--ink); }
+  .nav a.on small { color: var(--blue); }
+  .bal { margin-top: 28px; padding: 18px; border: 3px solid var(--ink); background: #fff; }
+  .bal b { font-family: "Archivo Black", sans-serif; font-size: 34px; letter-spacing: -0.04em; }
+  .bal b span { color: var(--blue); }
+  .bal p { font-size: 12px; text-transform: uppercase; font-weight: 700; margin-top: 4px; }
+  .main { padding: 36px 40px; }
+  h1 { font-family: "Archivo Black", sans-serif; font-size: 56px; letter-spacing: -0.05em; line-height: 0.95; }
+  .sub { color: var(--muted); margin: 10px 0 28px; font-size: 15px; }
+  .howto { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .card {
+    border: 3px solid var(--ink); padding: 20px; min-height: 220px;
+    display: flex; flex-direction: column; gap: 12px; background: #fff;
+  }
+  .card.hero { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .card.hero .d { color: rgba(255,255,255,0.85); }
+  .n { font-family: "Archivo Black", sans-serif; font-size: 18px; }
+  .t { font-family: "Archivo Black", sans-serif; font-size: 22px; letter-spacing: -0.03em; text-transform: uppercase; }
+  .d { font-size: 14px; line-height: 1.5; flex: 1; color: var(--muted); }
+  .btn { border: 3px solid var(--ink); cursor: pointer; padding: 12px 14px; font-family: inherit; font-weight: 800; text-transform: uppercase; font-size: 12px; letter-spacing: 0.04em; background: #fff; }
+  .btn-p { background: var(--ink); color: #fff; }
+  .card.hero .btn-p { background: #fff; color: var(--blue); border-color: #fff; }
+  .btn-s { background: transparent; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .stat { border: 3px solid var(--ink); padding: 18px; }
+  .stat .v { font-family: "Archivo Black", sans-serif; font-size: 34px; letter-spacing: -0.04em; }
+  .stat .v span { color: var(--blue); }
+  .stat .l { font-size: 12px; text-transform: uppercase; font-weight: 700; margin-top: 6px; }
+  .tag { position: fixed; bottom: 16px; right: 16px; background: var(--ink); color: #fff; padding: 10px 12px; font-family: "Archivo Black", sans-serif; font-size: 11px; letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="logo" href="/">ZeusCode</a>
+    <div class="chip">Кабинет</div>
+  </div>
+  <div class="shell">
+    <aside class="side">
+      <div class="side-label">МЕНЮ</div>
+      <nav class="nav">
+        <a class="on" href="#">Главная<small>баланс и быстрый старт</small></a>
+        <a href="#">Студия<small>проекты и чат с ИИ</small></a>
+        <a href="#">Модели<small>каталог и цены</small></a>
+        <a href="#">Ключи<small>для IDE</small></a>
+        <a href="#">История<small>списания</small></a>
+        <a href="#">Оплата<small>пополнить</small></a>
+      </nav>
+      <div class="bal"><b>$<span>1</span></b><p>Твой баланс</p></div>
+    </aside>
+    <main class="main">
+      <h1>ГЛАВНАЯ</h1>
+      <p class="sub">ivan@mail.ru · выбери, с чего начать</p>
+      <div class="howto">
+        <div class="card hero"><div class="n">01</div><div class="t">Код в браузере</div><div class="d">Создай проект → модель или Ultra → опиши задачу. Главный путь.</div><button class="btn btn-p">Открыть студию</button></div>
+        <div class="card"><div class="n">02</div><div class="t">Ключ IDE</div><div class="d">Cursor / Continue / Roo. Один ключ на всё.</div><button class="btn btn-s">Создать ключ</button></div>
+        <div class="card"><div class="n">03</div><div class="t">Цены</div><div class="d">Все доступные модели и цены за миллион токенов.</div><button class="btn btn-s">Каталог</button></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="v">$<span>1</span></div><div class="l">Баланс</div></div>
+        <div class="stat"><div class="v">$0</div><div class="l">Потрачено</div></div>
+        <div class="stat"><div class="v">0</div><div class="l">Запросов</div></div>
+      </div>
+    </main>
+  </div>
+  <div class="tag">D · ПЛАКАТ · бело-синий</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Вариант C — Спокойная студия</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f5f7f4;
+    --panel: #ffffff;
+    --ink: #1f2a24;
+    --muted: #66756c;
+    --teal: #0f766e;
+    --teal2: #ccfbf1;
+    --line: #e2e8e4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Manrope, sans-serif; background: linear-gradient(180deg, #eef3ef 0%, var(--bg) 40%); color: var(--ink); min-height: 100vh; }
+  .top {
+    height: 64px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+  }
+  .logo { font-weight: 800; font-size: 18px; text-decoration: none; color: inherit; display: flex; gap: 8px; align-items: center; }
+  .logo i { width: 22px; height: 22px; border-radius: 7px; background: var(--teal); display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; }
+  .chip { background: var(--teal2); color: var(--teal); padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+  .shell { display: grid; grid-template-columns: 260px 1fr; gap: 20px; max-width: 1180px; margin: 24px auto; padding: 0 24px 40px; }
+  .side { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 22px 18px; height: fit-content; box-shadow: 0 10px 30px rgba(31,42,36,0.04); }
+  .side-label { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .nav a {
+    display: block; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: var(--muted); font-weight: 600; margin-bottom: 4px;
+  }
+  .nav a small { display: block; font-size: 12px; font-weight: 500; color: #93a39a; margin-top: 2px; }
+  .nav a.on { background: var(--teal2); color: var(--teal); }
+  .bal { margin-top: 18px; padding: 16px; background: #f8faf8; border-radius: 14px; }
+  .bal b { font-size: 28px; font-weight: 800; color: var(--teal); }
+  .bal p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .main { }
+  h1 { font-family: "Source Serif 4", serif; font-size: 42px; font-weight: 600; letter-spacing: -0.03em; }
+  .sub { color: var(--muted); margin: 8px 0 24px; font-size: 15px; }
+  .howto { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+    display: flex; flex-direction: column; gap: 10px; min-height: 200px; box-shadow: 0 8px 24px rgba(31,42,36,0.03);
+  }
+  .n { width: 28px; height: 28px; border-radius: 9px; background: var(--teal2); color: var(--teal); display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+  .t { font-size: 17px; font-weight: 800; }
+  .d { color: var(--muted); font-size: 14px; line-height: 1.55; flex: 1; }
+  .btn { border: none; cursor: pointer; border-radius: 12px; padding: 12px 14px; font-family: inherit; font-weight: 700; font-size: 13px; }
+  .btn-p { background: var(--teal); color: #fff; }
+  .btn-s { background: #f3f6f3; color: var(--ink); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+  .stat .v { font-size: 30px; font-weight: 800; }
+  .stat .l { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .tag { position: fixed; bottom: 16px; right: 16px; background: var(--teal); color: #fff; padding: 8px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="logo" href="/"><i>O</i>ZeusCode</a>
+    <div class="chip">Иван</div>
+  </div>
+  <div class="shell">
+    <aside class="side">
+      <div class="side-label">Разделы</div>
+      <nav class="nav">
+        <a class="on" href="#">Главная<small>баланс и быстрый старт</small></a>
+        <a href="#">Студия<small>проекты и чат с ИИ</small></a>
+        <a href="#">Модели<small>каталог и цены</small></a>
+        <a href="#">Ключи для IDE<small>Cursor, VS Code</small></a>
+        <a href="#">История<small>запросы и списания</small></a>
+        <a href="#">Оплата<small>пополнить баланс</small></a>
+      </nav>
+      <div class="bal"><b>$1.00</b><p>Твой баланс</p></div>
+    </aside>
+    <main class="main">
+      <h1>Главная</h1>
+      <p class="sub">ivan@mail.ru · три шага, чтобы начать</p>
+      <div class="howto">
+        <div class="card"><div class="n">1</div><div class="t">Напиши код в браузере</div><div class="d">Создай проект, выбери модель или Ultra Mode и опиши задачу простыми словами.</div><button class="btn btn-p">Открыть студию</button></div>
+        <div class="card"><div class="n">2</div><div class="t">Или подключи IDE</div><div class="d">Один ключ для Cursor, Continue и Roo. Base URL уже готов.</div><button class="btn btn-s">Создать ключ</button></div>
+        <div class="card"><div class="n">3</div><div class="t">Посмотри цены</div><div class="d">Все доступные модели и цены за миллион токенов.</div><button class="btn btn-s">Каталог моделей</button></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="v">$1.00</div><div class="l">Баланс</div></div>
+        <div class="stat"><div class="v">$0.00</div><div class="l">Потрачено</div></div>
+        <div class="stat"><div class="v">0</div><div class="l">Запросов</div></div>
+      </div>
+    </main>
+  </div>
+  <div class="tag">C · Спокойная студия · teal</div>
+</body>
+</html>

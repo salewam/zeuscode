@@ -1,0 +1,117 @@
+name: studio-skills
+
+on:
+  push:
+    paths:
+      - "backend/app/agent_skills/**"
+      - "backend/app/evidence.py"
+      - "backend/app/skills.py"
+      - "backend/app/orchestrate.py"
+      - ".github/workflows/studio-skills.yml"
+  pull_request:
+    paths:
+      - "backend/app/agent_skills/**"
+      - "backend/app/evidence.py"
+      - "backend/app/skills.py"
+      - "backend/app/orchestrate.py"
+      - ".github/workflows/studio-skills.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-packs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+      - name: Pack load smoke
+        working-directory: backend
+        env:
+          PYTHONPATH: .
+        run: |
+          python - <<'PY'
+          from app.skills import get_skill, load_skill_pack, build_role_system
+          load_skill_pack.cache_clear()
+          for role in ("frontend", "backend", "design", "tests", "reviewer"):
+              s = get_skill(role)
+              assert s.get("pack"), role
+              assert load_skill_pack(s["pack"]), role
+              sys = build_role_system(role, "brief", "feature", "standard")
+              assert "Мышление" in sys or "мышление" in sys.lower() or "Вердикт" in sys or len(sys) > 500
+              print("ok", role, len(sys))
+          PY
+      - name: verify.sh templates
+        run: |
+          bash backend/app/agent_skills/frontend/scripts/verify.sh backend/app/agent_skills/frontend/assets/templates
+          bash backend/app/agent_skills/backend/scripts/verify.sh backend/app/agent_skills/backend/assets/templates
+          bash backend/app/agent_skills/design/scripts/verify.sh backend/app/agent_skills/design/assets/templates
+          bash backend/app/agent_skills/tests/scripts/verify.sh backend/app/agent_skills/tests/assets/templates
+      - name: Evidence + browser smoke unit
+        working-directory: backend
+        env:
+          PYTHONPATH: .
+        run: |
+          python - <<'PY'
+          from app.evidence import scan_all, build_receipt
+          arts = [
+            {"path":"/src/frontend/index.html","role":"frontend","language":"html","content":"""<!DOCTYPE html><html><body>
+              <label for="e">Email</label><input id="e" />
+              <button type="button" id="go">Go</button>
+              <script>document.getElementById('go').onclick=()=>{}</script>
+            </body></html>"""},
+            {"path":"/src/frontend/styles.css","role":"frontend","language":"css","content":"""
+              button:focus-visible{outline:2px solid #2dd4bf}
+              :root{--color-accent:#2dd4bf}
+            """},
+          ]
+          f = scan_all(arts)
+          r = build_receipt(task="t", mode="standard", artifacts=arts, findings=f)
+          codes = {x["code"] for x in f}
+          assert "browser_ok" in codes or "browser_skip" in codes, codes
+          assert r["verdict"] in ("PASS", "PASS_WITH_RISKS"), r
+          # dirty should fail browser or a11y
+          dirty = [{"path":"/src/frontend/index.html","role":"frontend","language":"html","content":"<div onclick=x()>x</div>"}]
+          f2 = scan_all(dirty)
+          assert any(x["code"] in ("div_onclick","browser_no_interactive","browser_pageerror") for x in f2), f2
+          print("evidence ok", r["verdict"], sorted(codes))
+          PY
+      - name: Offline skill battery
+        working-directory: .
+        env:
+          PYTHONPATH: backend
+        run: |
+          python backend/app/agent_skills/scripts/eval_all_offline.py
+      - name: Live Gemini Flash eval (optional)
+        if: ${{ secrets.UPSTREAM_API_KEY != '' }}
+        working-directory: .
+        env:
+          PYTHONPATH: backend
+          UPSTREAM_API_KEY: ${{ secrets.UPSTREAM_API_KEY }}
+          UPSTREAM_BASE_URL: ${{ secrets.UPSTREAM_BASE_URL }}
+          SKILL_EVAL_MODEL: gemini-2.5-flash
+        run: |
+          python backend/app/agent_skills/scripts/live_eval_gemini_flash.py || test $? -eq 2
+      - name: Frontend eval (optional live LLM)
+        if: ${{ secrets.UPSTREAM_API_KEY != '' }}
+        working-directory: .
+        env:
+          PYTHONPATH: backend
+          UPSTREAM_API_KEY: ${{ secrets.UPSTREAM_API_KEY }}
+          UPSTREAM_BASE_URL: ${{ secrets.UPSTREAM_BASE_URL }}
+        run: |
+          python backend/app/agent_skills/frontend/scripts/eval_run.py
+      - name: Backend eval (optional live LLM)
+        if: ${{ secrets.UPSTREAM_API_KEY != '' }}
+        working-directory: .
+        env:
+          PYTHONPATH: backend
+          UPSTREAM_API_KEY: ${{ secrets.UPSTREAM_API_KEY }}
+          UPSTREAM_BASE_URL: ${{ secrets.UPSTREAM_BASE_URL }}
+        run: |
+          python backend/app/agent_skills/backend/evals/run_evals.py

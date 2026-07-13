@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZeusCode — качество Fable по цене китайских токенов</title>
+  <meta name="description" content="Агрегатор нейросетей для кодинга. Ultra Mode: четыре дешёвых модели работают как команда и дают результат уровня Claude Fable 5." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="grain"></div>
+  <div id="cur"></div>
+  <div id="cur-r"></div>
+
+  <nav>
+    <a class="logo" href="/"><span class="logo-sq"></span>ZeusCode</a>
+    <ul class="nav-links">
+      <li><a href="#ultra">Ultra</a></li>
+      <li><a href="#bench">Bench</a></li>
+      <li><a href="#how">How</a></li>
+      <li><a href="/app">Кабинет</a></li>
+    </ul>
+    <a class="nav-cta" href="/app"><span>Войти</span></a>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-stripe"></div>
+    <div class="hero-stripe2"></div>
+    <div class="hero-ghost">ZC</div>
+    <div class="hero-corner">API · IDE · PLAYGROUND<br />RU / СНГ</div>
+
+    <div class="hero-kicker">Агрегатор нейросетей для кодеров</div>
+    <h1 class="hero-title">
+      <span class="ht-big">Zeus<span class="r">Code</span></span>
+      <span class="ht-mid">дешёвая команда моделей ≈ Fable</span>
+      <span class="ht-out">AI</span>
+    </h1>
+
+    <div class="hero-bottom">
+      <p class="hero-desc">
+        Один ключ во все IDE. В вебе — <strong>Ultra Mode</strong>:
+        четыре агента параллельно пишут фронт, бэк, тесты и доки,
+        потом склеивают результат. Качество уровня
+        <span class="hl">Claude Fable 5</span> — по цене азиатских токенов.
+      </p>
+      <div class="hero-acts">
+        <a class="btn-primary" href="/app"><span>Попробовать бесплатно</span></a>
+        <a class="btn-sec" href="#ultra">Как работает Ultra</a>
+        <div class="hero-sub-note">Trial 90 ₽ · без карты на старте</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-t">
+      <span class="ticker-i"><span class="t-sq"></span>Ultra Mode</span>
+      <span class="ticker-i"><span class="t-sq"></span>Gemini · Kimi · DeepSeek</span>
+      <span class="ticker-i"><span class="t-sq"></span>OpenAI-compatible</span>
+      <span class="ticker-i"><span class="t-sq"></span>Cursor · VS Code · Roo</span>
+      <span class="ticker-i"><span class="t-sq"></span>~10 сек на цикл</span>
+      <span class="ticker-i"><span class="t-sq"></span>прозрачные цены</span>
+      <span class="ticker-i"><span class="t-sq"></span>Ultra Mode</span>
+      <span class="ticker-i"><span class="t-sq"></span>Gemini · Kimi · DeepSeek</span>
+      <span class="ticker-i"><span class="t-sq"></span>OpenAI-compatible</span>
+      <span class="ticker-i"><span class="t-sq"></span>Cursor · VS Code · Roo</span>
+      <span class="ticker-i"><span class="t-sq"></span>~10 сек на цикл</span>
+      <span class="ticker-i"><span class="t-sq"></span>прозрачные цены</span>
+    </div>
+  </div>
+
+  <section class="mf" id="ultra">
+    <div class="mf-inner wrap" style="padding:0">
+      <div class="mf-kicker">01 / Ultra Mode</div>
+      <p class="mf-text">
+        Четыре субагента <strong>одновременно</strong> берут фронтенд, бэкенд, тесты и документацию.
+        Потом синтез собирает один рабочий проект.
+        <em>Не чат. Команда.</em>
+      </p>
+      <div class="mf-values">
+        <div class="mf-val">
+          <span class="mf-val-n">01</span>
+          <div class="mf-val-t">Параллель</div>
+          <div class="mf-val-d">Время ответа ≈ самой медленной модели, не сумме четырёх.</div>
+        </div>
+        <div class="mf-val">
+          <span class="mf-val-n">02</span>
+          <div class="mf-val-t">Синтез</div>
+          <div class="mf-val-d">Пятый проход склеивает куски без дублей и конфликтов.</div>
+        </div>
+        <div class="mf-val">
+          <span class="mf-val-n">03</span>
+          <div class="mf-val-t">Дешевизна</div>
+          <div class="mf-val-d">Ultra на gemini-2.5-flash — доли цента за цикл.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="bench">
+    <div class="wrap">
+      <div class="sec-top">
+        <div class="sec-id">02 / Benchmark</div>
+        <div class="sec-aside">OpenRouter Fusion · ориентир</div>
+      </div>
+      <h2 class="big-t">Команда дешёвых <span class="red">≈</span> <span class="out">Fable</span></h2>
+      <div class="bench">
+        <div class="bench-main">
+          <div class="bench-label">Fusion stack score</div>
+          <div class="bench-score">64<span class="r">–</span>65%</div>
+          <p class="bench-note">
+            Gemini 3 Flash + Kimi K2.6 + DeepSeek V4 Pro в связке
+            почти догоняют solo Claude Fable 5 (~65%).
+            Одиночные дешёвые модели заметно слабее.
+          </p>
+        </div>
+        <div class="bench-side">
+          <div class="bench-label">Сравнение</div>
+          <div class="bars" id="bars">
+            <div class="bar-row">
+              <div class="bar-name">Fable 5 solo</div>
+              <div class="bar-track"><div class="bar-fill accent" data-w="65"></div></div>
+              <div class="bar-val">65</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">Fusion cheap</div>
+              <div class="bar-track"><div class="bar-fill accent" data-w="64"></div></div>
+              <div class="bar-val">64</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">Kimi solo</div>
+              <div class="bar-track"><div class="bar-fill" data-w="54"></div></div>
+              <div class="bar-val">54</div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-name">Gemini solo</div>
+              <div class="bar-track"><div class="bar-fill" data-w="43"></div></div>
+              <div class="bar-val">43</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-top">
+        <div class="sec-id">03 / Product</div>
+        <div class="sec-aside">MVP scope</div>
+      </div>
+      <h2 class="big-t">Что внутри <span class="red">стека</span></h2>
+      <div class="cards">
+        <article class="card">
+          <span class="card-num">01 / API</span>
+          <h3 class="card-title">Один ключ</h3>
+          <p class="card-desc">OpenAI-compatible endpoint. Вставляешь в Cursor, VS Code, Continue, Roo — и работаешь.</p>
+          <div class="card-metric">
+            <span class="card-metric-val">zeus_</span>
+            <span class="card-metric-lbl">API key</span>
+          </div>
+        </article>
+        <article class="card">
+          <span class="card-num">02 / Playground</span>
+          <h3 class="card-title">Веб-кодинг</h3>
+          <p class="card-desc">Без установки IDE: проект, история, тумблер Ultra Mode, видно как агенты работают.</p>
+          <div class="card-metric">
+            <span class="card-metric-val">4</span>
+            <span class="card-metric-lbl">агента</span>
+          </div>
+        </article>
+        <article class="card">
+          <span class="card-num">03 / Cache</span>
+          <h3 class="card-title">Кэш контекста</h3>
+          <p class="card-desc">Повторное чтение кодовой базы дешевле. На моделях с Cached Input — до −90%.</p>
+          <div class="card-metric">
+            <span class="card-metric-val">−90%</span>
+            <span class="card-metric-lbl">на cache hit</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="how" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-top">
+        <div class="sec-id">04 / Path</div>
+        <div class="sec-aside">от регистрации до Cursor</div>
+      </div>
+      <h2 class="big-t">Путь за <span class="red">5</span> минут</h2>
+      <div class="proc">
+        <div class="pr">
+          <div class="pr-n">01</div>
+          <div class="pr-body">
+            <div class="pr-title">Регистрация</div>
+            <div class="pr-desc">Получаешь trial 90 ₽ — хватает на несколько Ultra-циклов.</div>
+          </div>
+          <div class="pr-time">30 сек</div>
+        </div>
+        <div class="pr">
+          <div class="pr-n">02</div>
+          <div class="pr-body">
+            <div class="pr-title">Playground</div>
+            <div class="pr-desc">Включаешь Ultra Mode, ставишь задачу, смотришь четырёх агентов и финальный синтез.</div>
+          </div>
+          <div class="pr-time">~10 сек</div>
+        </div>
+        <div class="pr">
+          <div class="pr-n">03</div>
+          <div class="pr-body">
+            <div class="pr-title">API-ключ</div>
+            <div class="pr-desc">Создаёшь zeus_… и вставляешь в IDE: base URL + model ultra-mode.</div>
+          </div>
+          <div class="pr-time">1 мин</div>
+        </div>
+        <div class="pr">
+          <div class="pr-n">04</div>
+          <div class="pr-body">
+            <div class="pr-title">Пополнение</div>
+            <div class="pr-desc">Карта РФ или USDT через CryptoBot. Без скрытых сюрпризов.</div>
+          </div>
+          <div class="pr-time">когда надо</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-bg">
+    <div class="cta-x">ZC</div>
+    <div class="cta-k">Start coding</div>
+    <h2 class="cta-h">Бери стек.<br /><span class="red">Жги токены.</span></h2>
+    <p class="cta-sub">Trial на старте. Ключ под любую IDE. Ultra Mode из коробки.</p>
+    <a class="btn-primary" href="/app" style="position:relative"><span>Открыть кабинет</span></a>
+  </section>
+
+  <footer>
+    <div class="ft-bot">
+      <div class="ft-copy">© 2026 ZeusCode</div>
+      <div class="ft-made">Style ref · <a href="https://hristo.agency/" target="_blank" rel="noopener">hristo.agency</a></div>
+    </div>
+  </footer>
+
+  <script>
+    const cur = document.getElementById("cur");
+    const curR = document.getElementById("cur-r");
+    let x = 0, y = 0, rx = 0, ry = 0;
+    window.addEventListener("mousemove", (e) => { x = e.clientX; y = e.clientY; });
+    function loop() {
+      cur.style.left = x + "px"; cur.style.top = y + "px";
+      rx += (x - rx) * 0.18; ry += (y - ry) * 0.18;
+      curR.style.left = rx + "px"; curR.style.top = ry + "px";
+      requestAnimationFrame(loop);
+    }
+    if (window.matchMedia("(pointer:fine)").matches) loop();
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.querySelectorAll(".bar-fill").forEach((el) => {
+            el.style.width = el.dataset.w + "%";
+          });
+        }
+      });
+    }, { threshold: 0.35 });
+    const bars = document.getElementById("bars");
+    if (bars) io.observe(bars);
+  </script>
+</body>
+</html>

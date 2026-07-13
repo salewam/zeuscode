@@ -1,0 +1,136 @@
+/* Base + primitives for page.html / form.html templates */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: 600;
+}
+.skip-link:focus {
+  left: var(--space-2);
+  top: var(--space-2);
+}
+
+.site-header {
+  padding: var(--space-4);
+}
+.brand {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.page {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+}
+.page--narrow {
+  max-width: var(--page-narrow);
+}
+
+h1 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+.lead {
+  margin: 0 0 var(--space-5);
+  color: var(--color-muted);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+.field label {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.field input,
+.field select,
+.field textarea {
+  min-height: 44px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+.hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.form-error {
+  margin: 0 0 var(--space-3);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+.form-error[hidden] {
+  display: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+.empty {
+  padding: var(--space-6) 0;
+}
+.empty p {
+  color: var(--color-muted);
+}
+
+.skeleton {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  margin-bottom: var(--space-3);
+}

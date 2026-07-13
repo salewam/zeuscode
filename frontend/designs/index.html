@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>4 варианта дизайна — ZeusCode</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; font-family: "Space Grotesk", sans-serif; background: #f0ece3; color: #1a1814; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 48px 24px 80px; }
+  h1 { font-family: Syne, sans-serif; font-size: 42px; font-weight: 800; text-transform: uppercase; letter-spacing: -1px; margin: 0 0 8px; }
+  p { color: #6b655c; line-height: 1.6; max-width: 640px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px; }
+  a.card {
+    display: block; text-decoration: none; color: inherit; border: 1.5px solid #d4cec2;
+    background: #fff; padding: 22px; transition: border-color .2s, transform .2s;
+  }
+  a.card:hover { border-color: #d9220f; transform: translateY(-2px); }
+  .letter { font-family: Syne, sans-serif; font-size: 48px; font-weight: 800; color: #d9220f; line-height: 1; }
+  .name { font-family: Syne, sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase; margin: 8px 0; }
+  .meta { font-size: 14px; color: #6b655c; line-height: 1.5; }
+  .swatches { display: flex; gap: 6px; margin: 14px 0; }
+  .swatches i { width: 22px; height: 22px; display: block; border: 1px solid #d4cec2; }
+  .go { font-family: Syne, sans-serif; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: .5px; color: #d9220f; }
+  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Выбери дизайн кабинета</h1>
+    <p>Одинаковая структура и русский текст — разный характер. Открой вариант, покликай глазами, напиши букву (A/B/C/D), какой ближе. Потом соберём его в рабочий кабинет.</p>
+    <div class="grid">
+      <a class="card" href="/static/designs/a-atelier.html">
+        <div class="letter">A</div>
+        <div class="name">Ателье</div>
+        <div class="swatches"><i style="background:#f0ece3"></i><i style="background:#1a1814"></i><i style="background:#d9220f"></i></div>
+        <div class="meta">Крем + красный, editorial. То, что сейчас на сайте. Острые углы, крупные заголовки.</div>
+        <div class="go">Открыть →</div>
+      </a>
+      <a class="card" href="/static/designs/b-terminal.html">
+        <div class="letter">B</div>
+        <div class="name">Терминал</div>
+        <div class="swatches"><i style="background:#0c1210"></i><i style="background:#b6ff3b"></i><i style="background:#121a17"></i></div>
+        <div class="meta">Тёмный для кодеров. Лайм, моноширинный шрифт, «консольный» вайб.</div>
+        <div class="go">Открыть →</div>
+      </a>
+      <a class="card" href="/static/designs/c-calm.html">
+        <div class="letter">C</div>
+        <div class="name">Спокойная студия</div>
+        <div class="swatches"><i style="background:#f5f7f4"></i><i style="background:#0f766e"></i><i style="background:#ffffff"></i></div>
+        <div class="meta">Мягкий светлый SaaS. Teal, скругления, воздух. Самый «понятный для новичка».</div>
+        <div class="go">Открыть →</div>
+      </a>
+      <a class="card" href="/static/designs/d-poster.html">
+        <div class="letter">D</div>
+        <div class="name">Плакат</div>
+        <div class="swatches"><i style="background:#ffffff"></i><i style="background:#2550ff"></i><i style="background:#0a0a0a"></i></div>
+        <div class="meta">Жирный плакатный стиль. Белый + электрик-синий, толстые рамки, огромный тип.</div>
+        <div class="go">Открыть →</div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

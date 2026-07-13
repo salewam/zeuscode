@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Страница</title>
+  <link rel="stylesheet" href="./tokens.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержимому</a>
+  <header class="site-header">
+    <p class="brand">Product</p>
+  </header>
+  <main id="main" class="page">
+    <h1>Заголовок экрана</h1>
+    <p class="lead">Одно короткое предложение поддержки.</p>
+
+    <section id="content-root" data-state="ready" aria-live="polite">
+      <!-- ready | loading | empty | error -->
+      <p>Основной контент экрана.</p>
+    </section>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

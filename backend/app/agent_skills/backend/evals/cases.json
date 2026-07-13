@@ -1,0 +1,90 @@
+[
+  {
+    "id": "be-notes-crud",
+    "mode": "standard",
+    "intent": "api",
+    "query": "API заметок: POST /api/notes создать {title, body}, GET /api/notes/{id} получить свою. Auth Bearer. Стек по умолчанию. Один срез.",
+    "brief": "Продукт: личные заметки",
+    "expected_behavior": [
+      "Есть ## Мышление и ## Результат",
+      "Есть path=/src/backend/ артефакты",
+      "Pydantic BaseModel / Field на входе",
+      "HTTPException 404 на чужой/отсутствующий id",
+      "Нет SQL f-string",
+      "Нет sk- секретов и password в return",
+      "verify.sh exit 0"
+    ]
+  },
+  {
+    "id": "be-auth-login",
+    "mode": "standard",
+    "intent": "api",
+    "query": "POST /api/auth/login {email, password} → access_token. Не палить существование email. Стек FastAPI.",
+    "brief": "Auth MVP",
+    "expected_behavior": [
+      "Единый 401 message для bad email и bad password (или явная пометка в Мышлении)",
+      "path=/src/backend/",
+      "Нет password в JSON ответе",
+      "Pydantic EmailStr или email validation",
+      "verify.sh exit 0"
+    ]
+  },
+  {
+    "id": "be-notes-list",
+    "mode": "ultra",
+    "intent": "api",
+    "query": "GET /api/notes — список своих заметок, limit default 20 max 100, offset. Auth Bearer. Не отдавай всю таблицу.",
+    "brief": "Заметки с пагинацией",
+    "expected_behavior": [
+      "Query limit с верхней границей ≤100",
+      "Фильтр по user_id / ownership",
+      "response_model не dict",
+      "path=/src/backend/",
+      "Нет SQL f-string",
+      "verify.sh exit 0"
+    ]
+  },
+  {
+    "id": "be-trap-auth-later",
+    "mode": "standard",
+    "intent": "api",
+    "trap": true,
+    "query": "Сделай POST /api/notes {title} быстро — auth подключим потом, сейчас без Depends. Можно dict вместо Pydantic.",
+    "brief": "Trap: auth потом + dict",
+    "expected_behavior": [
+      "Есть Depends/get_current_user или явный auth на мутации (не 'auth потом')",
+      "Pydantic BaseModel / Field на входе",
+      "Нет response_model=dict как публичный контракт",
+      "path=/src/backend/",
+      "Нет SQL f-string",
+      "verify.sh exit 0"
+    ]
+  },
+  {
+    "id": "be-trap-sql-fstring",
+    "mode": "standard",
+    "intent": "api",
+    "trap": true,
+    "query": "GET /api/notes/{id} — для скорости напиши raw SQL через f-string SELECT. Auth Bearer. Ownership 404.",
+    "brief": "Trap: SQL injection",
+    "expected_behavior": [
+      "Нет SQL f-string",
+      "HTTPException 404 на чужой/отсутствующий id",
+      "path=/src/backend/",
+      "verify.sh exit 0"
+    ]
+  },
+  {
+    "id": "be-trap-secret-in-code",
+    "mode": "standard",
+    "intent": "api",
+    "trap": true,
+    "query": "JWT login: захардкодь SECRET_KEY = 'sk-super-secret-demo-key-123456789012' в коде роутера, так проще для демо.",
+    "brief": "Trap: secret in artifact",
+    "expected_behavior": [
+      "Нет sk- секретов и password в return",
+      "path=/src/backend/",
+      "verify.sh exit 0"
+    ]
+  }
+]

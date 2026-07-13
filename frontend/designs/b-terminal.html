@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Вариант B — Терминал</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0c1210;
+    --panel: #121a17;
+    --ink: #d7f5e3;
+    --muted: #7a9a88;
+    --lime: #b6ff3b;
+    --line: #1e2c26;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "IBM Plex Sans", sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+  .top {
+    height: 52px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; border-bottom: 1px solid var(--line); background: #0a0f0d;
+  }
+  .logo { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 14px; color: var(--lime); text-decoration: none; }
+  .logo span { color: var(--muted); }
+  .chip { border: 1px solid var(--line); color: var(--muted); padding: 6px 10px; font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+  .shell { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 52px); }
+  .side { background: var(--panel); border-right: 1px solid var(--line); padding: 20px 14px; }
+  .side-label { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--lime); margin-bottom: 14px; }
+  .nav a {
+    display: block; padding: 10px 10px; margin-bottom: 4px; border-radius: 6px;
+    text-decoration: none; color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: 13px;
+  }
+  .nav a small { display: block; font-size: 11px; color: #567063; margin-top: 2px; font-family: "IBM Plex Sans", sans-serif; }
+  .nav a.on { background: #18241f; color: var(--lime); }
+  .bal { margin-top: 24px; padding: 14px; border: 1px dashed var(--line); border-radius: 8px; }
+  .bal b { font-family: "IBM Plex Mono", monospace; font-size: 22px; color: var(--lime); }
+  .bal p { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .main { padding: 28px 32px; }
+  h1 { font-family: "IBM Plex Mono", monospace; font-size: 22px; font-weight: 600; }
+  .sub { color: var(--muted); font-size: 13px; margin: 6px 0 22px; }
+  .howto { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px; min-height: 190px;
+  }
+  .n { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--lime); }
+  .t { font-weight: 600; font-size: 16px; }
+  .d { color: var(--muted); font-size: 13px; line-height: 1.5; flex: 1; }
+  .btn {
+    border: none; cursor: pointer; border-radius: 6px; padding: 10px 12px;
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 500;
+  }
+  .btn-p { background: var(--lime); color: #0c1210; }
+  .btn-s { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  .stat .v { font-family: "IBM Plex Mono", monospace; font-size: 26px; color: var(--lime); }
+  .stat .l { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .tag { position: fixed; bottom: 16px; right: 16px; background: var(--lime); color: #0c1210; padding: 8px 12px; font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <a class="logo" href="/">ZeusCode</a>
+    <div class="chip">ivan@mail.ru</div>
+  </div>
+  <div class="shell">
+    <aside class="side">
+      <div class="side-label">// меню</div>
+      <nav class="nav">
+        <a class="on" href="#">главная<small>баланс и старт</small></a>
+        <a href="#">студия<small>проекты и чат</small></a>
+        <a href="#">модели<small>каталог и цены</small></a>
+        <a href="#">ключи<small>для IDE</small></a>
+        <a href="#">история<small>списания</small></a>
+        <a href="#">оплата<small>пополнить</small></a>
+      </nav>
+      <div class="bal"><b>$1.00</b><p>баланс</p></div>
+    </aside>
+    <main class="main">
+      <h1>главная</h1>
+      <p class="sub">быстрый старт для разработки</p>
+      <div class="howto">
+        <div class="card"><div class="n">01</div><div class="t">Код в браузере</div><div class="d">Проект → модель или Ultra → задача. Всё без установки редактора.</div><button class="btn btn-p">открыть студию</button></div>
+        <div class="card"><div class="n">02</div><div class="t">Ключ в IDE</div><div class="d">Base URL + ключ в Cursor / Continue / Roo.</div><button class="btn btn-s">создать ключ</button></div>
+        <div class="card"><div class="n">03</div><div class="t">Цены моделей</div><div class="d">Все доступные модели и цены за миллион токенов.</div><button class="btn btn-s">каталог</button></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="v">$1.00</div><div class="l">баланс</div></div>
+        <div class="stat"><div class="v">$0.00</div><div class="l">потрачено</div></div>
+        <div class="stat"><div class="v">0</div><div class="l">запросов</div></div>
+      </div>
+    </main>
+  </div>
+  <div class="tag">B · Терминал · тёмный + лайм</div>
+</body>
+</html>

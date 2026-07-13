@@ -1,0 +1,12 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+stage0/out/
+data/workspaces/
+data/*.db
+data/.currency_rub
+data/*.json
+data/*.md
+data/*.db-journal

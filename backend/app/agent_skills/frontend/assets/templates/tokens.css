@@ -1,0 +1,49 @@
+/* Token skeleton — copy to /src/frontend/tokens.css and tune to brief.
+   Do NOT default to purple AI gradient or Inter. */
+
+:root {
+  --color-bg: #12141a;
+  --color-surface: #1c212b;
+  --color-border: #2e3645;
+  --color-text: #eef1f6;
+  --color-muted: #9aa3b2;
+  --color-accent: #3d9cf0;
+  --color-accent-ink: #0b1220;
+  --color-danger: #f07178;
+  --color-ok: #6bcb8b;
+
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+
+  --focus-ring: 2px solid var(--color-accent);
+  --focus-offset: 2px;
+
+  --page-max: 40rem;
+  --page-narrow: 22.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

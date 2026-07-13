@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Форма</title>
+  <link rel="stylesheet" href="./tokens.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержимому</a>
+  <main id="main" class="page page--narrow">
+    <h1>Форма</h1>
+    <p class="lead">Кратко зачем форма.</p>
+
+    <form id="main-form" class="form" novalidate>
+      <div class="field">
+        <label for="name">Имя</label>
+        <input id="name" name="name" type="text" autocomplete="name" required />
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required
+               aria-describedby="email-hint" />
+        <p id="email-hint" class="hint">Рабочий email для уведомлений</p>
+      </div>
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <button type="submit" class="btn" id="submit-btn">Сохранить</button>
+    </form>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
