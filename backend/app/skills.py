@@ -527,8 +527,9 @@ _ROLE_TASK_SIGNALS: dict[str, tuple[str, ...]] = {
         r"\b(бэкенд|backend|сервер|эндпоинт)\b",
     ),
     "frontend": (
-        r"\b(html|css|js|react|лендинг|экран|кнопк|форм[аыу]|ui|интерфейс|страниц)\b",
+        r"\b(html|css|js|react|лендинг|ленд|landing|сайт|экран|кнопк|форм[аыу]|ui|интерфейс|страниц)\b",
         r"\b(frontend|фронт)\b",
+        r"\b(автосервис|сто\b|кофейн|магазин|клиник|салон)\b",
     ),
     "design": (
         r"\b(дизайн|design|токен|палитр|типограф|layout|handoff|tokens\.css)\b",
@@ -550,8 +551,10 @@ def infer_intent_from_task(task: str | None, fallback: str = "feature") -> str:
         scores["api"] += 3
     if re.search(r"\b(post|get|put|patch|delete)\s+/api/", low):
         scores["api"] += 2
-    if re.search(r"\b(лендинг|экран|кнопк|html|css|ui|форм[аыу]|страниц)\b", low):
+    if re.search(r"\b(лендинг|ленд|landing|сайт|экран|кнопк|html|css|ui|форм[аыу]|страниц)\b", low):
         scores["ui"] += 3
+    if re.search(r"\b(автосервис|сто\b|кофейн|магазин|клиник|салон)\b", low):
+        scores["ui"] += 2
     if re.search(r"\b(pytest|тест|assert|покрыт)\b", low):
         scores["tests"] += 2
     if re.search(r"\b(баг|bug|почин|сломал|fix)\b", low):
