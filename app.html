@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кабинет — ZeusCode</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./static/app.css?v=zeus35" />
+  <script id="zeus-api-config">
+  window.ZEUS_API_BASE = localStorage.getItem("zeus_api_base") || "";
+</script>
+</head>
+<body>
+  <div class="top" id="app-top">
+    <a class="logo" href="./" id="nav-logo">ZeusCode</a>
+    <button type="button" class="chip chip-cab hidden" id="nav-cabinet" title="На главную">← На главную</button>
+    <div class="top-right">
+      <button type="button" class="bal-top hidden" id="nav-bal" title="Пополнить">0,00 ₽</button>
+      <button type="button" class="chip chip-out hidden" id="nav-logout">выйти</button>
+    </div>
+  </div>
+
+  <div id="view-auth" class="auth-wrap">
+    <div class="auth-box">
+      <p class="auth-kicker">// личный кабинет</p>
+      <h2>войти в ZeusCode</h2>
+      <p class="auth-hint">Регистрация → ключ создаётся сам → выбираешь модели → кнопка «сгенерировать». Баланс <strong>90 ₽</strong>.</p>
+      <div class="field">
+        <label>почта</label>
+        <input id="email" type="email" placeholder="ivan@mail.ru" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label>пароль</label>
+        <input id="password" type="password" placeholder="минимум 6 символов" autocomplete="current-password" />
+      </div>
+      <div class="field" id="api-base-field">
+        <label>API (если кабинет не на том же сервере)</label>
+        <input id="api-base" type="url" placeholder="https://… или http://127.0.0.1:8080" autocomplete="off" />
+        <p class="auth-hint" style="margin:6px 0 0">На GitHub Pages бэкенда нет. Либо укажи живой API здесь, либо войди на том же хосте, где крутится API (например http://127.0.0.1:8080/app).</p>
+      </div>
+      <div class="row-actions">
+        <button type="button" class="btn btn-p" id="btn-login">войти</button>
+        <button type="button" class="btn btn-s" id="btn-register">регистрация + ключ</button>
+      </div>
+      <div class="err" id="auth-err"></div>
+    </div>
+  </div>
+
+  <div id="view-app" class="shell hidden">
+    <aside class="side">
+      <div class="side-label">// кабинет</div>
+      <nav class="nav" id="side-nav">
+        <a href="#" class="on" data-tab="dash">мой набор<small>ключ + модели</small></a>
+        <a href="#" data-tab="models">модели<small>выбрать и цены ₽</small></a>
+        <a href="#" data-tab="keys">ключ<small>создать / копировать</small></a>
+        <a href="#" data-tab="billing">баланс<small>пополнить</small></a>
+        <a href="#" data-tab="usage">история<small>списания</small></a>
+        <a href="#" data-tab="projects">студия<small>опционально</small></a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <section id="tab-dash">
+        <div class="dash-head">
+          <div>
+            <h1>мой набор</h1>
+            <p class="sub">ключ · модели · баланс</p>
+          </div>
+          <div class="dash-actions">
+            <button type="button" class="btn btn-s" data-goto="billing">пополнить</button>
+            <button type="button" class="btn btn-s" data-goto="models">модели</button>
+            <button type="button" class="btn btn-p" data-action="launch-studio">в студию</button>
+          </div>
+        </div>
+
+        <div id="dash-alerts" class="dash-alerts hidden"></div>
+
+        <div class="limits" id="dash-limits">
+          <div class="limit" data-goto="billing">
+            <div class="limit-l">баланс</div>
+            <div class="limit-v" id="bal">0,00 ₽</div>
+          </div>
+          <div class="limit" data-goto="usage">
+            <div class="limit-l">за 7 дней</div>
+            <div class="limit-v" id="spent-week">0,00 ₽</div>
+          </div>
+          <div class="limit">
+            <div class="limit-l">сегодня</div>
+            <div class="limit-v" id="spent-today">0,00 ₽</div>
+          </div>
+          <div class="limit" data-goto="usage">
+            <div class="limit-l">запросов</div>
+            <div class="limit-v" id="req-n">0</div>
+          </div>
+          <span id="spent" class="hidden">0</span>
+        </div>
+
+        <div class="my-setup slim" id="my-setup-dash">
+          <div class="polza-field">
+            <label>Base URL <span class="hint">(для Cursor / Cline)</span></label>
+            <div class="polza-copy-row">
+              <code id="dash-base-url">http://127.0.0.1:8080/v1</code>
+              <button type="button" class="btn ghost sm" data-copy="#dash-base-url">копировать</button>
+            </div>
+          </div>
+          <div class="polza-field">
+            <label>API Key</label>
+            <div class="polza-copy-row">
+              <code id="dash-api-key">—</code>
+              <button type="button" class="btn ghost sm" data-copy="#dash-api-key">копировать</button>
+            </div>
+          </div>
+          <div class="row-actions">
+            <button type="button" class="btn btn-p" id="btn-create-key-dash" data-action="create-key">создать ключ</button>
+            <button type="button" class="btn btn-s" data-action="copy-pack">скопировать всё</button>
+          </div>
+          <div class="my-setup-status muted small" data-setup="status" style="margin-top:8px"></div>
+
+          <div class="my-setup-label" style="margin-top:20px">Модели · ₽ / 1M</div>
+          <div class="setup-models" data-setup="models"></div>
+          <div class="setup-cost" data-setup="cost" style="margin-top:14px"></div>
+          <div class="setup-balance hidden" data-setup="balance"></div>
+
+          <pre class="polza-code hidden" id="dash-pack-out" data-setup="pack" style="margin-top:14px"></pre>
+          <div class="setup-flash hidden" data-setup="flash"></div>
+        </div>
+
+        <div class="hidden" aria-hidden="true">
+          <div id="dash-models"></div>
+          <div id="dash-history"></div>
+          <div id="dash-projects"></div>
+          <div id="dash-chart"></div>
+          <span id="proj-n">0</span>
+          <span id="keys-n">0</span>
+          <span id="keys-n-vis">0</span>
+          <span id="pick-n-dash">0</span>
+          <span id="models-ready">0</span>
+          <span id="models-total">0</span>
+          <span id="models-total-vis">0</span>
+          <span id="side-bal">0</span>
+          <span id="daily-limit">300 ₽</span>
+          <span id="month-spent">0 ₽</span>
+          <span id="polza-bal">—</span>
+          <span id="dash-model-id">gemini-2.5-flash</span>
+        </div>
+      </section>
+
+      <section id="tab-projects" class="hidden">
+        <div class="zc-studio" id="zc-studio">
+          <!-- Legacy beginner form (hidden; task entry is in panes) -->
+          <div class="zc-home hidden" id="zc-home">
+            <div class="zc-home-inner">
+              <label class="zc-label" for="studio-prompt">Что сделать?</label>
+              <textarea id="studio-prompt" class="zc-prompt" rows="3" placeholder="Задача…"></textarea>
+              <div class="zc-templates hidden" id="zc-templates">
+                <button type="button" class="zc-chip" data-tpl="landing">Лендинг</button>
+                <button type="button" class="zc-chip" data-tpl="login">Страница входа</button>
+                <button type="button" class="zc-chip" data-tpl="todo">Todo-список</button>
+                <button type="button" class="zc-chip" data-tpl="dashboard">Панель</button>
+                <button type="button" class="zc-chip" data-tpl="form">Форма заявки</button>
+              </div>
+              <div class="zc-agents hidden" id="zc-agents" role="group">
+                <button type="button" class="zc-agent-btn" data-n="1"><span class="zc-n">1</span></button>
+                <button type="button" class="zc-agent-btn active" data-n="2"><span class="zc-n">2</span></button>
+                <button type="button" class="zc-agent-btn" data-n="3"><span class="zc-n">3</span></button>
+                <button type="button" class="zc-agent-btn" data-n="4"><span class="zc-n">4</span></button>
+              </div>
+              <p class="zc-hint hidden" id="zc-agents-hint"></p>
+              <div class="zc-actions">
+                <button type="button" class="btn primary zc-go" id="btn-studio-go">Сделать</button>
+                <button type="button" class="btn ghost" id="btn-studio-advanced-toggle">Продвинутый</button>
+              </div>
+            </div>
+            <aside class="zc-home-side">
+              <div id="projects-list" class="zc-project-list"></div>
+              <div id="studio-status" class="hidden"></div>
+              <button type="button" class="hidden" id="btn-new-chat-home"></button>
+            </aside>
+          </div>
+
+          <!-- ===== WORK VIEW: chats rail + prompt/chat ===== -->
+          <div class="zc-work" id="zc-work">
+            <div class="zc-mobile-tabs hidden" id="zc-mobile-tabs"></div>
+
+            <div class="zc-work-shell" id="zc-work-shell" data-panes="1" data-preview="0">
+              <aside class="zc-rail" id="zc-rail">
+                <button type="button" class="zc-exit zc-exit-rail" id="btn-studio-exit" title="На главную">← На главную</button>
+                <button type="button" class="zc-rail-new" id="btn-rail-new-chat">+ Новый чат</button>
+                <button type="button" class="zc-rail-folder" id="btn-rail-new-project">+ Папка / проект</button>
+                <div class="zc-rail-label">Чаты</div>
+                <div id="zc-rail-list" class="zc-rail-list"></div>
+                <div class="zc-rail-foot muted small" id="zc-rail-foot"></div>
+              </aside>
+
+              <div class="zc-panes" id="zc-panes"></div>
+
+              <div class="zc-preview-col hidden" id="zc-preview-dock" aria-hidden="true">
+                <div class="zc-preview-bar"><span></span><div class="row gap">
+                  <button type="button" class="btn ghost sm hidden" id="btn-preview-refresh"></button>
+                  <button type="button" class="btn ghost sm hidden" id="btn-preview-open"></button>
+                </div></div>
+                <iframe id="studio-preview" class="zc-preview-frame" title="Превью"></iframe>
+                <div id="preview-empty" class="zc-preview-empty hidden"></div>
+              </div>
+            </div>
+
+            <!-- hidden leftovers for stream handlers -->
+            <div class="hidden" aria-hidden="true">
+              <div id="zc-work-title"></div>
+              <div id="zc-status-strip"></div>
+              <button type="button" id="btn-preview-toggle"></button>
+              <button type="button" id="btn-studio-adv2"></button>
+            </div>
+
+            <!-- Legacy live targets (stream handlers still write here; hidden) -->
+            <div class="hidden" aria-hidden="true" id="zc-legacy-live">
+              <div id="zc-now"><span id="zc-now-text"></span></div>
+              <ol id="zc-live-steps">
+                <li data-step="understand" class="pending"></li>
+                <li data-step="build" class="pending"></li>
+                <li data-step="check" class="pending"></li>
+                <li data-step="show" class="pending"></li>
+              </ol>
+              <div id="coop-board" class="coop-board coop-compact hidden">
+                <div class="coop-h">Команда · live</div>
+                <div id="coop-grid" class="coop-grid"></div>
+                <div id="coop-synth" class="coop-synth hidden"></div>
+                <div id="coop-review" class="coop-review hidden"></div>
+              </div>
+              <div id="zc-contract" class="zc-panel hidden"></div>
+              <div id="zc-gate" class="zc-panel hidden"></div>
+              <div id="zc-run-bill" class="zc-panel zc-bill hidden"></div>
+              <div id="zc-timeline"></div>
+              <div id="studio-log"></div>
+              <textarea id="studio-iterate"></textarea>
+              <button type="button" id="btn-studio-iterate"></button>
+            </div>
+          </div>
+
+          <!-- ===== ADVANCED DRAWER ===== -->
+          <div class="zc-adv hidden" id="zc-adv">
+            <div class="zc-adv-head">
+              <strong>Продвинутый режим</strong>
+              <button type="button" class="btn ghost sm" id="btn-adv-close">Закрыть</button>
+            </div>
+            <div class="zc-adv-grid">
+              <div class="zc-adv-block">
+                <h4>Чаты проекта</h4>
+                <div id="chat-list" class="list"></div>
+                <button type="button" class="btn ghost sm" id="btn-new-chat">+ чат</button>
+              </div>
+              <div class="zc-adv-block">
+                <h4>Файлы</h4>
+                <div id="fs-tree" class="fs-tree"></div>
+                <div class="row gap" style="margin-top:8px;flex-wrap:wrap">
+                  <button type="button" class="btn ghost sm" id="btn-fs-refresh">Обновить</button>
+                  <button type="button" class="btn ghost sm" id="btn-fs-new-file">+ файл</button>
+                  <button type="button" class="btn ghost sm" id="btn-diff">Сравнение</button>
+                  <button type="button" class="btn ghost sm" id="btn-commit">Снимок</button>
+                  <button type="button" class="btn ghost sm" id="btn-push">GitHub ↑</button>
+                  <button type="button" class="btn ghost sm" id="btn-pull">GitHub ↓</button>
+                </div>
+                <pre id="git-status-box" class="git-status-box muted small"></pre>
+              </div>
+              <div class="zc-adv-block">
+                <h4>Редактор</h4>
+                <div class="cs-editor-path" id="open-file-path">файл не выбран</div>
+                <textarea id="code-editor" class="cs-editor" spellcheck="false" placeholder="открой файл слева"></textarea>
+                <div class="row gap" style="margin-top:8px">
+                  <button type="button" class="btn ghost sm" id="btn-save-file">Сохранить</button>
+                  <button type="button" class="btn ghost sm" id="btn-file-revert">Отменить</button>
+                </div>
+              </div>
+              <div class="zc-adv-block">
+                <h4>GitHub</h4>
+                <input id="gh-pat" class="input" type="password" placeholder="Personal Access Token" autocomplete="off" />
+                <div class="row gap" style="margin-top:6px">
+                  <button type="button" class="btn ghost sm" id="btn-gh-save">Сохранить токен</button>
+                  <button type="button" class="btn ghost sm" id="btn-gh-clear">Удалить</button>
+                </div>
+                <div id="gh-status" class="muted small" style="margin-top:6px"></div>
+                <input id="gh-repo" class="input" placeholder="owner/repo" style="margin-top:8px" />
+                <div class="row gap" style="margin-top:6px">
+                  <button type="button" class="btn ghost sm" id="btn-gh-link">Привязать</button>
+                  <button type="button" class="btn ghost sm" id="btn-gh-clone">Клонировать</button>
+                  <button type="button" class="btn ghost sm" id="btn-gh-create">Создать репо</button>
+                </div>
+              </div>
+              <div class="zc-adv-block">
+                <h4>Терминал / превью URL</h4>
+                <div class="row gap">
+                  <button type="button" class="btn ghost sm" id="btn-runtime-start">▶ старт</button>
+                  <button type="button" class="btn ghost sm" id="btn-runtime-stop">■ стоп</button>
+                  <input id="preview-url" class="input" placeholder="URL превью" style="flex:1" />
+                </div>
+                <pre id="term-out" class="cs-term-out"></pre>
+                <div class="row gap" style="margin-top:6px">
+                  <input id="term-in" class="input" placeholder="команда…" style="flex:1" />
+                  <button type="button" class="btn ghost sm" id="btn-term-run">↵</button>
+                </div>
+                <div class="row gap" style="margin-top:8px">
+                  <button type="button" class="btn ghost sm" id="btn-fork">×3 варианта</button>
+                </div>
+                <div id="fork-panel" class="hidden"></div>
+              </div>
+              <div class="zc-adv-block">
+                <h4>Модель / агенты / режим</h4>
+                <label class="zc-mini-label" for="studio-adv-model">Модель</label>
+                <select id="studio-adv-model" class="input"></select>
+                <label class="zc-mini-label" for="studio-agents-n" style="margin-top:8px;display:block">Число агентов</label>
+                <select id="studio-agents-n" class="input">
+                  <option value="1">1 — быстро</option>
+                  <option value="2" selected>2 — обычно</option>
+                  <option value="3">3 — сильнее</option>
+                  <option value="4">4 — максимум</option>
+                </select>
+                <label class="zc-mini-label" for="studio-mode" style="margin-top:8px;display:block">Режим</label>
+                <select id="studio-mode" class="input">
+                  <option value="light">light</option>
+                  <option value="standard" selected>standard</option>
+                  <option value="ultra">ultra</option>
+                </select>
+                <textarea id="studio-system" class="input" rows="3" placeholder="доп. системный промпт" style="margin-top:6px"></textarea>
+                <div id="artifacts" class="artifacts" style="margin-top:8px"></div>
+                <pre id="studio-meta" class="meta hidden"></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- legacy ids expected by app.js -->
+          <div class="hidden" aria-hidden="true">
+            <div id="play-empty"></div>
+            <div id="play-active"></div>
+            <div id="play-err"></div>
+            <div id="messages"></div>
+            <textarea id="prompt"></textarea>
+            <button type="button" id="btn-run"></button>
+            <select id="model"><option value="">auto</option></select>
+            <div id="studio-team"></div>
+            <select id="studio-solo-model"><option value="">auto</option></select>
+            <button type="button" id="btn-studio-send"></button>
+            <button type="button" id="btn-studio-stop"></button>
+            <button type="button" id="btn-clear-log"></button>
+            <div id="diff-modal" class="hidden"><pre id="diff-body"></pre><pre id="diff-view"></pre></div>
+            <div id="fs-context-menu" class="hidden"></div>
+            <div id="changes-list"></div>
+            <span id="editor-dirty"></span>
+            <span id="git-branch"></span>
+            <span id="ws-path"></span>
+            <button type="button" id="btn-open-folder"></button>
+            <button type="button" id="btn-reveal"></button>
+            <div id="preview-frame-wrap"></div>
+            <div id="fork-board" class="hidden"><div id="fork-grid"></div></div>
+          </div>
+        </div>
+        <div id="artifact-tree" class="hidden"></div>
+        <div id="tree-wrap" class="hidden"></div>
+      </section>
+
+      <section id="tab-models" class="hidden">
+        <h1>модели</h1>
+        <p class="sub">отметь нужные · цены ₽ / 1M</p>
+
+        <div class="my-setup compact slim" id="my-setup-models">
+          <div class="my-setup-label">В наборе</div>
+          <div class="setup-models" data-setup="models"></div>
+          <div class="setup-cost" data-setup="cost" style="margin-top:12px"></div>
+        </div>
+
+        <div class="models-toolbar">
+          <input id="models-q" type="search" placeholder="поиск: gemini, claude, gpt, grok…" />
+          <select id="models-sort" title="Сортировка по цене">
+            <option value="cheap">сначала дешёвые</option>
+            <option value="expensive">сначала дорогие</option>
+          </select>
+          <button type="button" class="btn ghost sm" id="btn-models-sync" title="Обновить каталог">↻ обновить</button>
+        </div>
+        <div id="models-grid" class="models-list"></div>
+        <div class="pick-bar" id="models-pick-bar">
+          <div class="pick-bar-l">в наборе: <b id="pick-n">0</b> · <span id="pick-cost-mini">—</span></div>
+          <div class="pick-bar-r">
+            <button type="button" class="btn ghost sm" id="btn-pick-clear">сбросить</button>
+            <button type="button" class="btn btn-s" data-goto="dash">к набору</button>
+            <button type="button" class="btn btn-p" id="btn-gen-pack">скопировать подключение</button>
+          </div>
+        </div>
+        <pre class="polza-code hidden" id="models-pack-out" style="margin-top:12px"></pre>
+      </section>
+
+      <section id="tab-keys" class="hidden">
+        <h1>ключ</h1>
+        <p class="sub">Base URL + API Key</p>
+
+        <div class="my-setup slim" id="my-setup-keys">
+          <div class="polza-field">
+            <label>Base URL</label>
+            <div class="polza-copy-row">
+              <code id="keys-base-url">http://127.0.0.1:8080/v1</code>
+              <button type="button" class="btn btn-p sm" data-copy="#keys-base-url">копировать</button>
+            </div>
+          </div>
+          <div class="polza-field">
+            <label>API Key</label>
+            <div class="polza-copy-row">
+              <code id="keys-api-key">—</code>
+              <button type="button" class="btn btn-p sm" data-copy="#keys-api-key">копировать</button>
+            </div>
+          </div>
+          <div class="row-actions">
+            <button type="button" class="btn btn-p" id="btn-create-key-keys" data-action="create-key">создать ключ</button>
+            <button type="button" class="btn btn-s" data-action="copy-pack">скопировать всё</button>
+            <button type="button" class="btn ghost sm" data-goto="models">модели</button>
+          </div>
+          <div class="my-setup-status muted small" data-setup="status" style="margin-top:8px"></div>
+          <div class="setup-models hidden" data-setup="models"></div>
+          <div class="setup-cost hidden" data-setup="cost"></div>
+          <div class="setup-balance hidden" data-setup="balance"></div>
+          <pre class="polza-code hidden" id="keys-pack-out" data-setup="pack" style="margin-top:14px"></pre>
+          <div class="setup-flash hidden" data-setup="flash"></div>
+        </div>
+
+        <div id="new-key-box" class="hidden"></div>
+        <div id="keys-list" style="margin-top:20px"></div>
+
+        <div class="hidden">
+          <input id="key-name" type="text" value="default" />
+          <input id="key-budget" type="number" value="0" />
+          <button type="button" id="btn-new-key">создать ключ</button>
+          <button type="button" id="btn-reissue-key">новый ключ</button>
+          <button type="button" id="btn-gen-pack-keys">gen</button>
+          <button type="button" id="btn-gen-pack-dash">gen</button>
+        </div>
+      </section>
+
+      <section id="tab-usage" class="hidden">
+        <h1>история</h1>
+        <p class="sub">запросы и списания</p>
+        <table class="table">
+          <thead>
+            <tr><th>когда</th><th>модель</th><th>режим</th><th>токены</th><th>списано</th></tr>
+          </thead>
+          <tbody id="usage-rows"></tbody>
+        </table>
+      </section>
+
+      <section id="tab-billing" class="hidden">
+        <h1>оплата</h1>
+        <p class="sub">пополнение в рублях · карта РФ · USDT CryptoBot</p>
+        <div class="pkg-grid">
+          <div class="pkg" data-amt="500"><div class="pkg-t">500 ₽</div><div class="pkg-d">старт</div></div>
+          <div class="pkg" data-amt="2000"><div class="pkg-t">2 000 ₽</div><div class="pkg-d">для разработки</div></div>
+          <div class="pkg" data-amt="5000"><div class="pkg-t">5 000 ₽</div><div class="pkg-d">для команды</div></div>
+        </div>
+        <div class="field">
+          <label>сумма, ₽</label>
+          <input id="topup-amount" type="number" value="500" min="100" max="100000" step="100" />
+        </div>
+        <div class="field">
+          <label>способ</label>
+          <select id="topup-method">
+            <option value="card">карта РФ</option>
+            <option value="cryptobot">USDT · CryptoBot</option>
+          </select>
+        </div>
+        <div class="row-actions">
+          <button type="button" class="btn btn-p" id="btn-topup">запросить пополнение</button>
+        </div>
+        <div id="topup-out" class="code-block hidden"></div>
+        <p class="muted-note">Пока пополнение вручную через Telegram. Автооплата — следующий этап.</p>
+
+        <div class="settings-card">
+          <div class="settings-h">контроль расходов</div>
+          <div class="settings-row">
+            <label class="check">
+              <input type="checkbox" id="alert-on" checked />
+              <span>алерт при низком балансе</span>
+            </label>
+          </div>
+          <div class="field">
+            <label>порог алерта, ₽</label>
+            <input id="alert-threshold" type="number" value="50" min="0" max="1000000" step="10" />
+          </div>
+          <div class="field">
+            <label>мягкий бюджет на месяц, ₽ <span class="hint">(0 = выкл)</span></label>
+            <input id="month-budget" type="number" value="0" min="0" max="10000000" step="100" />
+          </div>
+          <div class="row-actions">
+            <button type="button" class="btn btn-s" id="btn-save-alerts">сохранить</button>
+          </div>
+          <div id="alerts-saved" class="muted-note hidden">Сохранено</div>
+          <p class="muted-note" id="alerts-note"></p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./static/app.js?v=zeus40"></script>
+</body>
+</html>
