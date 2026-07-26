@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МоторХаус | Автосервис на Каширском шоссе</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --asphalt-100: #2c2d31;
+            --asphalt-500: #1a1a1d;
+            --asphalt-900: #101012;
+            --amber-main: #ff9f1c;
+            --amber-hover: #ffb752;
+            --amber-dark: #cc7d14;
+            --text-light: #f5f5f5;
+            --text-muted: #a1a1aa;
+            --font-head: 'Oswald', sans-serif;
+            --font-body: 'Montserrat', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--asphalt-900);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-head);
+            text-transform: uppercase;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--amber-main);
+            color: var(--asphalt-900);
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 15px 30px;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: var(--amber-hover);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before { left: 0; }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: background 0.3s ease, padding 0.3s ease;
+            background: linear-gradient(to bottom, rgba(16,16,18,0.9), transparent);
+        }
+
+        header.scrolled {
+            background: rgba(16, 16, 18, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            font-family: var(--font-head);
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-light);
+            z-index: 1001;
+        }
+
+        .logo span { color: var(--amber-main); }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav a {
+            font-family: var(--font-head);
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+        nav a:hover { color: var(--amber-main); }
+
+        .header-contacts { text-align: right; z-index: 1001; }
+        .header-contacts .phone { font-weight: 600; font-size: 1.2rem; color: var(--amber-main); }
+        .header-contacts .address { font-size: 0.8rem; color: var(--text-muted); }
+
+        .mobile-toggle {
+            display: none;
+            font-size: 1.8rem;
+            background: none;
+            border: none;
+            color: var(--amber-main);
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background-color: var(--asphalt-900);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 10%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1613214149922-f1809c99b414?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;
+            opacity: 0.4;
+            z-index: 0;
+        }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 70% 50%, rgba(255, 159, 28, 0.15) 0%, transparent 60%),
+                        repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 2px, transparent 2px, transparent 4px);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        @keyframes slideUpFade {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero h1 {
+            font-size: 5.5rem;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .hero h1 span { color: var(--amber-main); }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: var(--text-light);
+            max-width: 600px;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.8);
+        }
+
+        /* Trust Bar */
+        .trust-bar {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(26, 26, 29, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--asphalt-100);
+            z-index: 2;
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 10%;
+        }
+
+        .trust-item { text-align: center; }
+        .trust-item strong { display: block; font-family: var(--font-head); font-size: 2rem; color: var(--amber-main); }
+        .trust-item span { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Sections General */
+        section { padding: 100px 10%; }
+        .section-title { font-size: 3rem; margin-bottom: 50px; text-align: center; }
+        .section-title span { color: var(--amber-main); }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: var(--asphalt-500);
+            padding: 40px 30px;
+            border-bottom: 4px solid transparent;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            border-bottom: 4px solid var(--amber-main);
+            background: var(--asphalt-100);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .service-icon {
+            width: 50px; height: 50px;
+            color: var(--amber-main);
+            margin-bottom: 20px;
+            transition: transform 0.4s ease;
+        }
+        
+        .service-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        .service-card:hover .service-icon { transform: scale(1.1) rotate(5deg); }
+
+        .service-card h3 { font-size: 1.5rem; margin-bottom: 15px; }
+        .service-card p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; flex-grow: 1; }
+        
+        .service-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--asphalt-100);
+            padding-top: 15px;
+            font-size: 0.9rem;
+            font-family: var(--font-head);
+        }
+        .service-price { color: var(--amber-main); font-weight: 600; font-size: 1.1rem; }
+        .service-time { color: var(--text-muted); }
+
+        /* Gallery */
+        .gallery { padding: 0; display: flex; overflow: hidden; background: var(--asphalt-900); }
+        .gallery-img { 
+            flex: 1; height: 300px; 
+            background-size: cover; background-position: center;
+            filter: grayscale(80%); transition: filter 0.4s ease, flex 0.4s ease;
+        }
+        .gallery-img:hover { filter: grayscale(0%); flex: 1.2; }
+
+        /* Reviews Section */
+        .reviews { background: var(--asphalt-500); }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+        .review-card {
+            background: var(--asphalt-900);
+            padding: 30px;
+            border-left: 3px solid var(--amber-main);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .stars { color: #f5b301; font-size: 1.2rem; }
+        .review-source { font-size: 0.8rem; color: var(--text-muted); background: var(--asphalt-500); padding: 3px 8px; border-radius: 4px; }
+        .review-text { font-style: italic; margin-bottom: 20px; color: var(--text-light); flex-grow: 1; }
+        .review-footer { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 40px; height: 40px; background: var(--asphalt-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--amber-main); font-family: var(--font-head); font-weight: 700; }
+        .review-author { font-weight: 600; font-family: var(--font-head); letter-spacing: 1px; }
+
+        /* FAQ Section */
+        .faq-list { max-width: 800px; margin: 0 auto; }
+        .faq-item { background: var(--asphalt-500); margin-bottom: 15px; border-radius: 4px; overflow: hidden; }
+        .faq-question {
+            padding: 20px; font-family: var(--font-head); font-size: 1.2rem; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; transition: background 0.3s ease;
+        }
+        .faq-question:hover { background: var(--asphalt-100); }
+        .faq-question::after { content: '+'; color: var(--amber-main); font-size: 1.5rem; transition: transform 0.3s ease; }
+        .faq-item.active .faq-question::after { transform: rotate(45deg); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; background: var(--asphalt-100); color: var(--text-muted); padding: 0 20px; }
+        .faq-item.active .faq-answer { max-height: 500px; padding: 20px; }
+
+        /* Booking Section */
+        .booking { background: linear-gradient(135deg, var(--asphalt-900) 0%, var(--asphalt-500) 100%); display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }
+        .booking-info h2 { font-size: 3rem; margin-bottom: 20px; }
+        .booking-info p { color: var(--text-muted); margin-bottom: 20px; font-size: 1.1rem; }
+        
+        .booking-form { background: var(--asphalt-900); padding: 40px; border: 1px solid var(--asphalt-100); box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 15px; background: var(--asphalt-500); border: 1px solid var(--asphalt-100); color: var(--text-light); font-family: var(--font-body); font-size: 1rem; outline: none; transition: border-color 0.3s ease;
+            color-scheme: dark;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--amber-main); }
+        .checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; font-size: 0.8rem; color: var(--text-muted); }
+        .checkbox-group input { width: auto; margin-top: 4px; accent-color: var(--amber-main); }
+        .booking-form .btn { width: 100%; }
+
+        #formSuccess {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--asphalt-900);
+            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;
+        }
+        #formSuccess h3 { color: var(--amber-main); font-size: 2rem; margin-bottom: 10px; }
+
+        /* Footer */
+        footer { background: #0a0a0c; padding: 30px 10%; text-align: center; color: var(--text-muted); border-top: 1px solid var(--asphalt-500); padding-bottom: 80px; }
+
+        /* Mobile Sticky CTA */
+        .mobile-cta {
+            display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--amber-main); z-index: 1000;
+            padding: 15px; text-align: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+        }
+        .mobile-cta a { color: var(--asphalt-900); font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; display: block; }
+
+        /* Mobile Responsive */
+        @media (max-width: 992px) {
+            .booking { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 4rem; }
+            .trust-bar { flex-wrap: wrap; gap: 15px; padding: 15px 5%; }
+            .trust-item { width: 45%; }
+            .gallery { flex-direction: column; }
+            .gallery-img { height: 150px; }
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 15px 20px; background: rgba(16, 16, 18, 0.98); }
+            header.scrolled { padding: 15px 20px; }
+            .header-contacts { display: none; }
+            .mobile-toggle { display: block; }
+            nav {
+                position: absolute; top: 100%; left: 0; width: 100%; background: var(--asphalt-900);
+                padding: 20px; border-top: 1px solid var(--asphalt-100); display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            }
+            nav.active { display: block; }
+            nav ul { flex-direction: column; text-align: center; gap: 20px; }
+            
+            .hero h1 { font-size: 2.8rem; margin-top: 40px; }
+            section { padding: 70px 5%; }
+            .section-title { font-size: 2.2rem; }
+            .form-row { grid-template-columns: 1fr; }
+            footer { padding-bottom: 80px; }
+            .mobile-cta { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="header">
+        <div class="logo">Мотор<span>Хаус</span></div>
+        <button class="mobile-toggle" id="mobileToggle">☰</button>
+        <nav id="nav">
+            <ul>
+                <li><a href="#services">Услуги</a></li>
+                <li><a href="#reviews">Отзывы</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#booking">Запись</a></li>
+            </ul>
+        </nav>
+        <div class="header-contacts">
+            <div class="phone">+7 (495) 123-45-67</div>
+            <div class="address">Каширское шоссе, 12А</div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Честный ремонт <br><span>без компромиссов</span></h1>
+            <p>Премиальное обслуживание вашего автомобиля на Каширском шоссе. Современное оборудование, прозрачные цены и атмосфера настоящего гоночного бокса.</p>
+            <a href="#booking" class="btn">Записаться в бокс</a>
+        </div>
+        <div class="trust-bar">
+            <div class="trust-item">
+                <strong>10+</strong>
+                <span>Лет на Каширке</span>
+            </div>
+            <div class="trust-item">
+                <strong>12к+</strong>
+                <span>Отремонтировано авто</span>
+            </div>
+            <div class="trust-item">
+                <strong>2 года</strong>
+                <span>Честная гарантия</span>
+            </div>
+            <div class="trust-item">
+                <strong>ASE</strong>
+                <span>Сертификация мастеров</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="services">
+        <h2 class="section-title reveal">Наши <span>Услуги</span></h2>
+        <div class="services-grid">
+            <div class="service-card reveal">
+                <div class="service-icon"><svg viewBox="0 0 24 24"><path d="M4 10v6M4 16l4-4M4 16l-2-2M20 10v6M20 16l-4-4M20 16l2-2M12 4v16M8 8l4-4 4 4"/></svg></div>
+                <h3>Компьютерная диагностика</h3>
+                <p>Точное выявление неисправностей с помощью дилерских сканеров. Чтение ошибок, проверка датчиков, сброс сервисных интервалов.</p>
+                <div class="service-meta"><span class="service-price">от 1 500 ₽</span><span class="service-time">~30 мин</span></div>
+            </div>
+            <div class="service-card reveal">
+                <div class="service-icon"><svg viewBox="0 0 24 24"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"/><path d="m16.24 7.76 2.12-2.12M7.76 16.24l-2.12 2.12M12 4V1M12 23v-3M20 12h3M1 12h3M16.24 16.24l2.12 2.12M7.76 7.76 5.64 5.64"/></svg></div>
+                <h3>Ремонт двигателей</h3>
+                <p>От замены ремня ГРМ до капитального ремонта ДВС. Устраняем масложор, восстанавливаем компрессию, даем гарантию на работы.</p>
+                <div class="service-meta"><span class="service-price">от 4 000 ₽</span><span class="service-time">от 2 часов</span></div>
+            </div>
+            <div class="service-card reveal">
+                <div class="service-icon"><svg viewBox="0 0 24 24"><path d="M5 22h14M12 2v20M8 6h8M8 10h8M8 14h8M8 18h8"/></svg></div>
+                <h3>Обслуживание ходовой</h3>
+                <p>Замена амортизаторов, рычагов, сайлентблоков. Обеспечим идеальную управляемость и безопасность вашего авто на любой дороге.</p>
+                <div class="service-meta"><span class="service-price">от 1 200 ₽</span><span class="service-time">~1 час</span></div>
+            </div>
+            <div class="service-card reveal">
+                <div class="service-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M12 22a4 4 0 0 0 4-4H8a4 4 0 0 0 4 4ZM7 12c-1.5 0-3-1.5-3-3s1.5-3 3-3 3 1.5 3 3-1.5 3-3 3Z"/></svg></div>
+                <h3>Замена техжидкостей</h3>
+                <p>Аппаратная замена масла в АКПП, двигателе, замена антифриза и тормозной жидкости с использованием сертифицированных масел.</p>
+                <div class="service-meta"><span class="service-price">от 900 ₽</span><span class="service-time">~40 мин</span></div>
+            </div>
+            <div class="service-card reveal">
+                <div class="service-icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <h3>Автоэлектрика</h3>
+                <p>Восстановление проводки, установка сигнализаций, парктроников, автозвука и решение сложных проблем с бортовой сетью.</p>
+                <div class="service-meta"><span class="service-price">от 2 000 ₽</span><span class="service-time">индивидуально</span></div>
+            </div>
+            <div class="service-card reveal">
+                <div class="service-icon"><svg viewBox="0 0 24 24"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16a4 4 0 100-8 4 4 0 000 8zM12 13a1 1 0 100-2 1 1 0 000 2z"/></svg></div>
+                <h3>Шиномонтаж и сход-развал</h3>
+                <p>Быстро, без очередей. Балансировка на высокоточных станках и 3D сход-развал для идеального контакта с асфальтом.</p>
+                <div class="service-meta"><span class="service-price">от 2 500 ₽</span><span class="service-time">~45 мин</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery">
+        <div class="gallery-img" style="background-image: url('https://images.unsplash.com/photo-1632823471565-3cefc4d360f0?q=80&w=800&auto=format&fit=crop');"></div>
+        <div class="gallery-img" style="background-image: url('https://images.unsplash.com/photo-1625047509168-a7006f8233f4?q=80&w=800&auto=format&fit=crop');"></div>
+        <div class="gallery-img" style="background-image: url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=800&auto=format&fit=crop');"></div>
+        <div class="gallery-img" style="background-image: url('https://images.unsplash.com/photo-1605634676159-289b4e723594?q=80&w=800&auto=format&fit=crop');"></div>
+    </section>
+
+    <section id="reviews" class="reviews">
+        <h2 class="section-title reveal">Что говорят <span>клиенты</span></h2>
+        <div class="reviews-grid">
+            <div class="review-card reveal">
+                <div class="review-header">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-source">Яндекс.Карты</div>
+                </div>
+                <p class="review-text">"Заехал по пути на Каширке с чеком двигателя. Парни быстро подключились, нашли обрыв провода на датчике, сделали за 20 минут и не содрали три шкуры. Респект!"</p>
+                <div class="review-footer">
+                    <div class="avatar">АС</div>
+                    <div class="review-author">Алексей С.</div>
+                </div>
+            </div>
+            <div class="review-card reveal">
+                <div class="review-header">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-source">2ГИС</div>
+                </div>
+                <p class="review-text">"Атмосфера внутри — огонь, чистота как в операционной, хотя это автосервис. Перебирали подвеску на BMW, все запчасти заказали сами, сделали в срок."</p>
+                <div class="review-footer">
+                    <div class="avatar">МД</div>
+                    <div class="review-author">Михаил Д.</div>
+                </div>
+            </div>
+            <div class="review-card reveal">
+                <div class="review-header">
+                    <div class="stars">★★★★★</div>
+                    <div class="review-source">Яндекс.Карты</div>
+                </div>
+                <p class="review-text">"Наконец-то нормальный сервис на юге Москвы. Сделали аппаратную замену масла в коробке. Коробка перестала пинаться, едет плавно. Спасибо мастеру Ивану."</p>
+                <div class="review-footer">
+                    <div class="avatar">ЕВ</div>
+                    <div class="review-author">Елена В.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq">
+        <h2 class="section-title reveal">Частые <span>Вопросы</span></h2>
+        <div class="faq-list reveal">
+            <div class="faq-item">
+                <div class="faq-question">Вы даете гарантию на работы?</div>
+                <div class="faq-answer">
+                    <p>Да, мы предоставляем документальную гарантию до 2 лет или 40 000 км пробега на большинство видов работ и приобретенные у нас оригинальные запчасти.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Можно ли присутствовать в ремзоне?</div>
+                <div class="faq-answer">
+                    <p>Конечно. Наш принцип — полная прозрачность. Вы можете наблюдать за процессом ремонта в безопасной зоне рядом с подъемником вместе с мастером.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Нужно ли покупать запчасти самому?</div>
+                <div class="faq-answer">
+                    <p>Не обязательно. У нас собственный склад запчастей на 5000+ позиций. Подберем оригиналы или проверенные аналоги дешевле, чем в розничных магазинах.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="booking" class="booking">
+        <div class="booking-info reveal">
+            <h2>Ждем вас в <br><span>МоторХаус</span></h2>
+            <p>Оставьте заявку, и наш мастер-приемщик свяжется с вами в течение 10 минут для согласования времени и предварительного расчета стоимости.</p>
+            <p><strong>Адрес:</strong> Москва, Каширское шоссе, д. 12А<br>
+            <strong>Режим работы:</strong> Ежедневно, с 09:00 до 21:00</p>
+        </div>
+        <div class="booking-form reveal">
+            <form id="contactForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Ваше имя" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" name="phone" placeholder="Телефон (+7...)" required pattern="[\+]\d{1}\s?[\(]?\d{3}[\)]?\s?\d{3}[\-]?\d{2}[\-]?\d{2}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" name="car" placeholder="Марка и модель авто" required>
+                    </div>
+                    <div class="form-group">
+                        <select name="service" required>
+                            <option value="" disabled selected>Выберите услугу</option>
+                            <option value="diag">Компьютерная диагностика</option>
+                            <option value="engine">Ремонт двигателя</option>
+                            <option value="suspension">Обслуживание ходовой</option>
+                            <option value="oil">Замена жидкостей</option>
+                            <option value="electro">Автоэлектрика</option>
+                            <option value="tires">Шиномонтаж / Сход-развал</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="date" name="date" required title="Желаемая дата">
+                    </div>
+                    <div class="form-group">
+                        <input type="time" name="time" required title="Желаемое время">
+                    </div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="consent" required checked>
+                    <label for="consent">Я согласен с условиями обработки персональных данных согласно 152-ФЗ</label>
+                </div>
+                <button type="submit" class="btn" id="submitBtn">Забронировать подъемник</button>
+            </form>
+            <div id="formSuccess">
+                <h3>Заявка принята!</h3>
+                <p>Мастер перезвонит вам в течение 15 минут для подтверждения записи.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 МоторХаус. Все права защищены. Автосервис на Каширском шоссе.</p>
+    </footer>
+
+    <div class="mobile-cta">
+        <a href="tel:+74951234567">Позвонить: +7 (495) 123-45-67</a>
+    </div>
+
+    <script>
+        // Header Scroll
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+
+        // Mobile Menu Toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const nav = document.getElementById('nav');
+        mobileToggle.addEventListener('click', () => {
+            nav.classList.toggle('active');
+        });
+        nav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => nav.classList.remove('active'));
+        });
+
+        // FAQ Accordion
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                faqItems.forEach(i => i.classList.remove('active'));
+                if (!isActive) item.classList.add('active');
+            });
+        });
+
+        // Scroll Reveal Animation (Intersection Observer)
+        const observerOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Form Submit Handler (Simulation)
+        const form = document.getElementById('contactForm');
+        const successMsg = document.getElementById('formSuccess');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitBtn.textContent = 'Отправка...';
+            submitBtn.disabled = true;
+            
+            // Simulate API request delay
+            setTimeout(() => {
+                form.style.display = 'none';
+                successMsg.style.display = 'flex';
+            }, 1000);
+        });
+
+        // Set min date for date input to today
+        const dateInput = document.querySelector('input[type="date"]');
+        if(dateInput) {
+            dateInput.min = new Date().toISOString().split('T')[0];
+        }
+    </script>
+<a class="zeus-badge" href="https://zeuscode.ru" target="_blank" rel="noopener noreferrer">Сделано на ZeusCode</a>
+<style id="zeus-badge-css">
+.zeus-badge{
+  position:fixed;right:14px;bottom:12px;z-index:2147483646;
+  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;
+  letter-spacing:.02em;text-decoration:none;
+  color:rgba(120,120,120,.42);pointer-events:auto;
+  transition:color .2s ease,opacity .2s ease;
+}
+.zeus-badge:hover{color:rgba(120,120,120,.78)}
+</style>
+</body>
+</html>

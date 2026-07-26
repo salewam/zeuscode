@@ -26,6 +26,7 @@ def test_autoservice_fallback_has_booking_api():
     assert any(a["path"] == "/api/booking" for a in data["api"])
     assert len(data["services"]) >= 5
     assert data["questions"]
+    assert "000-00-00" not in data["contacts"]["phone"]
     lock = inject_api_prelock(data)
     assert lock is not None
     assert "/api/booking" in lock["paths"]

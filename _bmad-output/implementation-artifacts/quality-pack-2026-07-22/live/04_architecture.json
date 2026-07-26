@@ -1,0 +1,107 @@
+{
+  "cid": "04_architecture",
+  "prompt": "Спроектируй коротко сервис очередей для webhooks: компоненты, хранилище, retry. 8-12 предложений.",
+  "stream": false,
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "power",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "759a49feacb44be8",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 63,
+        "completion_tokens": 396,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "**Компоненты**\n1. Архитектура сервиса состоит из трех частей: API-шлюза (Producer), брокера сообщений и пула воркеров (Consumers). \n2. API-шлюз принимает входящий вебхук, валидирует его, кладет в очередь и сразу возвращает клиенту статус `202 Accepted`. \n3. Воркеры асинхронно читают задачи из очереди и выполняют исходящие HTTP-запросы на целевые URL.\n\n**Хранилище**\n4. Для реализации очереди сообщений оптимально использовать RabbitMQ или AWS SQS, так как они имеют встроенные механизмы маршрутизации и подтверждения доставки (ACK). \n5. Историю отправок, логи ответов и текущие статусы задач следует сохранять в персистентную БД (например, PostgreSQL) для аналитики и аудита.\n\n**Механизм Retry и DLQ**\n6. Если целевой сервер отвечает ошибками (например, таймаут, `5xx` или `429`), воркер маркирует отправку как неудачную и возвращает задачу в очередь. \n7. Повторные попытки выполняются с использованием паттерна экспоненциальной задержки (exponential backoff), чтобы плавно увеличивать интервал между запросами и не перегружать принимающую сторону. \n8. Количество попыток отправки должно быть строго ограничено (например, до 5-7 раз). \n9. Если после исчерпания лимита вебхук не доставлен, сообщение удаляется из основной очереди и переносится в Dead Letter Queue (DLQ). \n10. Сообщения в DLQ служат триггером для отправки алертов мониторинга и остаются доступны для ручного перезапуска или анализа разработчиками.",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "architecture",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.402,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "raw_error": null,
+  "answer_excerpt": "**Компоненты**\n1. Архитектура сервиса состоит из трех частей: API-шлюза (Producer), брокера сообщений и пула воркеров (Consumers). \n2. API-шлюз принимает входящий вебхук, валидирует его, кладет в очередь и сразу возвращает клиенту статус `202 Accepted`. \n3. Воркеры асинхронно читают задачи из очеред",
+  "usage": {
+    "prompt_tokens": 63,
+    "completion_tokens": 396,
+    "total_tokens": 459
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.2003,
+    "markup": 1.5,
+    "balance_left_rub": 885.95,
+    "key_spent_rub": 0.3066,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "759a49feacb44be8",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "fusion_result_keys": [
+    "answer",
+    "branches",
+    "complexity",
+    "escalate_from",
+    "leader",
+    "path",
+    "phase",
+    "policy_path",
+    "routed_by",
+    "trace_id"
+  ],
+  "http_status": 200,
+  "latency_s": 22.467,
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "759a49feacb44be8",
+  "escalate_from": "CASCADE",
+  "human_stub": "ok",
+  "why": "http200 non-empty or cancel sim"
+}

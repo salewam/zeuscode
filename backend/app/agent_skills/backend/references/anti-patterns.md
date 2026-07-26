@@ -15,6 +15,7 @@
 | 200 + `{success:false}` вместо 4xx | Клиенты не отличить | HTTP status = смысл |
 | Код без контракт-таблицы в Мышлении | Hyrum: всё станет зависимостью | method/path/auth/codes сначала |
 | List без limit/max | Отдаёт всю таблицу | Query limit + верхняя граница |
+| Brief с `POST /api/booking` / `/api/lead`, а артефактов нет | FE → `api_orphan`, форма мертва | Сдай router по `landing-api.md` |
 
 ## 2. Validation & errors
 

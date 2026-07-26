@@ -1,0 +1,381 @@
+{
+  "label": "fusion_ui_crew",
+  "ok": true,
+  "status": 200,
+  "latency_s": 553.91,
+  "routed_by": "ui_author_critics_web",
+  "ui_crew": {
+    "author": "gemini-3.1-pro",
+    "critics": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro"
+    ],
+    "power_scores": {
+      "claude-opus-4-8": 968,
+      "deepseek-v4-pro": 840,
+      "gemini-3.1-pro": 860
+    },
+    "web": {
+      "ok": true,
+      "degraded": false,
+      "backend": "browser,duckduckgo_html,jina",
+      "queries": [
+        "автосервис сайт запись онлайн",
+        "car repair shop website book appointment",
+        "best auto repair shop website design examples"
+      ],
+      "refs_used": [
+        "https://www.abcp.ru/carservice",
+        "https://part-kom.ru/service-booking",
+        "https://fitauto.ru/"
+      ],
+      "browser_used": 2,
+      "browser_live_used": 2,
+      "browser_available": true,
+      "live_refs": [
+        "https://www.abcp.ru/carservice",
+        "https://part-kom.ru/service-booking",
+        "https://fitauto.ru/"
+      ]
+    },
+    "critique_merged": {
+      "upgrades": [
+        "Add a compact sub-hero trust bar under the CTA (адрес Каширское шоссе, часы работы, телефон-ссылка, «гарантия 2 года») — refs fitauto/abcp all lead with trust/contact; right now the address only lives in the title tag.",
+        "Give each of the 6 service cards a price-from label (напр. «от 900 ₽») and est. time — ref part-kom booking flow shows work type selection, so pricing/time raises conversion and density.",
+        "Upgrade the booking form beyond alert-only: add a native date/time picker + service <select> matching the 6 services, inline validation, and a success state that replaces the form (refs abcp/part-kom center the date/time/work-type choice).",
+        "Add a scroll-spy active state on nav links plus smooth-scroll — cheap polish that reads as crafted.",
+        "Introduce a subtle amber count-up or icon micro-motion on the services section entering viewport to hit the 2-3 motion target beyond fadeIn/pulseGlow.",
+        "Add a footer with map embed / directions to Каширское шоссе, working hours, соцсети — refs close with contacts block; site currently seems to end abruptly.",
+        "Layer a faint animated garage texture (subtle grain or slow gradient shift) on hero to avoid flat gradient over one unsplash photo, matching brief's 'атмосфера бокса'.",
+        "Интегрируйте модуль онлайн-записи с выбором даты/времени и типа услуги, по аналогии с ABCP.ru – это повысит конверсию и доверие.",
+        "Добавьте видео-фон в hero с реальной работой бокса (или анимированный слайд-шоу) для полного погружения в атмосферу.",
+        "Добавьте hamburger-меню для мобильных, скрывающее ссылки за иконкой, и реализуйте плавное открытие/закрытие.",
+        "Сделайте все трёхколоночные сетки (услуги, отзывы) одноколоночными на экранах до 768px.",
+        "Уменьшите размер заголовка hero до 2.2–2.5rem на мобильных, отрегулируйте отступы, чтобы не закрывать изображение."
+      ],
+      "must_fix": [
+        "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px",
+        "No mobile nav: .nav-links show desktop links with margin-left:30px that will wrap/overflow at ~390px. Add a hamburger toggle with a stacked menu drawer, hide desktop links under @media (max-width:768px).",
+        "Hero h1 is 5rem fixed — at 390px 'МОТОРХАУС' will overflow/scroll horizontally. Use clamp(2.2rem, 9vw, 5rem) and reduce hero padding; verify no horizontal scroll.",
+        "Services and reviews grids are hard-coded repeat(3,1fr) with no visible mobile breakpoint in shown CSS — must collapse to 1 column at ≤768px or cards become unreadably narrow.",
+        "pulseGlow infinite on the primary CTA is distracting and drains battery on mobile; limit iterations or pause via prefers-reduced-motion.",
+        "Add a sticky bottom 'Записаться' / phone CTA on mobile (≥44px tap target) that does NOT overlap the booking form when it's in view.",
+        "Полная HTML-разметка не предоставлена – автор ограничился CSS; сайт не загружается. Исправьте, предоставив полный код с body.",
+        "Отсутствуют медиа-запросы (@media) – на телефоне всё сломано. Добавьте адаптивность с брейкпоинтами min-width: 320px, 480px, 768px."
+      ],
+      "praise": [
+        "Strong asphalt+amber palette with layered gradient hero overlay — on-brief atmosphere and no indigo/Inter clichés.",
+        "Montserrat/Open Sans pairing and uppercase headings give a proper garage identity.",
+        "Service card hover (lift + amber underline + radial glow) and FAQ accordion are tasteful, real interactions.",
+        "Цветовая гамма «асфальт/янтарь» отлично отражает бренд, нет запрещённых indigo/Inter.",
+        "Использованы шрифты Montserrat и Open Sans — хорошо читаются и создают индустриальное настроение.",
+        "Градиентное затемнение hero с радиальным акцентом создаёт объём и «атмосферу бокса».",
+        "Эффект наведения на карточки услуг с золотистой границей и подъёмом – приятный и современный.",
+        "Логотип с акцентом на amber привлекателен и запоминается."
+      ],
+      "mobile_gaps": [
+        "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px"
+      ]
+    }
+  },
+  "leader": "gemini-3.1-pro",
+  "task_kind": "ui",
+  "path": "FULL",
+  "metrics": {
+    "bytes": 36230,
+    "has_html_close": true,
+    "has_media": true,
+    "has_form": true,
+    "has_nav": true,
+    "sections": 5,
+    "live_link": null
+  },
+  "error": null,
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "power",
+    "path": "FULL",
+    "policy_path": "FULL",
+    "escalate_from": null,
+    "routed_by": "ui_author_critics_web",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "ui",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "328965a5ed27452c",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "cancelled_no_tokens",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "cancelled_no_tokens",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "cancelled_no_tokens",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "agent"
+      },
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 112,
+        "completion_tokens": 6112,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "completed",
+        "prompt_tokens": 5121,
+        "completion_tokens": 1068,
+        "role": "agent"
+      },
+      {
+        "model": "deepseek-v4-pro",
+        "model_id": "deepseek-v4-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 3564,
+        "completion_tokens": 4066,
+        "role": "agent"
+      },
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 7197,
+        "completion_tokens": 9819,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">\n    <title>МоторХаус | Автосервис на Каширском шоссе</title>\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&family=Open+Sans:wght@400;600&display=swap\" rel=\"stylesheet\">\n    <style>\n        :root {\n            --asphalt: #141415;\n            --asphalt-light: #242426;\n            --asphalt-lighter: #343438;\n            --amber: #FF9F00;\n            --amber-hover: #E08900;\n            --text-main: #EAEAEA;\n            --text-muted: #A0A0A0;\n            --font-headings: 'Montserrat', sans-serif;\n            --font-text: 'Open Sans', sans-serif;\n        }\n\n        * {\n            margin: 0;\n            padding: 0;\n            box-sizing: border-box;\n        }\n\n        html {\n            scroll-behavior: smooth;\n        }\n\n        body {\n            font-family: var(--font-text);\n            background-color: var(--asphalt);\n            color: var(--text-main);\n            line-height: 1.6;\n            overflow-x: hidden;\n            -webkit-font-smoothing: antialiased;\n        }\n\n        h1, h2, h3, h4 {\n            font-family: var(--font-headings);\n            text-transform: uppercase;\n        }\n\n        a {\n            text-decoration: none;\n            color: var(--text-main);\n        }\n\n        /* Animations */\n        @keyframes fadeIn {\n            from { opacity: 0; transform: translateY(30px); }\n            to { opacity: 1; transform: translateY(0); }\n        }\n\n        @keyframes pulseGlow {\n            0% { box-shadow: 0 0 0 0 rgba(255, 159, 0, 0.4); }\n            70% { box-shadow: 0 0 0 15px rgba(255, 159, 0, 0); }\n            100% { box-shadow: 0 0 0 0 rgba(255, 159, 0, 0); }\n        }\n\n        @keyframes noise {\n            0%, 100% { background-position: 0 0; }\n            10% { background-position: -5% -10%; }\n            50% { background-position: -15% 5%; }\n            90% { background-position: 7% -5%; }\n        }\n\n        @media (prefers-reduced-motion: reduce) {\n            .btn { animation: none !important; }\n            .hero-texture { display: none; }\n        }\n\n        .animate-on-scroll {\n            opacity: 0;\n            transition: opacity 0.8s ease-out, transform 0.8s ease-out;\n            transform: translateY(30px);\n        }\n\n        .animate-on-scroll.visible {\n            opacity: 1;\n            transform: translateY(0);\n        }\n\n        /* Header */\n        header {\n            position: fixed;\n            top: 0;\n            width: 100%;\n            background: rgba(20, 20, 21, 0.95);\n            backdrop-filter: blur(10px);\n            -webkit-backdrop-filter: blur(10px);\n            z-index: 1000;\n            border-bottom: 1px solid var(--asphalt-lighter);\n        }\n\n        .nav-container {\n            max-width: 1200px;\n            margin: 0 auto;\n            padding: 15px 20px;\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n        }\n\n        .logo {\n            font-size: 24px;\n            font-weight: 900;\n            color: var(--amber);\n            letter-spacing: 1px;\n            position: relative;\n            z-index: 1001;\n        }\n\n        .logo span {\n            color: var(--text-main);\n        }\n\n        .nav-links {\n            display: flex;\n            align-items: center;\n        }\n\n        .nav-links a {\n            margin-left: 30px;\n            font-size: 14px;\n            font-weight: 600;\n            transition: color 0.3s ease;\n            position: relative;\n        }\n\n        .nav-links a:hover, .nav-links a.active {\n            color: var(--amber);\n        }\n\n        .nav-links a.active::after {\n            content: '';\n            position: absolute;\n            bottom: -5px;\n            left: 0;\n            width: 100%;\n            height: 2px;\n            background: var(--amber);\n        }\n\n        .hamburger {\n            display: none;\n            background: none;\n            border: none;\n            color: var(--text-main);\n            font-size: 28px;\n            cursor: pointer;\n            z-index: 1001;\n            padding: 5px;\n        }\n\n        /* Hero */\n        .hero {\n            min-height: 100vh;\n            display: flex;\n            align-items: center;\n            justify-content: center;\n            position: relative;\n            background: \n                linear-gradient(to right, rgba(20, 20, 21, 0.95) 0%, rgba(20, 20, 21, 0.7) 50%, rgba(20, 20, 21, 0.95) 100%),\n                radial-gradient(circle at 50% 50%, rgba(255, 159, 0, 0.15) 0%, transparent 60%),\n                url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=1920') center/cover no-repeat;\n            text-align: center;\n            padding: 100px 20px 40px;\n        }\n\n        .hero-texture {\n            position: absolute;\n            top: 0; left: 0; right: 0; bottom: 0;\n            background-image: url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\");\n            opacity: 0.03;\n            pointer-events: none;\n            z-index: 1;\n            animation: noise 8s steps(10) infinite;\n        }\n\n        .hero::after {\n            content: '';\n            position: absolute;\n            bottom: 0;\n            left: 0;\n            width: 100%;\n            height: 150px;\n            background: linear-gradient(to bottom, transparent, var(--asphalt));\n            z-index: 1;\n        }\n\n        .hero-content {\n            position: relative;\n            z-index: 2;\n            max-width: 800px;\n            animation: fadeIn 1s ease-out forwards;\n            width: 100%;\n        }\n\n        .hero h1 {\n            font-size: clamp(2.2rem, 9vw, 5rem);\n            font-weight: 900;\n            line-height: 1.1;\n            margin-bottom: 20px;\n            text-shadow: 0 10px 20px rgba(0,0,0,0.5);\n            word-wrap: break-word;\n        }\n\n        .hero h1 span {\n            color: var(--amber);\n        }\n\n        .hero p {\n            font-size: clamp(1rem, 4vw, 1.2rem);\n            color: var(--text-muted);\n            margin-bottom: 30px;\n            font-weight: 400;\n        }\n\n        .btn {\n            display: inline-block;\n            background: var(--amber);\n            color: var(--asphalt);\n            padding: 18px 40px;\n            font-size: 16px;\n            font-weight: 800;\n            font-family: var(--font-headings);\n            border-radius: 4px;\n            transition: all 0.3s ease;\n            cursor: pointer;\n            border: none;\n            text-transform: uppercase;\n            animation: pulseGlow 3s infinite;\n            text-align: center;\n        }\n\n        .btn:hover {\n            background: var(--amber-hover);\n            transform: translateY(-2px);\n        }\n\n        .trust-bar {\n            margin-top: 40px;\n            display: flex;\n            justify-content: center;\n            gap: 20px;\n            flex-wrap: wrap;\n            font-size: 0.9rem;\n            color: var(--text-muted);\n        }\n\n        .trust-item {\n            display: flex;\n            align-items: center;\n            gap: 8px;\n        }\n\n        .trust-item svg {\n            width: 16px;\n            height: 16px;\n            fill: var(--amber);\n        }\n\n        /* Sections General */\n        section {\n            padding: 80px 20px;\n            max-width: 1200px;\n            margin: 0 auto;\n        }\n\n        .section-title {\n            text-align: center;\n            font-size: clamp(2rem, 6vw, 2.5rem);\n            margin-bottom: 50px;\n            font-weight: 800;\n        }\n\n        .section-title span {\n            color: var(--amber);\n        }\n\n        /* Services */\n        .services-grid {\n            display: grid;\n            grid-template-columns: repeat(3, 1fr);\n            gap: 20px;\n        }\n\n        .service-card {\n            background: var(--asphalt-light);\n            padding: 30px 20px;\n            border-radius: 8px;\n            border-bottom: 4px solid transparent;\n            transition: all 0.4s ease;\n            position: relative;\n            overflow: hidden;\n            display: flex;\n            flex-direction: column;\n            height: 100%;\n        }\n\n        .service-card::before {\n            content: '';\n            position: absolute;\n            top: 0;\n            left: 0;\n            width: 100%;\n            height: 100%;\n            background: radial-gradient(circle at top right, rgba(255,159,0,0.1), transparent);\n            opacity: 0;\n            transition: opacity 0.4s ease;\n            pointer-events: none;\n        }\n\n        .service-card:hover {\n            transform: translateY(-5px);\n            border-bottom: 4px solid var(--amber);\n            box-shadow: 0 10px 30px rgba(0,0,0,0.4);\n        }\n\n        .service-card:hover::before {\n            opacity: 1;\n        }\n\n        .service-card:hover .service-icon {\n            transform: scale(1.1);\n        }\n\n        .service-icon {\n            font-size: 36px;\n            color: var(--amber);\n            margin-bottom: 15px;\n            transition: transform 0.3s ease;\n        }\n\n        .service-card h3 {\n            font-size: 1.1rem;\n            margin-bottom: 10px;\n        }\n\n        .service-card p {\n            color: var(--text-muted);\n            font-size: 0.9rem;\n            margin-bottom: 20px;\n            flex-grow: 1;\n        }\n\n        .service-meta {\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n            padding-top: 15px;\n            border-top: 1px solid var(--asphalt-lighter);\n            font-size: 0.85rem;\n            font-weight: 600;\n        }\n\n        .service-price { color: var(--amber); }\n        .service-time { color: var(--text-muted); }\n\n        /* Reviews */\n        .reviews-bg {\n            background: var(--asphalt-light);\n            border-top: 1px solid var(--asphalt-lighter);\n            border-bottom: 1px solid var(--asphalt-lighter);\n        }\n\n        .reviews-grid {\n            display: grid;\n            grid-template-columns: repeat(3, 1fr);\n            gap: 20px;\n        }\n\n        .review-card {\n            background: var(--asphalt);\n            padding: 30px;\n            border-radius: 8px;\n        }\n\n        .stars {\n            color: var(--amber);\n            margin-bottom: 15px;\n            font-size: 18px;\n            letter-spacing: 2px;\n        }\n\n        .review-text {\n            font-style: italic;\n            color: var(--text-muted);\n            margin-bottom: 20px;\n            font-size: 0.95rem;\n        }\n\n        .review-author {\n            font-weight: 600;\n            color: var(--text-main);\n            text-transform: uppercase;\n            font-size: 0.85rem;\n        }\n\n        /* FAQ */\n        .faq-container {\n            max-width: 800px;\n            margin: 0 auto;\n        }\n\n        .faq-item {\n            background: var(--asphalt-light);\n            margin-bottom: 15px;\n            border-radius: 6px;\n            overflow: hidden;\n        }\n\n        .faq-question {\n            padding: 20px;\n            font-family: var(--font-headings);\n            font-weight: 600;\n            cursor: pointer;\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n            transition: background 0.3s;\n            font-size: 0.95rem;\n        }\n\n        .faq-question:hover {\n            background: var(--asphalt-lighter);\n        }\n\n        .faq-icon {\n            color: var(--amber);\n            font-weight: bold;\n            font-size: 1.2rem;\n            transition: transform 0.3s ease;\n        }\n\n        .faq-answer {\n            max-height: 0;\n            overflow: hidden;\n            transition: max-height 0.4s ease;\n            background: var(--asphalt);\n        }\n\n        .faq-answer p {\n            padding: 20px;\n            color: var(--text-muted);\n            font-size: 0.95rem;\n            border-top: 1px solid var(--asphalt-light);\n        }\n\n        .faq-item.active .faq-answer {\n            max-height: 300px;\n        }\n\n        .faq-item.active .faq-icon {\n            transform: rotate(45deg);\n        }\n\n        /* Booking Form */\n        .booking-section {\n            background: linear-gradient(135deg, var(--asphalt) 0%, var(--asphalt-light) 100%);\n            border: 1px solid var(--asphalt-lighter);\n            border-radius: 12px;\n            padding: 50px;\n            text-align: center;\n            max-width: 800px;\n            margin: 0 auto;\n            position: relative;\n            overflow: hidden;\n        }\n\n        .booking-section::before {\n            content: '';\n            position: absolute;\n            top: -50%;\n            left: -50%;\n            width: 200%;\n            height: 200%;\n            background: radial-gradient(circle, rgba(255,159,0,0.05) 0%, transparent 60%);\n            z-index: 0;\n        }\n\n        .booking-content {\n            position: relative;\n            z-index: 1;\n        }\n\n        .booking-form {\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 15px;\n            margin-top: 30px;\n        }\n\n        .form-group {\n            text-align: left;\n        }\n\n        .form-group.full-width {\n            grid-column: span 2;\n        }\n\n        input, select {\n            width: 100%;\n            padding: 15px;\n            background: var(--asphalt);\n            border: 1px solid var(--asphalt-lighter);\n            color: var(--text-main);\n            border-radius: 4px;\n            font-family: var(--font-text);\n            font-size: 16px; /* Prevents iOS zoom */\n            transition: border-color 0.3s ease;\n            appearance: none;\n        }\n\n        /* Date/Time picker icon fix for dark theme */\n        input[type=\"datetime-local\"]::-webkit-calendar-picker-indicator {\n            filter: invert(1);\n            cursor: pointer;\n        }\n\n        select {\n            background-image: url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FF9F00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\");\n            background-repeat: no-repeat;\n            background-position: right 15px center;\n            background-size: 15px;\n        }\n\n        input:focus, select:focus {\n            outline: none;\n            border-color: var(--amber);\n        }\n\n        .success-message {\n            display: none;\n            text-align: center;\n            padding: 40px 20px;\n        }\n\n        .success-message h3 {\n            color: var(--amber);\n            font-size: 1.5rem;\n            margin-bottom: 10px;\n        }\n\n        /* Footer */\n        footer {\n            background: #0a0a0a;\n            border-top: 2px solid var(--amber);\n            padding: 60px 20px 80px; /* Extra bottom padding for mobile sticky CTA */\n        }\n\n        .footer-container {\n            max-width: 1200px;\n            margin: 0 auto;\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 40px;\n            align-items: center;\n        }\n\n        .footer-info p {\n            color: var(--text-muted);\n            margin: 10px 0;\n            font-size: 0.95rem;\n        }\n\n        .footer-info strong {\n            color: var(--text-main);\n        }\n\n        .footer-info a {\n            color: var(--amber);\n        }\n\n        .map-container {\n            border-radius: 8px;\n            overflow: hidden;\n            height: 250px;\n            border: 1px solid var(--asphalt-lighter);\n        }\n\n        .map-container iframe {\n            width: 100%;\n            height: 100%;\n            border: none;\n        }\n\n        .footer-bottom {\n            text-align: center;\n            margin-top: 40px;\n            padding-top: 20px;\n            border-top: 1px solid var(--asphalt-lighter);\n            color: var(--asphalt-lighter);\n            font-size: 0.8rem;\n        }\n\n        /* Mobile Sticky CTA */\n        .mobile-sticky-cta {\n            display: none;\n            position: fixed;\n            bottom: 0;\n            left: 0;\n            width: 100%;\n            background: var(--amber);\n            color: var(--asphalt);\n            text-align: center;\n            padding: 15px;\n            font-weight: 800;\n            font-size: 16px;\n            font-family: var(--font-headings);\n            text-transform: uppercase;\n            z-index: 999;\n            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);\n        }\n\n        .mobile-sticky-cta.hidden {\n            transform: translateY(100%);\n        }\n\n        /* Responsive */\n        @media (max-width: 992px) {\n            .services-grid, .reviews-grid {\n                grid-template-columns: repeat(2, 1fr);\n            }\n            .footer-container {\n                grid-template-columns: 1fr;\n            }\n        }\n\n        @media (max-width: 768px) {\n            .hamburger {\n                display: block;\n            }\n\n            .nav-links {\n                position: fixed;\n                top: 0;\n                right: -100%;\n                height: 100vh;\n                width: 250px;\n                background: var(--asphalt-light);\n                flex-direction: column;\n                justify-content: center;\n                align-items: center;\n                transition: right 0.3s ease;\n                border-left: 1px solid var(--asphalt-lighter);\n                box-shadow: -5px 0 15px rgba(0,0,0,0.5);\n            }\n\n            .nav-links.active {\n                right: 0;\n            }\n\n            .nav-links a {\n                margin: 20px 0;\n                font-size: 1.1rem;\n            }\n\n            .services-grid, .reviews-grid {\n                grid-template-columns: 1fr;\n            }\n\n            .booking-form {\n                grid-template-columns: 1fr;\n            }\n\n            .form-group.full-width {\n                grid-column: span 1;\n            }\n\n            .booking-section {\n                padding: 40px 20px;\n            }\n\n            .trust-bar {\n                flex-direction: column;\n                align-items: center;\n                gap: 10px;\n            }\n\n            .mobile-sticky-cta {\n                display: block;\n                transition: transform 0.3s ease;\n            }\n        }\n\n        @media (max-width: 480px) {\n            section {\n                padding: 60px 15px;\n            }\n        }\n    </style>\n</head>\n<body>\n\n    <header>\n        <div class=\"nav-container\">\n            <a href=\"#\" class=\"logo\">МОТОР<span>ХАУС</span></a>\n            <button class=\"hamburger\" aria-label=\"Меню\">☰</button>\n            <nav class=\"nav-links\">\n                <a href=\"#services\">Услуги</a>\n                <a href=\"#reviews\">Отзывы</a>\n                <a href=\"#faq\">FAQ</a>\n                <a href=\"#booking\">Запись</a>\n            </nav>\n        </div>\n    </header>\n\n    <section class=\"hero\">\n        <div class=\"hero-texture\"></div>\n        <div class=\"hero-content\">\n            <h1>Брутальный подход.<br><span>Ювелирная</span> точность.</h1>\n            <p>Профессиональный ремонт и обслуживание автомобилей на Каширском шоссе. Честные цены, мощное оборудование и мастера, которые знают свое дело.</p>\n            <a href=\"#booking\" class=\"btn\">Записаться в бокс</a>\n            \n            <div class=\"trust-bar\">\n                <div class=\"trust-item\">\n                    <svg viewBox=\"0 0 24 24\"><path d=\"M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z\"/></svg>\n                    Каширское ш., 61\n                </div>\n                <div class=\"trust-item\">\n                    <svg viewBox=\"0 0 24 24\"><path d=\"M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z\"/></svg>\n                    09:00 - 21:00\n                </div>\n                <div class=\"trust-item\">\n                    <svg viewBox=\"0 0 24 24\"><path d=\"M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z\"/></svg>\n                    Гарантия 1 год\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"services\">\n        <h2 class=\"section-title animate-on-scroll\">Наши <span>Услуги</span></h2>\n        <div class=\"services-grid\">\n            <div class=\"service-card animate-on-scroll\">\n                <div class=\"service-icon\">⚡</div>\n                <h3>Компьютерная диагностика</h3>\n                <p>Полное сканирование электронных систем дилерским оборудованием. Выявляем скрытые ошибки до того, как они станут проблемой.</p>\n                <div class=\"service-meta\">\n                    <span class=\"service-price\">от 900 ₽</span>\n                    <span class=\"service-time\">~30 мин</span>\n                </div>\n            </div>\n            <div class=\"service-card animate-on-scroll\">\n                <div class=\"service-icon\">🔧</div>\n                <h3>Ремонт ДВС</h3>\n                <p>От замены ремня ГРМ до капитального ремонта двигателя. Работаем с бензиновыми и дизельными агрегатами любой сложности.</p>\n                <div class=\"service-meta\">\n                    <span class=\"service-price\">от 5 000 ₽</span>\n                    <span class=\"service-time\">от 4 часов</span>\n                </div>\n            </div>\n            <div class=\"service-card animate-on-scroll\">\n                <div class=\"service-icon\">⚙️</div>\n                <h3>Ходовая часть</h3>\n                <p>Замена амортизаторов, рычагов, сайлентблоков. Делаем подвеску упругой и надежной для любых дорог.</p>\n                <div class=\"service-meta\">\n                    <span class=\"service-price\">от 1 200 ₽</span>\n                    <span class=\"service-time\">от 1 часа</span>\n                </div>\n            </div>\n            <div class=\"service-card animate-on-scroll\">\n                <div class=\"service-icon\">🔋</div>\n                <h3>Автоэлектрика</h3>\n                <p>Поиск и устранение обрывов, замыканий, ремонт генераторов и стартеров. Установка дополнительного оборудования.</p>\n                <div class=\"service-meta\">\n                    <span class=\"service-price\">от 1 500 ₽</span>\n                    <span class=\"service-time\">от 1 часа</span>\n                </div>\n            </div>\n            <div class=\"service-card animate-on-scroll\">\n                <div class=\"service-icon\">🛞</div>\n                <h3>Шиномонтаж 3D</h3>\n                <p>Высокоточная балансировка, правка литых дисков, устранение грыж. Сезонная переобувка без очередей по записи.</p>\n                <div class=\"service-meta\">\n                    <span class=\"service-price\">от 1 800 ₽</span>\n                    <span class=\"service-time\">~40 мин</span>\n                </div>\n            </div>\n            <div class=\"service-card animate-on-scroll\">\n                <div class=\"service-icon\">🛢️</div>\n                <h3>Регулярное ТО</h3>\n                <p>Замена масла в ДВС и АКПП, фильтров, свечей и технических жидкостей. Используем проверенные расходники в наличии.</p>\n                <div class=\"service-meta\">\n                    <span class=\"service-price\">от 1 000 ₽</span>\n                    <span class=\"service-time\">~45 мин</span>\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <div class=\"reviews-bg\">\n        <section id=\"reviews\">\n            <h2 class=\"section-title animate-on-scroll\">Что <span>говорят</span> клиенты</h2>\n            <div class=\"reviews-grid\">\n                <div class=\"review-card animate-on-scroll\">\n                    <div class=\"stars\">★★★★★</div>\n                    <p class=\"review-text\">\"Застучал движок на трассе. Дотащили до МоторХауса. Парни быстро разобрали, дефектовали, нашли запчасти. Через 4 дня машина была на ходу. Респект!\"</p>\n                    <p class=\"review-author\">— Алексей В., BMW X5</p>\n                </div>\n                <div class=\"review-card animate-on-scroll\">\n                    <div class=\"stars\">★★★★★</div>\n                    <p class=\"review-text\">\"Отличный сервис на Каширке. Без развода на лишние работы, все по факту. Приехал на диагностику ходовой, поменяли только то, что реально умерло.\"</p>\n                    <p class=\"review-author\">— Дмитрий С., Kia Optima</p>\n                </div>\n                <div class=\"review-card animate-on-scroll\">\n                    <div class=\"stars\">★★★★★</div>\n                    <p class=\"review-text\">\"Искал нормального электрика неделю. Тут за час нашли, почему высаживался аккум. Бокс чистый, мастера адекватные. Теперь только сюда.\"</p>\n                    <p class=\"review-author\">— Михаил Т., VW Tiguan</p>\n                </div>\n            </div>\n        </section>\n    </div>\n\n    <section id=\"faq\">\n        <h2 class=\"section-title animate-on-scroll\">Частые <span>Вопросы</span></h2>\n        <div class=\"faq-container animate-on-scroll\">\n            <div class=\"faq-item\">\n                <div class=\"faq-question\">\n                    Вы даете гарантию на работы? <span class=\"faq-icon\">+</span>\n                </div>\n                <div class=\"faq-answer\">\n                    <p>Да, мы предоставляем гарантию 1 год или 10 000 км пробега на слесарные работы и запчасти, купленные в нашем сервисе.</p>\n                </div>\n            </div>\n            <div class=\"faq-item\">\n                <div class=\"faq-question\">\n                    Можно ли находиться в ремзоне? <span class=\"faq-icon\">+</span>\n                </div>\n                <div class=\"faq-answer\">\n                    <p>Конечно. Вы можете присутствовать при диагностике и ремонте вашего автомобиля, соблюдая технику безопасности. Мы за полную прозрачность.</p>\n                </div>\n            </div>\n            <div class=\"faq-item\">\n                <div class=\"faq-question\">\n                    Запчасти нужно привозить свои? <span class=\"faq-icon\">+</span>\n                </div>\n                <div class=\"faq-answer\">\n                    <p>Не обязательно. У нас собственный склад ходовых расходников и налаженные связи с поставщиками. Привезем нужную деталь от 2 часов. Но если хотите со своими — без проблем.</p>\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"booking\">\n        <div class=\"booking-section animate-on-scroll\">\n            <div class=\"booking-content\" id=\"form-content\">\n                <h2>Заезд в <span>бокс</span></h2>\n                <p style=\"color: var(--text-muted); margin-top: 10px;\">Выберите удобное время, и мастер свяжется с вами</p>\n                <form class=\"booking-form\" id=\"bookingForm\">\n                    <div class=\"form-group\">\n                        <input type=\"text\" placeholder=\"Ваше Имя\" required>\n                    </div>\n                    <div class=\"form-group\">\n                        <input type=\"tel\" placeholder=\"Телефон\" required pattern=\"[0-9\\-\\+\\s\\(\\)]+\">\n                    </div>\n                    <div class=\"form-group\">\n                        <select required>\n                            <option value=\"\" disabled selected>Выберите услугу</option>\n                            <option value=\"diag\">Диагностика (от 900 ₽)</option>\n                            <option value=\"engine\">Ремонт ДВС (от 5000 ₽)</option>\n                            <option value=\"suspension\">Ходовая часть (от 1200 ₽)</option>\n                            <option value=\"electro\">Автоэлектрика (от 1500 ₽)</option>\n                            <option value=\"tires\">Шиномонтаж (от 1800 ₽)</option>\n                            <option value=\"to\">Регулярное ТО (от 1000 ₽)</option>\n                        </select>\n                    </div>\n                    <div class=\"form-group\">\n                        <input type=\"datetime-local\" required>\n                    </div>\n                    <div class=\"form-group full-width\">\n                        <button type=\"submit\" class=\"btn\" style=\"width: 100%;\">Подтвердить запись</button>\n                    </div>\n                </form>\n            </div>\n            <div class=\"success-message\" id=\"successMessage\">\n                <h3>Заявка принята! ⚙️</h3>\n                <p>Мы свяжемся с вами в течение 10 минут для подтверждения времени заезда.</p>\n            </div>\n        </div>\n    </section>\n\n    <footer>\n        <div class=\"footer-container\">\n            <div class=\"footer-info\">\n                <a href=\"#\" class=\"logo\" style=\"display:inline-block; margin-bottom: 20px;\">МОТОР<span>ХАУС</span></a>\n                <p><strong>Адрес:</strong> г. Москва, Каширское шоссе, д. 61</p>\n                <p><strong>Режим работы:</strong> Ежедневно с 09:00 до 21:00</p>\n                <p><strong>Телефон:</strong> <a href=\"tel:+74951234567\">+7 (495) 123-45-67</a></p>\n                <div style=\"margin-top: 20px;\">\n                    <a href=\"#\" style=\"margin-right: 15px; text-decoration: underline;\">ВКонтакте</a>\n                    <a href=\"#\" style=\"text-decoration: underline;\">Telegram</a>\n                </div>\n            </div>\n            <div class=\"map-container\">\n                <!-- Placeholder for map iframe -->\n                <iframe src=\"https://yandex.ru/map-widget/v1/?um=constructor%3Aplaceholder&amp;source=constructor&amp;ll=37.708890%2C55.627780&amp;z=15\" frameborder=\"0\"></iframe>\n            </div>\n        </div>\n        <div class=\"footer-bottom\">\n            &copy; 2024 МоторХаус. Все права защищены.\n        </div>\n    </footer>\n\n    <a href=\"#booking\" class=\"mobile-sticky-cta\" id=\"mobileStickyBtn\">Записаться в бокс</a>\n\n    <script>\n        // Hamburger Menu\n        const hamburger = document.querySelector('.hamburger');\n        const navLinks = document.querySelector('.nav-links');\n        \n        hamburger.addEventListener('click', () => {\n            navLinks.classList.toggle('active');\n            hamburger.textContent = navLinks.classList.contains('active') ? '✕' : '☰';\n        });\n\n        navLinks.querySelectorAll('a').forEach(link => {\n            link.addEventListener('click', () => {\n                navLinks.classList.remove('active');\n                hamburger.textContent = '☰';\n            });\n        });\n\n        // FAQ Accordion\n        document.querySelectorAll('.faq-question').forEach(item => {\n            item.addEventListener('click', () => {\n                const parent = item.parentElement;\n                parent.classList.toggle('active');\n            });\n        });\n\n        // Intersection Observer for Animations\n        const observer = new IntersectionObserver((entries) => {\n            entries.forEach(entry => {\n                if (entry.isIntersecting) {\n                    entry.target.classList.add('visible');\n                }\n            });\n        }, { threshold: 0.1 });\n\n        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));\n\n        // Form Submit\n        document.getElementById('bookingForm').addEventListener('submit', (e) => {\n            e.preventDefault();\n            document.getElementById('form-content').style.display = 'none';\n            document.getElementById('successMessage').style.display = 'block';\n        });\n\n        // Sticky Mobile CTA Visibility\n        const stickyBtn = document.getElementById('mobileStickyBtn');\n        const bookingSection = document.getElementById('booking');\n\n        if ('IntersectionObserver' in window) {\n            const ctaObserver = new IntersectionObserver((entries) => {\n                entries.forEach(entry => {\n                    if (entry.isIntersecting) {\n                        stickyBtn.classList.add('hidden');\n                    } else {\n                        stickyBtn.classList.remove('hidden');\n                    }\n                });\n            }, { threshold: 0 });\n            ctaObserver.observe(bookingSection);\n        }\n        \n        // Scroll Spy\n        const sections = document.querySelectorAll('section');\n        const navItems = document.querySelectorAll('.nav-links a[href^=\"#\"]');\n        \n        window.addEventListener('scroll', () => {\n            let current = '';\n            sections.forEach(section => {\n                const sectionTop = section.offsetTop;\n                const sectionHeight = section.clientHeight;\n                if (pageYOffset >= (sectionTop - 200)) {\n                    current = section.getAttribute('id');\n                }\n            });\n\n            navItems.forEach(a => {\n                a.classList.remove('active');\n                if (a.getAttribute('href') === `#${current}`) {\n                    a.classList.add('active');\n                }\n            });\n        });\n    </script>\n<a class=\"zeus-badge\" href=\"https://zeuscode.ru\" target=\"_blank\" rel=\"noopener noreferrer\">Сделано на ZeusCode</a>\n<style id=\"zeus-badge-css\">\n.zeus-badge{\n  position:fixed;right:14px;bottom:12px;z-index:2147483646;\n  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;\n  letter-spacing:.02em;text-decoration:none;\n  color:rgba(120,120,120,.42);pointer-events:auto;\n  transition:color .2s ease,opacity .2s ease;\n}\n.zeus-badge:hover{color:rgba(120,120,120,.78)}\n</style>\n</body>\n</html>\n\n---\n🔗 Живая ссылка: https://zeuscode.ru/go/site-2897/\n",
+    "thinking_visible": true,
+    "epic3": {
+      "crew": "ui_author_critics",
+      "author": "gemini-3.1-pro",
+      "critics": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 968,
+        "deepseek-v4-pro": 840,
+        "gemini-3.1-pro": 860
+      },
+      "author_attempts": [
+        {
+          "model": "claude-opus-4-8",
+          "attempt": 1,
+          "ok": false,
+          "error": "Upstream error 500: {\"type\": \"error\", \"error\": {\"type\": \"api_error\", \"message\": \"Server exception, please try again later\"}}",
+          "preferred": true
+        },
+        {
+          "model": "claude-opus-4-8",
+          "attempt": 2,
+          "ok": false,
+          "error": "Upstream error 500: {\"type\": \"error\", \"error\": {\"type\": \"api_error\", \"message\": \"Server exception, please try again later\"}}",
+          "preferred": true
+        },
+        {
+          "model": "claude-opus-4-8",
+          "attempt": 3,
+          "ok": false,
+          "error": "Upstream error 500: {\"type\": \"error\", \"error\": {\"type\": \"api_error\", \"message\": \"Server exception, please try again later\"}}",
+          "preferred": true
+        },
+        {
+          "model": "gemini-3.1-pro",
+          "attempt": 1,
+          "ok": true,
+          "error": null,
+          "preferred": false
+        }
+      ],
+      "author_preferred": "claude-opus-4-8",
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://part-kom.ru/service-booking",
+          "https://fitauto.ru/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://part-kom.ru/service-booking",
+          "https://fitauto.ru/"
+        ]
+      },
+      "mobile_gaps": [
+        "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px"
+      ],
+      "critique_merged": {
+        "upgrades": [
+          "Add a compact sub-hero trust bar under the CTA (адрес Каширское шоссе, часы работы, телефон-ссылка, «гарантия 2 года») — refs fitauto/abcp all lead with trust/contact; right now the address only lives in the title tag.",
+          "Give each of the 6 service cards a price-from label (напр. «от 900 ₽») and est. time — ref part-kom booking flow shows work type selection, so pricing/time raises conversion and density.",
+          "Upgrade the booking form beyond alert-only: add a native date/time picker + service <select> matching the 6 services, inline validation, and a success state that replaces the form (refs abcp/part-kom center the date/time/work-type choice).",
+          "Add a scroll-spy active state on nav links plus smooth-scroll — cheap polish that reads as crafted.",
+          "Introduce a subtle amber count-up or icon micro-motion on the services section entering viewport to hit the 2-3 motion target beyond fadeIn/pulseGlow.",
+          "Add a footer with map embed / directions to Каширское шоссе, working hours, соцсети — refs close with contacts block; site currently seems to end abruptly.",
+          "Layer a faint animated garage texture (subtle grain or slow gradient shift) on hero to avoid flat gradient over one unsplash photo, matching brief's 'атмосфера бокса'.",
+          "Интегрируйте модуль онлайн-записи с выбором даты/времени и типа услуги, по аналогии с ABCP.ru – это повысит конверсию и доверие.",
+          "Добавьте видео-фон в hero с реальной работой бокса (или анимированный слайд-шоу) для полного погружения в атмосферу.",
+          "Добавьте hamburger-меню для мобильных, скрывающее ссылки за иконкой, и реализуйте плавное открытие/закрытие.",
+          "Сделайте все трёхколоночные сетки (услуги, отзывы) одноколоночными на экранах до 768px.",
+          "Уменьшите размер заголовка hero до 2.2–2.5rem на мобильных, отрегулируйте отступы, чтобы не закрывать изображение."
+        ],
+        "must_fix": [
+          "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px",
+          "No mobile nav: .nav-links show desktop links with margin-left:30px that will wrap/overflow at ~390px. Add a hamburger toggle with a stacked menu drawer, hide desktop links under @media (max-width:768px).",
+          "Hero h1 is 5rem fixed — at 390px 'МОТОРХАУС' will overflow/scroll horizontally. Use clamp(2.2rem, 9vw, 5rem) and reduce hero padding; verify no horizontal scroll.",
+          "Services and reviews grids are hard-coded repeat(3,1fr) with no visible mobile breakpoint in shown CSS — must collapse to 1 column at ≤768px or cards become unreadably narrow.",
+          "pulseGlow infinite on the primary CTA is distracting and drains battery on mobile; limit iterations or pause via prefers-reduced-motion.",
+          "Add a sticky bottom 'Записаться' / phone CTA on mobile (≥44px tap target) that does NOT overlap the booking form when it's in view.",
+          "Полная HTML-разметка не предоставлена – автор ограничился CSS; сайт не загружается. Исправьте, предоставив полный код с body.",
+          "Отсутствуют медиа-запросы (@media) – на телефоне всё сломано. Добавьте адаптивность с брейкпоинтами min-width: 320px, 480px, 768px."
+        ],
+        "praise": [
+          "Strong asphalt+amber palette with layered gradient hero overlay — on-brief atmosphere and no indigo/Inter clichés.",
+          "Montserrat/Open Sans pairing and uppercase headings give a proper garage identity.",
+          "Service card hover (lift + amber underline + radial glow) and FAQ accordion are tasteful, real interactions.",
+          "Цветовая гамма «асфальт/янтарь» отлично отражает бренд, нет запрещённых indigo/Inter.",
+          "Использованы шрифты Montserrat и Open Sans — хорошо читаются и создают индустриальное настроение.",
+          "Градиентное затемнение hero с радиальным акцентом создаёт объём и «атмосферу бокса».",
+          "Эффект наведения на карточки услуг с золотистой границей и подъёмом – приятный и современный.",
+          "Логотип с акцентом на amber привлекателен и запоминается."
+        ],
+        "mobile_gaps": [
+          "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px"
+        ]
+      },
+      "mobile_final_gaps": [],
+      "mobile_critical_holes": 0
+    },
+    "ui_crew": {
+      "author": "gemini-3.1-pro",
+      "critics": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 968,
+        "deepseek-v4-pro": 840,
+        "gemini-3.1-pro": 860
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://part-kom.ru/service-booking",
+          "https://fitauto.ru/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://part-kom.ru/service-booking",
+          "https://fitauto.ru/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Add a compact sub-hero trust bar under the CTA (адрес Каширское шоссе, часы работы, телефон-ссылка, «гарантия 2 года») — refs fitauto/abcp all lead with trust/contact; right now the address only lives in the title tag.",
+          "Give each of the 6 service cards a price-from label (напр. «от 900 ₽») and est. time — ref part-kom booking flow shows work type selection, so pricing/time raises conversion and density.",
+          "Upgrade the booking form beyond alert-only: add a native date/time picker + service <select> matching the 6 services, inline validation, and a success state that replaces the form (refs abcp/part-kom center the date/time/work-type choice).",
+          "Add a scroll-spy active state on nav links plus smooth-scroll — cheap polish that reads as crafted.",
+          "Introduce a subtle amber count-up or icon micro-motion on the services section entering viewport to hit the 2-3 motion target beyond fadeIn/pulseGlow.",
+          "Add a footer with map embed / directions to Каширское шоссе, working hours, соцсети — refs close with contacts block; site currently seems to end abruptly.",
+          "Layer a faint animated garage texture (subtle grain or slow gradient shift) on hero to avoid flat gradient over one unsplash photo, matching brief's 'атмосфера бокса'.",
+          "Интегрируйте модуль онлайн-записи с выбором даты/времени и типа услуги, по аналогии с ABCP.ru – это повысит конверсию и доверие.",
+          "Добавьте видео-фон в hero с реальной работой бокса (или анимированный слайд-шоу) для полного погружения в атмосферу.",
+          "Добавьте hamburger-меню для мобильных, скрывающее ссылки за иконкой, и реализуйте плавное открытие/закрытие.",
+          "Сделайте все трёхколоночные сетки (услуги, отзывы) одноколоночными на экранах до 768px.",
+          "Уменьшите размер заголовка hero до 2.2–2.5rem на мобильных, отрегулируйте отступы, чтобы не закрывать изображение."
+        ],
+        "must_fix": [
+          "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px",
+          "No mobile nav: .nav-links show desktop links with margin-left:30px that will wrap/overflow at ~390px. Add a hamburger toggle with a stacked menu drawer, hide desktop links under @media (max-width:768px).",
+          "Hero h1 is 5rem fixed — at 390px 'МОТОРХАУС' will overflow/scroll horizontally. Use clamp(2.2rem, 9vw, 5rem) and reduce hero padding; verify no horizontal scroll.",
+          "Services and reviews grids are hard-coded repeat(3,1fr) with no visible mobile breakpoint in shown CSS — must collapse to 1 column at ≤768px or cards become unreadably narrow.",
+          "pulseGlow infinite on the primary CTA is distracting and drains battery on mobile; limit iterations or pause via prefers-reduced-motion.",
+          "Add a sticky bottom 'Записаться' / phone CTA on mobile (≥44px tap target) that does NOT overlap the booking form when it's in view.",
+          "Полная HTML-разметка не предоставлена – автор ограничился CSS; сайт не загружается. Исправьте, предоставив полный код с body.",
+          "Отсутствуют медиа-запросы (@media) – на телефоне всё сломано. Добавьте адаптивность с брейкпоинтами min-width: 320px, 480px, 768px."
+        ],
+        "praise": [
+          "Strong asphalt+amber palette with layered gradient hero overlay — on-brief atmosphere and no indigo/Inter clichés.",
+          "Montserrat/Open Sans pairing and uppercase headings give a proper garage identity.",
+          "Service card hover (lift + amber underline + radial glow) and FAQ accordion are tasteful, real interactions.",
+          "Цветовая гамма «асфальт/янтарь» отлично отражает бренд, нет запрещённых indigo/Inter.",
+          "Использованы шрифты Montserrat и Open Sans — хорошо читаются и создают индустриальное настроение.",
+          "Градиентное затемнение hero с радиальным акцентом создаёт объём и «атмосферу бокса».",
+          "Эффект наведения на карточки услуг с золотистой границей и подъёмом – приятный и современный.",
+          "Логотип с акцентом на amber привлекателен и запоминается."
+        ],
+        "mobile_gaps": [
+          "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px"
+        ]
+      }
+    },
+    "classifier": {
+      "stack": "full",
+      "task": "ui",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  }
+}

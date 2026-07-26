@@ -1,0 +1,97 @@
+{
+  "cid": "u08_explain",
+  "prompt": "Объясни за 5 предложений, что такое webhook и зачем retry.",
+  "zeus": {
+    "mode": "simple"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "# Webhook и Retry\n\n**Webhook** — это механизм, когда одно приложение отправляет HTTP-запрос другому приложению при возникновении определённого события (например, оплата, создание пользователя, обновление статуса). Вместо того чтобы постоянно опрашивать сервер (\"есть ли что-то новое?\"), webhook \"толкает\" данные прямо в нужное место в момент события.\n\n**Retry** (повторная попытка) нужен, потому что сетевые ошибки, временные сбои сервера или перегрузки случаются постоянно — первый запрос может не дойти. Если просто отправить webhook один раз и забыть, то при сетевой ошибке данные потеряются и событие никогда не обработается. \n\nПоэтому системы обычно используют **exponential backoff** — повторяют запрос несколько раз с растущей задержкой (1 сек, 2 сек, 4 сек...), чтобы дать серверу время восстановиться. Это гарантирует надёжность доставки: либо запрос дойдёт, либо после N попыток система явно зафиксирует, что webhook не удался.",
+  "answer_excerpt": "# Webhook и Retry\n\n**Webhook** — это механизм, когда одно приложение отправляет HTTP-запрос другому приложению при возникновении определённого события (например, оплата, создание пользователя, обновление статуса). Вместо того чтобы постоянно опрашивать сервер (\"есть ли что-то новое?\"), webhook \"толкает\" данные прямо в нужное место в момент события.\n\n**Retry** (повторная попытка) нужен, потому что сетевые ошибки, временные сбои сервера или перегрузки случаются постоянно — первый запрос может не д",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "simple",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "claude-haiku-4-5",
+    "panel": [
+      "deepseek-v4-flash",
+      "gemini-3-pro",
+      "claude-haiku-4-5"
+    ],
+    "trace_id": "1a3403a516a84971",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "claude-haiku-4-5",
+        "model_id": "claude-haiku-4-5",
+        "billable_state": "completed",
+        "prompt_tokens": 68,
+        "completion_tokens": 401,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "# Webhook и Retry\n\n**Webhook** — это механизм, когда одно приложение отправляет HTTP-запрос другому приложению при возникновении определённого события (например, оплата, создание пользователя, обновление статуса). Вместо того чтобы постоянно опрашивать сервер (\"есть ли что-то новое?\"), webhook \"толкает\" данные прямо в нужное место в момент события.\n\n**Retry** (повторная попытка) нужен, потому что сетевые ошибки, временные сбои сервера или перегрузки случаются постоянно — первый запрос может не дойти. Если просто отправить webhook один раз и забыть, то при сетевой ошибке данные потеряются и событие никогда не обработается. \n\nПоэтому системы обычно используют **exponential backoff** — повторяют запрос несколько раз с растущей задержкой (1 сек, 2 сек, 4 сек...), чтобы дать серверу время восстановиться. Это гарантирует надёжность доставки: либо запрос дойдёт, либо после N попыток система явно зафиксирует, что webhook не удался.",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "fast",
+      "task": "light",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 68,
+    "completion_tokens": 401,
+    "total_tokens": 469
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.1035,
+    "markup": 1.5,
+    "balance_left_rub": 878.03,
+    "key_spent_rub": 0.7204,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "1a3403a516a84971",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "claude-haiku-4-5",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "1a3403a516a84971",
+  "escalate_from": "CASCADE",
+  "latency_s": 17.302,
+  "ok": true
+}

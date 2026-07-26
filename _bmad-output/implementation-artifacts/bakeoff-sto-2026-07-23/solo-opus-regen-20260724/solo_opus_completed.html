@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Автосервис «МоторХаус» | Качественный ремонт автомобилей</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --asphalt-900: #121418;
+  --asphalt-800: #1a1d24;
+  --asphalt-700: #252932;
+  --asphalt-600: #333844;
+  --smoke: #9ca3af;
+  --cream: #f3f4f6;
+  --amber: #e8952c;
+  --amber-bright: #ffaa33;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--asphalt-900);
+  color: var(--cream);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { text-decoration: none; color: inherit; transition: color 0.2s; }
+ul { list-style: none; }
+img { max-width: 100%; height: auto; display: block; }
+
+.container { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+section { padding: 80px 0; }
+.section-title { font-family: 'Oswald', sans-serif; font-size: clamp(32px, 5vw, 48px); font-weight: 700; margin-bottom: 40px; text-transform: uppercase; color: #fff; }
+.section-title span { color: var(--amber); }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--amber); color: #fff; font-weight: 600; font-family: 'Oswald', sans-serif;
+  padding: 16px 32px; border-radius: 10px; border: none; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s;
+}
+.btn-primary:hover { background: var(--amber-bright); }
+
+/* HEADER */
+header { background: var(--asphalt-800); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 100; padding: 20px 0; }
+header .container { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-family: 'Oswald', sans-serif; font-size: 28px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+.logo span { color: var(--amber); }
+.nav-links { display: flex; gap: 30px; }
+.nav-links a { font-size: 15px; font-weight: 500; color: var(--smoke); }
+.nav-links a:hover { color: #fff; }
+.header-phone { font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 600; color: #fff; }
+
+/* HERO */
+.hero { background: linear-gradient(rgba(18,20,24,0.8), rgba(18,20,24,0.9)), url('https://images.unsplash.com/photo-1613214149922-f1809c99b414?auto=format&fit=crop&w=1920&q=80') center/cover; padding: 120px 0; text-align: center; }
+.hero h1 { font-family: 'Oswald', sans-serif; font-size: clamp(40px, 6vw, 64px); line-height: 1.1; margin-bottom: 20px; text-transform: uppercase; }
+.hero p { font-size: clamp(16px, 2vw, 20px); color: var(--smoke); max-width: 700px; margin: 0 auto 40px; }
+
+/* SERVICES & PAINTING */
+.services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+.service-card { background: var(--asphalt-800); border: 1px solid var(--line); border-radius: 16px; padding: 30px; transition: transform 0.3s, border-color 0.3s; }
+.service-card:hover { transform: translateY(-5px); border-color: var(--amber); }
+.service-card h3 { font-size: 22px; font-family: 'Oswald', sans-serif; margin-bottom: 12px; color: #fff; }
+.service-card p { color: var(--smoke); font-size: 15px; }
+.icon-wrap { width: 60px; height: 60px; background: rgba(232,149,44,.1); border-radius: 12px; display: grid; place-items: center; margin-bottom: 20px; font-size: 28px; color: var(--amber); }
+
+/* PRICES */
+.prices-table { width: 100%; border-collapse: collapse; background: var(--asphalt-800); border-radius: 16px; overflow: hidden; }
+.prices-table th, .prices-table td { padding: 20px; text-align: left; border-bottom: 1px solid var(--line); }
+.prices-table th { background: var(--asphalt-700); font-family: 'Oswald', sans-serif; text-transform: uppercase; color: var(--smoke); font-size: 14px; letter-spacing: 1px; }
+.prices-table td { font-size: 16px; font-weight: 500; }
+.prices-table tr:last-child td { border-bottom: none; }
+.price-val { color: var(--amber-bright); font-weight: 700; font-family: 'Oswald', sans-serif; font-size: 18px; }
+
+/* REVIEWS */
+.reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+.review-card { background: var(--asphalt-800); padding: 30px; border-radius: 16px; border: 1px solid var(--line); }
+.review-stars { color: var(--amber); margin-bottom: 15px; letter-spacing: 2px; }
+.review-text { color: var(--smoke); font-style: italic; margin-bottom: 20px; font-size: 15px; }
+.review-author { display: flex; align-items: center; gap: 12px; }
+.review-author b { font-size: 16px; color: #fff; }
+.review-author span { font-size: 13px; color: var(--smoke); }
+
+/* QA (From provided snippet context) */
+.qa-item { border-bottom: 1px solid var(--line); }
+.qa-q { padding: 24px 26px; font-size: 18px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; color: #fff; }
+.qa-a { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+.qa-a p { padding: 0 26px 24px; color: var(--smoke); font-size: 15px; line-height: 1.7; }
+
+/* ===== FORM (Provided Snippet) ===== */
+.book{background:var(--asphalt-900);position:relative}
+.book-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:start}
+.book-info h2{font-size:clamp(32px,5vw,48px);font-weight:700;color:#fff;margin-bottom:18px}
+.book-info>p{color:var(--smoke);font-size:17px;margin-bottom:34px}
+.book-contacts{display:flex;flex-direction:column;gap:20px}
+.bc{display:flex;align-items:flex-start;gap:16px}
+.bc .ic{flex-shrink:0;width:48px;height:48px;border-radius:11px;background:rgba(232,149,44,.12);border:1px solid var(--line-strong);display:grid;place-items:center;font-size:22px}
+.bc .t small{display:block;font-size:13px;color:var(--smoke);letter-spacing:.5px;margin-bottom:2px}
+.bc .t b{font-family:'Oswald';font-size:19px;font-weight:600;color:#fff;letter-spacing:.4px}
+.bc .t a{color:#fff}
+.bc .t a:hover{color:var(--amber-bright)}
+
+.form-card{background:var(--asphalt-800);border:1px solid var(--line);border-radius:20px;padding:38px 34px;box-shadow:0 30px 70px rgba(0,0,0,.4)}
+.form-card h3{font-size:26px;font-weight:600;color:#fff;margin-bottom:6px}
+.form-card .fh{color:var(--smoke);font-size:14px;margin-bottom:26px}
+.fg{margin-bottom:18px}
+.fg label{display:block;font-size:13px;font-weight:600;color:var(--smoke);letter-spacing:.5px;margin-bottom:8px}
+.fg label em{color:var(--amber-bright);font-style:normal}
+.fg input,.fg select{
+  width:100%;padding:15px 16px;font-size:16px;font-family:'Manrope';
+  background:var(--asphalt-700);border:1px solid var(--line);border-radius:10px;color:#fff;
+  transition:border-color .2s,background .2s;
+}
+.fg input::placeholder{color:#6a707a}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--amber);background:var(--asphalt-600)}
+.fg select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e8952c' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:44px}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-card .btn-primary{width:100%;justify-content:center;margin-top:8px}
+.form-note{font-size:12px;color:#6a707a;text-align:center;margin-top:16px;line-height:1.5}
+.field-err{border-color:#e05a3a !important}
+.err-msg{font-size:12px;color:#f08a6f;margin-top:6px;display:none}
+.err-msg.show{display:block}
+.form-success{
+  display:none;text-align:center;padding:20px 10px;
+}
+.form-success.show{display:block;animation:pop .4s ease}
+.form-success .check{
+  width:76px;height:76px;border-radius:50%;background:rgba(232,149,44,.14);border:2px solid var(--amber);
+  display:grid;place-items:center;margin:0 auto 20px;font-size:40px;color:var(--amber-bright);
+}
+.form-success h3{margin-bottom:10px}
+.form-success p{color:var(--smoke);font-size:15px;margin-bottom:20px}
+.form-success .sum{background:var(--asphalt-700);border-radius:12px;padding:16px 20px;text-align:left;font-size:14px;color:var(--cream);border:1px solid var(--line)}
+.form-success .sum div{margin:4px 0}
+.form-success .sum span{color:var(--smoke)}
+@keyframes pop{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
+
+/* ===== FOOTER ===== */
+.footer{background:var(--asphalt-800);border-top:1px solid var(--line);padding:56px 0 40px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr; gap:40px; margin-bottom:40px;}
+.foot-col h4 { font-family: 'Oswald', sans-serif; font-size: 18px; color: #fff; margin-bottom: 20px; letter-spacing: 0.5px; }
+.foot-col ul { display: flex; flex-direction: column; gap: 12px; }
+.foot-col ul a { color: var(--smoke); font-size: 15px; }
+.foot-col ul a:hover { color: var(--amber); }
+.foot-col p { color: var(--smoke); font-size: 14px; margin-top: 16px; max-width: 300px; }
+.footer-bottom { border-top: 1px solid var(--line); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--smoke); }
+
+/* ===== MOBILE ADAPTATION ===== */
+@media (max-width: 992px) {
+  .book-grid { grid-template-columns: 1fr; gap: 40px; }
+  .foot-grid { grid-template-columns: 1fr 1fr; }
+  .nav-links { display: none; } /* Simplified for demo */
+}
+@media (max-width: 768px) {
+  section { padding: 50px 0; }
+  .fg-row { grid-template-columns: 1fr; }
+  .foot-grid { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+  .prices-table th, .prices-table td { padding: 12px 10px; font-size: 14px; }
+  .price-val { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <a href="#" class="logo">Мотор<span>Хаус</span></a>
+    <nav class="nav-links">
+      <a href="#services">Услуги</a>
+      <a href="#paint">Малярка</a>
+      <a href="#prices">Цены</a>
+      <a href="#reviews">Отзывы</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+    <div class="header-phone"><a href="tel:+74951234567">+7 (495) 123-45-67</a></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h1>Профессиональный ремонт<br>и обслуживание автомобилей</h1>
+    <p>Качественный автосервис на Каширском шоссе. Современное оборудование, опытные мастера и гарантия на все виды работ до 2-х лет.</p>
+    <a href="#book" class="btn-primary">Записаться на сервис</a>
+  </div>
+</section>
+
+<section id="services">
+  <div class="container">
+    <h2 class="section-title">Наши <span>Услуги</span></h2>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="icon-wrap">⚙️</div>
+        <h3>Слесарный ремонт</h3>
+        <p>Ремонт ходовой части, подвески, тормозной системы и рулевого управления с использованием оригинальных запчастей.</p>
+      </div>
+      <div class="service-card">
+        <div class="icon-wrap">💻</div>
+        <h3>Компьютерная диагностика</h3>
+        <p>Точное выявление неисправностей двигателя и электронных систем сканерами дилерского уровня.</p>
+      </div>
+      <div class="service-card">
+        <div class="icon-wrap">🔧</div>
+        <h3>ТО и замена масла</h3>
+        <p>Регламентное техническое обслуживание, замена фильтров, технических жидкостей и свечей зажигания.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="paint" style="background: var(--asphalt-800);">
+  <div class="container">
+    <h2 class="section-title">Кузовной ремонт и <span>Малярка</span></h2>
+    <div class="services-grid" style="grid-template-columns: 1fr 1fr;">
+      <div>
+        <p style="color: var(--smoke); font-size: 18px; margin-bottom: 20px;">Восстанавливаем геометрию кузова и лакокрасочное покрытие с точностью до микрона. Используем премиальные материалы и профессиональную покрасочную камеру.</p>
+        <ul style="color: var(--smoke); line-height: 2; margin-bottom: 30px; padding-left: 20px; list-style: disc;">
+          <li>Локальная и полная покраска авто</li>
+          <li>Удаление вмятин без покраски (PDR)</li>
+          <li>Стапельные работы и восстановление геометрии</li>
+          <li>Полировка кузова и нанесение керамики</li>
+        </ul>
+        <a href="#book" class="btn-primary">Оценить по фото</a>
+      </div>
+      <div>
+        <img src="https://images.unsplash.com/photo-1550524458-132d7abf46a3?auto=format&fit=crop&w=800&q=80" alt="Малярка" style="border-radius: 16px; border: 1px solid var(--line);">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="prices">
+  <div class="container">
+    <h2 class="section-title">Цены на <span>работы</span></h2>
+    <table class="prices-table">
+      <thead>
+        <tr>
+          <th>Наименование работ</th>
+          <th>Время (в среднем)</th>
+          <th>Стоимость</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Замена масла в ДВС (с фильтром)</td>
+          <td>30 мин</td>
+          <td class="price-val">от 900 ₽</td>
+        </tr>
+        <tr>
+          <td>Компьютерная диагностика</td>
+          <td>45 мин</td>
+          <td class="price-val">от 1 500 ₽</td>
+        </tr>
+        <tr>
+          <td>Замена тормозных колодок (ось)</td>
+          <td>1 час</td>
+          <td class="price-val">от 1 200 ₽</td>
+        </tr>
+        <tr>
+          <td>Диагностика ходовой части</td>
+          <td>40 мин</td>
+          <td class="price-val">Бесплатно*</td>
+        </tr>
+        <tr>
+          <td>Окрас одной детали (под ключ)</td>
+          <td>1-2 дня</td>
+          <td class="price-val">от 8 000 ₽</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="color: var(--smoke); font-size: 13px; margin-top: 15px;">* При условии последующего ремонта в нашем автосервисе.</p>
+  </div>
+</section>
+
+<section id="reviews" style="background: var(--asphalt-800);">
+  <div class="container">
+    <h2 class="section-title">Отзывы <span>клиентов</span></h2>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«Отличный сервис. Делали ходовую на BMW X5. Все четко, без навязывания лишних услуг. Мастера знают свое дело.»</p>
+        <div class="review-author">
+          <b>Михаил С.</b>
+          <span>BMW X5</span>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«Попал в ДТП, мятое крыло и бампер. В малярке МоторХауса сделали так, что не подкопаешься, в цвет попали 100%. Спасибо!»</p>
+        <div class="review-author">
+          <b>Алексей В.</b>
+          <span>Toyota Camry</span>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">«Регулярно прохожу ТО только здесь. Удобно, что на Каширке, цены адекватные и всегда можно записаться на удобное время.»</p>
+        <div class="review-author">
+          <b>Екатерина М.</b>
+          <span>Kia Rio</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="book" class="book">
+  <div class="container">
+    <div class="book-grid">
+      
+      <div class="book-info" id="contacts">
+        <h2>Ждем вас в <span style="color: var(--amber);">МоторХаус</span></h2>
+        <p>Запишитесь на ремонт или обслуживание прямо сейчас. Наш мастер-приемщик перезвонит вам в течение 5 минут для подтверждения времени.</p>
+        
+        <div class="book-contacts">
+          <div class="bc">
+            <div class="ic">📍</div>
+            <div class="t">
+              <small>Наш адрес</small>
+              <b>г. Москва, Каширское шоссе, д. 45 стр. 2</b>
+            </div>
+          </div>
+          <div class="bc">
+            <div class="ic">📞</div>
+            <div class="t">
+              <small>Телефон</small>
+              <b><a href="tel:+74951234567">+7 (495) 123-45-67</a></b>
+            </div>
+          </div>
+          <div class="bc">
+            <div class="ic">🕒</div>
+            <div class="t">
+              <small>Режим работы</small>
+              <b>Ежедневно: с 09:00 до 21:00</b>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <form id="bookingForm" onsubmit="event.preventDefault(); this.style.display='none'; document.getElementById('successMsg').classList.add('show');">
+          <h3>Запись онлайн</h3>
+          <p class="fh">Оставьте заявку и получите скидку 10% на первый визит</p>
+          
+          <div class="fg">
+            <label>Ваше имя <em>*</em></label>
+            <input type="text" placeholder="Иван Иванов" required>
+          </div>
+          
+          <div class="fg-row">
+            <div class="fg">
+              <label>Телефон <em>*</em></label>
+              <input type="tel" placeholder="+7 (___) ___-__-__" required>
+            </div>
+            <div class="fg">
+              <label>Марка авто</label>
+              <input type="text" placeholder="Например, Toyota">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label>Что нужно сделать?</label>
+            <select>
+              <option>Слесарный ремонт / ТО</option>
+              <option>Кузовной ремонт / Покраска</option>
+              <option>Диагностика</option>
+              <option>Другое</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-primary">Записаться</button>
+          <p class="form-note">Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности.</p>
+        </form>
+
+        <div id="successMsg" class="form-success">
+          <div class="check">✓</div>
+          <h3>Заявка отправлена!</h3>
+          <p>Наш менеджер свяжется с вами в ближайшее время для уточнения деталей.</p>
+          <div class="sum">
+            <div><span>Статус:</span> Ожидание звонка</div>
+            <div><span>Скидка 10%:</span> Активирована</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <div class="logo">Мотор<span>Хаус</span></div>
+        <p>Современный автосервис на Каширском шоссе. Доверяйте свой автомобиль профессионалам с гарантией качества.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Услуги</h4>
+        <ul>
+          <li><a href="#">Техническое обслуживание</a></li>
+          <li><a href="#">Слесарный ремонт</a></li>
+          <li><a href="#">Кузовной ремонт</a></li>
+          <li><a href="#">Компьютерная диагностика</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Информация</h4>
+        <ul>
+          <li><a href="#">О компании</a></li>
+          <li><a href="#">Цены</a></li>
+          <li><a href="#">Отзывы</a></li>
+          <li><a href="#">Контакты</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>&copy; 2024 Автосервис «МоторХаус». Все права защищены.</div>
+      <div><a href="#">Политика конфиденциальности</a></div>
+    </div>
+  </div>
+</footer>
+
+<a class="zeus-badge" href="http://127.0.0.1:8080" target="_blank" rel="noopener noreferrer">Сделано на ZeusCode</a>
+<style id="zeus-badge-css">
+.zeus-badge{
+  position:fixed;right:14px;bottom:12px;z-index:2147483646;
+  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;
+  letter-spacing:.02em;text-decoration:none;
+  color:rgba(120,120,120,.42);pointer-events:auto;
+  transition:color .2s ease,opacity .2s ease;
+}
+.zeus-badge:hover{color:rgba(120,120,120,.78)}
+</style>
+</body>
+</html>

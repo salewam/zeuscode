@@ -1,0 +1,296 @@
+[
+  {
+    "label": "1_simple_polzovatelskiy",
+    "title": "Пользовательский (simple)",
+    "ok": true,
+    "status": 200,
+    "latency_s": 174.97,
+    "routed_by": "ui_author_critics_web",
+    "path": "FULL",
+    "product_mode": "simple",
+    "leader": "gemini-3-pro",
+    "panel": [
+      "gemini-3-pro",
+      "deepseek-v4-flash",
+      "claude-haiku-4-5"
+    ],
+    "ui_crew": {
+      "author": "gemini-3-pro",
+      "critics": [
+        "deepseek-v4-flash",
+        "claude-haiku-4-5"
+      ],
+      "power_scores": {
+        "gemini-3-pro": 935,
+        "deepseek-v4-flash": 800,
+        "claude-haiku-4-5": 700
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://www.avtomato.ru/",
+          "https://checkinauto.com/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://www.avtomato.ru/",
+          "https://checkinauto.com/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Добавить адаптивные медиа-запросы для ≤768px и ≤480px: услуги в одну колонку, увеличенные отступы, шрифты не менее 16px на мобильных, кнопки и кликабельные элементы ≥44px.",
+          "Реализовать работающее гамбургер-меню с плавным выездом списка навигации (сейчас скрыто, но нет JS для переключения).",
+          "Добавить прилипающую кнопку «Записаться» на мобильной версии (внизу), которая не перекрывает форму — отображать только на небольших экранах и прятать при скролле к форме.",
+          "Заполнить фоновые изображения в блоке «Малярный цех» реальными ссылками на фото (например, из Unsplash) для плейсхолдеров «До/После».",
+          "В блоке «Почему мы» добавить иконки (можно Unicode-символы или простые SVG) для наглядности вместо просто текста.",
+          "Обработать отправку формы без alert: показывать inline-сообщение об успехе (например, замена формы на благодарность).",
+          "Настроить аккордеон FAQ с помощью JS: клик на вопрос должен раскрывать/скрывать ответ, добавить анимацию.",
+          "Сделать мобильный контактный телефон кликабельным (tel:+7...).",
+          "Добавить пару статистических значений (например, «100+ окрашенных авто») для усиления доверия в блоке «Почему мы».",
+          "Оптимизировать производительность: добавить lazy loading для изображений и отложить загрузку AOS до скролла."
+        ],
+        "must_fix": [
+          "Отсутствуют медиа-запросы для мобильных устройств — сайт не адаптирован под экраны ≤768px (стили обрываются, нет одноколоночной сетки).",
+          "Гамбургер-меню не работает: кнопка есть, но нет JavaScript для переключения навигации, меню остаётся скрытым.",
+          "Отсутствует прилипающая CTA-кнопка «Записаться» на мобильной версии (требование из брифа).",
+          "Изображения в блоке «Малярный цех» не имеют URL — отображаются только серые прямоугольники.",
+          "Форма, вероятно, использует alert (по умолчанию), а не inline-уведомление об успешной записи.",
+          "Блок «Почему мы» не содержит иконок (только текст), что снижает визуальный акцент."
+        ],
+        "praise": [
+          "Цветовая палитра точно следует брифу (асфальт + янтарь/охра) и создаёт атмосферу.",
+          "Бренд «МоторХаус» является главным героем первого экрана — крупный заголовок в hero.",
+          "Все шесть требуемых услуг перечислены карточками с адекватным описанием.",
+          "Блок «Малярный цех» выделен отдельно и содержит гарантии, сроки, фото-плейсхолдеры (нужно только заполнить).",
+          "Использованы шрифты Oswald и Montserrat вместо запрещённых — уникально и стильно.",
+          "Добавлена анимация появления через AOS (2-3 осознанных движения).",
+          "Форма содержит все обязательные поля: имя, телефон, авто, услуга с выбором малярки, дата/время."
+        ],
+        "mobile_gaps": []
+      }
+    },
+    "metrics": {
+      "bytes": 34351,
+      "has_html_close": true,
+      "has_media": true,
+      "has_viewport": true,
+      "has_form": true,
+      "has_nav": true,
+      "has_paint": true,
+      "sections": 6,
+      "live_link": "https://zeuscode.ru/go/site-1ff5/"
+    },
+    "error": null,
+    "on_brief": true
+  },
+  {
+    "label": "2_power_prodvinutyy",
+    "title": "Продвинутый (power)",
+    "ok": true,
+    "status": 200,
+    "latency_s": 555.3,
+    "routed_by": "ui_author_rollback",
+    "path": "FULL",
+    "product_mode": "power",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro",
+      "gemini-3.1-pro"
+    ],
+    "ui_crew": {
+      "author": "gemini-3.1-pro",
+      "critics": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 968,
+        "deepseek-v4-pro": 840,
+        "gemini-3.1-pro": 860
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://checkinauto.com/",
+          "https://www.avtomato.ru/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://checkinauto.com/",
+          "https://www.avtomato.ru/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Hero: brand 'МоторХаус' is styled as a normal H1 span—make it a dominant wordmark (larger clamp, tighter tracking, subtle amber underline/stamp) so it reads as brand-first, not just a headline word.",
+          "Contact section uses a hard 50/50 split-gradient background—on tablet this creates an awkward seam behind stacked content; switch to a solid asphalt panel with a bordered form card for clarity.",
+          "Add a real embedded map or styled map placeholder for Каширское шоссе near contacts (refs emphasize location trust); pin + address block boosts credibility.",
+          "Paint-shop до/после: implement an actual before/after slider or two labeled placeholders side by side rather than a single static paint image, per brief item 5.",
+          "Services text density: ensure each of the 6 cards has 2–3 lines of real copy + a 'от N ₽' price hint (CheckInAuto/Avtomato refs lead with prices) to feel like a strong competitor, not a template.",
+          "FAQ answer uses max-height:200px which will clip longer answers on mobile—use a JS-measured scrollHeight or large max-height to avoid cut text.",
+          "Add trust strip under hero (стаж, кол-во авто, гарантия на ЛКП X мес) as a horizontal stat row that stacks on phone—mirrors ref stat bands (5000+/98%).",
+          "Motion: keep fadeUp but add a scroll-reveal (IntersectionObserver) for service/paint cards and a subtle amber CTA hover only—avoid any infinite pulse.",
+          "Form: add inline validation (phone mask/required) and an aria-live success message that appears in-place; ensure success block does not rely on alert.",
+          "Hero image currently a generic dark overlay photo; replace with a high-quality shot of an actual paint booth or workshop bay with amber/orange accent lighting to instantly convey the specialty and atmosphere, as seen in service-camera references.",
+          "Add a 'How it works' / 'Три шага' block (Найдите, Сравните, Запишите) inspired by CheckInAuto – it builds immediate trust with a clear process and strengthens onboarding for first-time visitors.",
+          "In the 'Малярный цех' block, replace the single static image with a before/after comparison slider or side-by-side image placeholders, directly addressing the brief's request for стилизованные фото-плейсхолдеры до/после and adding a strong trust signal."
+        ],
+        "must_fix": [
+          "Mobile nav: hamburger is styled but the truncated HTML shows no visible .nav-menu toggle logic/panel—verify a working full-screen or dropdown menu at ≤768px with tap targets ≥44px, or nav is unusable on phone.",
+          "Sticky mobile CTA «Записаться» is required (brief 12) and must add bottom-padding to the form/page so it never overlaps the last form fields or submit button on 390px.",
+          "Inputs must be font-size ≥16px to prevent iOS zoom—confirm form input/select rules set this at ≤480px (not inherited body size only).",
+          "Hero height:100vh + min-height:600px can crop content on short phones; use min-height:100svh and reduce padding so H1 + CTA fit at 390px without scroll-trap.",
+          "Contact split-gradient and 2-col grids (contact/paint/adv) must collapse to 1 column at ≤768px—confirm @media rules exist; the truncated CSS ends before media queries so this is unverified and blocking.",
+          "Hamburger menu has no JavaScript functionality in the provided code – mobile navigation is completely inaccessible, a critical blocking issue.",
+          "No @media queries for ≤768px and ≤480px shown; the paint shop grid and advantages grid (3 columns) will overflow on 390px causing horizontal scroll, which violates the mobile requirement.",
+          "Sticky CTA 'Записаться' is missing entirely in the provided snippet; if present, its placement must be verified so it does not overlap the form fields when scrolled on phones – currently no evidence of a sticky bar, which is a usability gap for conversion."
+        ],
+        "praise": [
+          "Palette is on-brief: asphalt #1a1a1a + amber #d97706, no indigo/AI-purple.",
+          "Typography uses Oswald + Montserrat—correctly avoids Inter/Roboto/Arial and gives an industrial feel.",
+          "Real garage/paint-booth Unsplash imagery with dark overlay gives genuine atmosphere instead of a flat gradient.",
+          "FAQ accordion with rotating + icon and services hover with amber bottom-border are clean, restrained interactions.",
+          "Brand name 'МоторХаус' is the hero of the first screen with a massive, bold H1 – true to the brief’s instruction, not just a small subtitle.",
+          "Color palette (asphalt black + amber/ochre) and font choice (Oswald + Montserrat) strictly follow the brief and avoid clichéd AI‑purple or Inter/Roboto, giving a unique, rugged identity.",
+          "Interactive FAQ accordion is correctly structured with CSS max‑height transition and toggle, providing a smooth, client‑controlled experience.",
+          "Separate 'Малярный цех' block is present with dedicated layout and checklist‑style benefits (✓), showing specialization and attention to trust signals like guarantee."
+        ],
+        "mobile_gaps": []
+      }
+    },
+    "metrics": {
+      "bytes": 28467,
+      "has_html_close": true,
+      "has_media": true,
+      "has_viewport": true,
+      "has_form": true,
+      "has_nav": true,
+      "has_paint": true,
+      "sections": 7,
+      "live_link": "https://zeuscode.ru/go/site-7168/"
+    },
+    "error": null,
+    "on_brief": true
+  },
+  {
+    "label": "3_custom_strongest",
+    "title": "Набор из самых сильных",
+    "ok": true,
+    "status": 200,
+    "latency_s": 515.62,
+    "routed_by": "ui_author_critics_web",
+    "path": "FULL",
+    "product_mode": "custom",
+    "leader": "claude-fable-5",
+    "panel": [
+      "claude-opus-4-8",
+      "claude-fable-5",
+      "gpt-5.6-sol"
+    ],
+    "ui_crew": {
+      "author": "claude-fable-5",
+      "critics": [
+        "gpt-5.6-sol",
+        "claude-opus-4-8"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 968,
+        "claude-fable-5": 1000,
+        "gpt-5.6-sol": 1000
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://checkinauto.com/",
+          "https://www.avtomato.ru/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://checkinauto.com/",
+          "https://www.avtomato.ru/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Заменить содержимое на один валидный самодостаточный HTML-документ с встроенными CSS и JS, начинающийся с <!doctype html>.",
+          "Сделать «МоторХаус» главным элементом full-bleed hero на фоне реального бокса или малярной камеры; использовать асфальтовую палитру с янтарными и охристыми акцентами.",
+          "Добавить плотную сетку минимум из шести содержательных карточек услуг с ориентировочными ценами или сроками: это усилит прозрачность предложения по примеру CheckInAuto.",
+          "Создать отдельный визуально насыщенный блок «Малярный цех» с камерой, материалами, сроками, гарантией на ЛКП и убедительной парой «до/после».",
+          "Добавить блоки доверия: честная смета, гарантия, зона ожидания, три конкретных отзыва и кликабельный FAQ-аккордеон.",
+          "Реализовать настоящую форму записи с полями имени, телефона, автомобиля, услуги, даты и времени, валидацией и inline-сообщением об успешной отправке; удобство онлайн-записи должно быть центральным преимуществом, как в ABCP.",
+          "Использовать реальные локальные данные и конкретику вместо общих заявлений: адрес на Каширском шоссе, телефон, режим 9:00–21:00, фото работ и проверяемые условия гарантии, следуя подходу Avtomato.",
+          "Добавить 2–3 осмысленных motion-эффекта: вступительное раскрытие hero, stagger-появление карточек при прокрутке и плавное раскрытие FAQ с поддержкой prefers-reduced-motion.",
+          "Ground the hero atmosphere in real reference cues (Avtomato/CheckInAuto use real work photos): overlay a subtle photographic body-shop layer via CSS gradient + duotone image blend in asphalt+amber, avoid any flat gradient.",
+          "Add trust stats bar under hero like CheckInAuto (5000+ СТО, 120000 отзывов): e.g. 'лет на Каширском', 'машин в год', 'гарантия на ЛКП' — quantified numbers build credibility.",
+          "Make the до/после block interactive with a draggable slider (or tap-to-reveal) instead of two static placeholders — this is the signature feature buyers judge a малярный цех by.",
+          "Add price-from anchors on service cards (от 3000 ₽ style, per CheckInAuto services list) so users understand cost before form — 'прозрачные цены' is a top ref conversion driver."
+        ],
+        "must_fix": [
+          "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">",
+          "Предоставленный результат не является HTML-сайтом: это вызов инструмента Write для создания markdown-файла с пользовательскими предпочтениями, поэтому страница вообще не отображается.",
+          "Добавить <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">, иначе макет не будет корректно масштабироваться на телефоне шириной около 390px.",
+          "Для экранов до 768px и 480px добавить отдельные media queries: все сетки перевести в одну колонку, ограничить ширину медиа, исключить горизонтальный скролл и оставить основной текст не меньше 16px.",
+          "На телефоне реализовать доступное hamburger-меню с кнопкой и состоянием aria-expanded; все кнопки, ссылки и элементы FAQ должны иметь tap target не меньше 44x44px.",
+          "Мобильный hero должен помещать бренд, ключевое предложение, адрес и основной CTA без чрезмерной высоты; поля формы и select должны иметь размер шрифта не меньше 16px.",
+          "Мобильный sticky CTA необходимо скрывать или переводить в обычный поток при пересечении с формой, а также учитывать safe-area-inset-bottom, чтобы он не перекрывал поля и кнопку отправки.",
+          "Add <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> — mobile audit flags it missing; without it the entire responsive layout collapses on phones."
+        ],
+        "praise": [
+          "Brief demands brand-first hero, амбер/асфальт palette and inline form success — keep МоторХаус as the dominant hero headline.",
+          "Separate Малярный цех section is a strong differentiator vs generic сервис лендинги — keep it prominent."
+        ],
+        "mobile_gaps": [
+          "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">"
+        ]
+      }
+    },
+    "metrics": {
+      "bytes": 18382,
+      "has_html_close": true,
+      "has_media": true,
+      "has_viewport": true,
+      "has_form": true,
+      "has_nav": true,
+      "has_paint": false,
+      "sections": 5,
+      "live_link": "https://zeuscode.ru/go/site-f85a/"
+    },
+    "error": null,
+    "on_brief": false
+  }
+]

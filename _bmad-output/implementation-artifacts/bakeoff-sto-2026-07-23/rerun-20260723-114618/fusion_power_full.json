@@ -1,0 +1,162 @@
+{
+  "status": 200,
+  "latency_s": 149.32,
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "power",
+    "path": "FULL",
+    "policy_path": "FULL",
+    "escalate_from": null,
+    "routed_by": "forced_full",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "ui",
+    "leader": "claude-opus-4-8",
+    "panel": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "fffe067f75c2480a",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 268,
+        "completion_tokens": 3182,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "completed",
+        "prompt_tokens": 336,
+        "completion_tokens": 6584,
+        "role": "agent"
+      },
+      {
+        "model": "deepseek-v4-pro",
+        "model_id": "deepseek-v4-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 311,
+        "completion_tokens": 6144,
+        "role": "agent"
+      },
+      {
+        "model": "aspect:correctness",
+        "model_id": "aspect:correctness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      },
+      {
+        "model": "aspect:completeness",
+        "model_id": "aspect:completeness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      },
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 8199,
+        "completion_tokens": 3126,
+        "role": "judge"
+      }
+    ],
+    "answer_only": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>МоторХаус — Автосервис на Каширском шоссе</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Russo+One&display=swap\" rel=\"stylesheet\">\n<style>\n:root {\n  --asphalt-1: #111214;\n  --asphalt-2: #1c1e22;\n  --asphalt-3: #272a2f;\n  --amber: #ffb020;\n  --amber-dark: #e09918;\n  --text: #e9ecef;\n  --muted: #9ba3af;\n}\n* { margin: 0; padding: 0; box-sizing: border-box; }\nhtml { scroll-behavior: smooth; }\nbody {\n  font-family: 'Manrope', sans-serif;\n  background: var(--asphalt-1);\n  color: var(--text);\n  line-height: 1.6;\n}\nh1, h2, h3, .brand { font-family: 'Russo One', sans-serif; letter-spacing: 1px; }\na { color: inherit; text-decoration: none; }\n.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }\n.amber { color: var(--amber); }\n\n/* HERO */\n.hero {\n  min-height: 100vh;\n  display: flex;\n  align-items: center;\n  position: relative;\n  background: radial-gradient(circle at 70% 30%, rgba(255,176,32,0.15), transparent 50%),\n              linear-gradient(to bottom, rgba(17,18,20,0.8), rgba(17,18,20,1)),\n              url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=1920') center/cover;\n}\n.hero::after {\n  content: ''; position: absolute; inset: 0;\n  background: repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0 2px, transparent 2px 4px);\n  pointer-events: none;\n}\n.hero-content { position: relative; z-index: 2; text-align: center; width: 100%; }\n.hero h1 { font-size: clamp(40px, 8vw, 90px); line-height: 1; margin-bottom: 20px; text-transform: uppercase; }\n.hero p { font-size: clamp(16px, 2.5vw, 24px); color: var(--muted); margin-bottom: 40px; max-width: 600px; margin-inline: auto; }\n.btn {\n  display: inline-block;\n  background: var(--amber);\n  color: #111;\n  font-family: 'Russo One', sans-serif;\n  padding: 18px 40px;\n  font-size: 18px;\n  border-radius: 4px;\n  text-transform: uppercase;\n  transition: 0.3s;\n  border: none;\n  cursor: pointer;\n}\n.btn:hover { background: var(--amber-dark); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255,176,32,0.2); }\n\n/* SECTIONS */\n.section { padding: 100px 0; }\n.section-title { text-align: center; font-size: clamp(28px, 5vw, 42px); margin-bottom: 60px; text-transform: uppercase; }\n\n/* SERVICES */\n.services { background: var(--asphalt-2); }\n.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }\n.card { background: var(--asphalt-3); padding: 40px 30px; border-radius: 8px; transition: 0.3s; border-bottom: 3px solid transparent; }\n.card:hover { transform: translateY(-5px); border-bottom-color: var(--amber); }\n.card h3 { font-size: 22px; margin-bottom: 15px; }\n.card p { color: var(--muted); font-size: 15px; }\n\n/* WHY US */\n.why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; text-align: center; }\n.why-item h3 { color: var(--amber); font-size: 36px; margin-bottom: 10px; }\n\n/* FORM */\n.booking { background: var(--asphalt-2); }\n.form-wrap { max-width: 600px; margin: 0 auto; background: var(--asphalt-3); padding: 40px; border-radius: 8px; }\n.form-group { margin-bottom: 20px; }\n.form-group input, .form-group select {\n  width: 100%; padding: 15px; background: var(--asphalt-1); border: 1px solid var(--asphalt-2);\n  color: var(--text); font-family: 'Manrope', sans-serif; border-radius: 4px;\n}\n.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--amber); }\n.form-wrap .btn { width: 100%; margin-top: 10px; }\n\n/* REVIEWS */\n.reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }\n.review { background: var(--asphalt-2); padding: 30px; border-radius: 8px; border-left: 4px solid var(--amber); }\n.review p { font-style: italic; margin-bottom: 15px; }\n.review strong { font-family: 'Russo One', sans-serif; color: var(--amber); }\n\n/* FOOTER */\n.footer { background: #0a0b0c; padding: 60px 0; text-align: center; border-top: 1px solid #1a1a1c; }\n.footer h2 { font-size: 32px; margin-bottom: 20px; }\n.footer p { color: var(--muted); margin-bottom: 10px; font-size: 18px; }\n</style>\n</head>\n<body>\n\n<section class=\"hero\">\n  <div class=\"container hero-content\">\n    <h1>Мотор<span class=\"amber\">Хаус</span></h1>\n    <p>Честный автосервис. Держим ваш мотор в форме быстро и с гарантией.</p>\n    <a href=\"#book\" class=\"btn\">Записаться</a>\n  </div>\n</section>\n\n<section class=\"section services\">\n  <div class=\"container\">\n    <h2 class=\"section-title\">Услуги</h2>\n    <div class=\"grid\">\n      <div class=\"card\"><h3>ТО</h3><p>Плановое техобслуживание с сохранением гарантии.</p></div>\n      <div class=\"card\"><h3>Диагностика</h3><p>Компьютерная и инструментальная проверка всех узлов.</p></div>\n      <div class=\"card\"><h3>Замена масла</h3><p>Оригинальные масла и фильтры всегда в наличии.</p></div>\n      <div class=\"card\"><h3>Шиномонтаж</h3><p>Балансировка, ремонт проколов, сезонная переобувка.</p></div>\n      <div class=\"card\"><h3>Кузовной ремонт</h3><p>Восстановление геометрии, локальная и полная покраска.</p></div>\n      <div class=\"card\"><h3>Электрика</h3><p>Ремонт проводки, генераторов, установка доп. оборудования.</p></div>\n    </div>\n  </div>\n</section>\n\n<section class=\"section\">\n  <div class=\"container\">\n    <h2 class=\"section-title\">Почему мы</h2>\n    <div class=\"why-grid\">\n      <div class=\"why-item\"><h3>10+</h3><p>Лет опыта мастеров</p></div>\n      <div class=\"why-item\"><h3>1 Г.</h3><p>Гарантии на работы</p></div>\n      <div class=\"why-item\"><h3>24/7</h3><p>Прием автомобилей</p></div>\n      <div class=\"why-item\"><h3>100%</h3><p>Честные цены</p></div>\n    </div>\n  </div>\n</section>\n\n<section class=\"section booking\" id=\"book\">\n  <div class=\"container\">\n    <h2 class=\"section-title\">Запись на сервис</h2>\n    <div class=\"form-wrap\">\n      <form onsubmit=\"event.preventDefault(); alert('Заявка отправлена!');\">\n        <div class=\"form-group\"><input type=\"text\" placeholder=\"Ваше имя\" required></div>\n        <div class=\"form-group\"><input type=\"tel\" placeholder=\"Телефон\" required></div>\n        <div class=\"form-group\"><input type=\"text\" placeholder=\"Марка и модель авто\" required></div>\n        <div class=\"form-group\">\n          <select required>\n            <option value=\"\">Выберите услугу</option>\n            <option>ТО</option>\n            <option>Диагностика</option>\n            <option>Замена масла</option>\n            <option>Шиномонтаж</option>\n            <option>Кузовной ремонт</option>\n            <option>Электрика</option>\n          </select>\n        </div>\n        <button type=\"submit\" class=\"btn\">Оставить заявку</button>\n      </form>\n    </div>\n  </div>\n</section>\n\n<section class=\"section\">\n  <div class=\"container\">\n    <h2 class=\"section-title\">Отзывы</h2>\n    <div class=\"reviews-grid\">\n      <div class=\"review\"><p>«Сделали ТО быстро, лишнего не навязывали. Мастер все объяснил. Рекомендую.»</p><strong>— Алексей В.</strong></div>\n      <div class=\"review\"><p>«Отличный кузовной цех! В цвет попали идеально, машина как новая.»</p><strong>— Марина С.</strong></div>\n      <div class=\"review\"><p>«Приехал с троящим двигателем, электрик нашел проблему за 10 минут. Спасибо!»</p><strong>— Дмитрий К.</strong></div>\n    </div>\n  </div>\n</section>\n\n<footer class=\"footer\">\n  <div class=\"container\">\n    <h2>Мотор<span class=\"amber\">Хаус</span></h2>\n    <p>г. Москва, Каширское шоссе, д. 45</p>\n    <p>Телефон: <a href=\"tel:+74951112233\" class=\"amber\">+7 (495) 111-22-33</a></p>\n    <p style=\"margin-top: 30px; font-size: 14px; opacity: 0.5;\">© 2023 МоторХаус. Все права защищены.</p>\n  </div>\n</footer>\n\n<a class=\"zeus-badge\" href=\"https://zeuscode.ru\" target=\"_blank\" rel=\"noopener noreferrer\">Сделано на ZeusCode</a>\n<style id=\"zeus-badge-css\">\n.zeus-badge{\n  position:fixed;right:14px;bottom:12px;z-index:2147483646;\n  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;\n  letter-spacing:.02em;text-decoration:none;\n  color:rgba(120,120,120,.42);pointer-events:auto;\n  transition:color .2s ease,opacity .2s ease;\n}\n.zeus-badge:hover{color:rgba(120,120,120,.78)}\n</style>\n</body>\n</html>\n\n---\n🔗 Живая ссылка: https://zeuscode.ru/go/site-a5de/\n",
+    "thinking_visible": true,
+    "epic3": {
+      "families": {
+        "claude-opus-4-8": "claude",
+        "deepseek-v4-pro": "deepseek",
+        "gemini-3.1-pro": "gemini"
+      },
+      "ranked": [
+        [
+          "claude-opus-4-8",
+          0.55
+        ],
+        [
+          "gemini-3.1-pro",
+          0.47
+        ],
+        [
+          "deepseek-v4-pro",
+          0.47
+        ]
+      ],
+      "top_k": [
+        "claude-opus-4-8",
+        "gemini-3.1-pro",
+        "deepseek-v4-pro"
+      ],
+      "near_duplicate_score": 0.30934343434343436,
+      "aspects_must_fail": false,
+      "anti_bias_fail": false,
+      "judge_analysis": {
+        "consensus": [
+          "Dark theme (asphalt) with amber/orange accents",
+          "Fullscreen hero section with CTA",
+          "Grid layout for services and reviews",
+          "Single-page HTML structure with inline CSS"
+        ],
+        "contradictions": [
+          "Different font choices (Oswald/Barlow vs Montserrat vs Russo/Manrope)",
+          "Different approaches to background styling (SVG pattern vs Unsplash image vs raw gradients)"
+        ],
+        "unique": [
+          "Variant A features a custom SVG geometric background",
+          "Variant C implements complex radial lighting layers"
+        ],
+        "blind_spots": [
+          "All AI variants cut off before completing the HTML file due to output limits."
+        ]
+      }
+    },
+    "classifier": {
+      "classify_phase": "ui",
+      "complexity_band": "med",
+      "confidence": 0.65,
+      "policy_path": "FULL",
+      "path": "FULL",
+      "epic2_routed_by": "forced_full",
+      "mode_ignored": false,
+      "classify_failed": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 9114,
+    "completion_tokens": 19036,
+    "total_tokens": 28150
+  },
+  "billing": {
+    "currency": "RUB",
+    "charged_rub": 25.1229,
+    "markup": 1.5,
+    "balance_left_rub": 818.83,
+    "key_spent_rub": 64.2603,
+    "key_budget_rub": 0.0,
+    "path": "FULL",
+    "policy_path": "FULL",
+    "routed_by": "forced_full",
+    "trace_id": "fffe067f75c2480a",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "error": null,
+  "publish_url": "https://zeuscode.ru/go/site-a5de/"
+}

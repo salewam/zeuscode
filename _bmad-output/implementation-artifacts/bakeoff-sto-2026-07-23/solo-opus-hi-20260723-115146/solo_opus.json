@@ -1,0 +1,28 @@
+{
+  "status": 200,
+  "latency_s": 47.68,
+  "usage": {
+    "prompt_tokens": 279,
+    "completion_tokens": 4096,
+    "total_tokens": 4375
+  },
+  "billing": {
+    "currency": "RUB",
+    "charged_rub": 12.1877,
+    "markup": 1.5,
+    "balance_left_rub": 801.61,
+    "key_spent_rub": 88.6358,
+    "key_budget_rub": 0.0,
+    "path": null,
+    "policy_path": null,
+    "routed_by": null,
+    "trace_id": null,
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "publish_url": "https://zeuscode.ru/go/site-eb12/",
+  "error": null
+}

@@ -1,0 +1,13 @@
+{
+  "id": "SM6",
+  "metric": "SM-6",
+  "title": "Pipeline v1 needs second_signal; Brief≤3; Soft-Stop nonempty",
+  "intent": "0× pipeline=v1 without second_signal on eval; eligible v1 Brief≤3; Soft-Stop body nonempty",
+  "binds": ["FR-18", "NFR-8"],
+  "fr16_deferred": true,
+  "expect": {
+    "v1_without_second_signal": 0,
+    "brief_max_components": 3,
+    "soft_stop_nonempty": true
+  }
+}

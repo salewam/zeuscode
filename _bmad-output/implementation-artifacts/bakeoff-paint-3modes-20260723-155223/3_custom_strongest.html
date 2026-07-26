@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Печь &amp; Зерно — ремесленная пекарня в вашем районе</title>
+<meta name="description" content="Ремесленная пекарня «Печь и Зерно»: хлеб на закваске, свежая выпечка каждое утро, доставка по району. Закажите к завтраку.">
+<style>
+  :root{
+    --clay:#c4572e;
+    --clay-dark:#9c3f1d;
+    --cream:#faf4ea;
+    --paper:#fffdf8;
+    --ink:#2b2118;
+    --moss:#4c5b3f;
+    --line:#e6d9c6;
+    --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Georgia","Times New Roman",serif;
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  img{max-width:100%;display:block}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(250,244,234,.94);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;max-width:1080px;margin:0 auto;
+  }
+  .logo{
+    font-size:1.25rem;font-weight:700;letter-spacing:.02em;
+    color:var(--clay-dark);text-decoration:none;
+  }
+  .logo span{color:var(--moss)}
+  .nav-links{display:flex;gap:28px;list-style:none;align-items:center}
+  .nav-links a{
+    color:var(--ink);text-decoration:none;font-size:.98rem;
+    border-bottom:2px solid transparent;transition:border-color .2s;
+  }
+  .nav-links a:hover{border-color:var(--clay)}
+  .nav-cta{
+    background:var(--clay);color:#fff !important;padding:10px 18px;
+    border-radius:999px;border-bottom:none !important;
+    transition:background .2s;
+  }
+  .nav-cta:hover{background:var(--clay-dark)}
+  .burger{
+    display:none;background:none;border:none;cursor:pointer;
+    width:44px;height:44px;padding:10px;
+  }
+  .burger span{
+    display:block;height:2px;background:var(--ink);margin:6px 0;
+    transition:transform .25s,opacity .25s;
+  }
+  .burger.open span:nth-child(1){transform:translateY(8px) rotate(45deg)}
+  .burger.open span:nth-child(2){opacity:0}
+  .burger.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:
+      radial-gradient(ellipse at 80% 10%, rgba(196,87,46,.14), transparent 55%),
+      radial-gradient(ellipse at 10% 90%, rgba(76,91,63,.12), transparent 50%),
+      var(--paper);
+    padding:88px 0 72px;
+    border-bottom:1px solid var(--line);
+  }
+  .hero-grid{
+    display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;
+  }
+  .kicker{
+    display:inline-block;font-size:.82rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--moss);
+    border:1px solid var(--moss);border-radius:999px;
+    padding:6px 14px;margin-bottom:20px;
+  }
+  h1{
+    font-size:clamp(2rem,4.5vw,3.2rem);
+    line-height:1.15;font-weight:700;margin-bottom:18px;
+  }
+  h1 em{font-style:normal;color:var(--clay)}
+  .hero p{font-size:1.1rem;max-width:34ch;color:#4a3d30;margin-bottom:28px}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{
+    display:inline-block;text-decoration:none;font-size:1rem;
+    padding:14px 28px;border-radius:999px;transition:transform .2s,background .2s;
+    text-align:center;
+  }
+  .btn-main{background:var(--clay);color:#fff}
+  .btn-main:hover{background:var(--clay-dark);transform:translateY(-2px)}
+  .btn-ghost{border:1.5px solid var(--ink);color:var(--ink)}
+  .btn-ghost:hover{background:var(--ink);color:var(--cream)}
+  .hero-art{
+    aspect-ratio:4/5;border-radius:var(--radius);
+    background:
+      linear-gradient(160deg, rgba(196,87,46,.9), rgba(156,63,29,.95)),
+      repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,.05) 14px 28px);
+    display:flex;align-items:flex-end;padding:28px;
+    color:#fff;box-shadow:0 24px 48px -24px rgba(156,63,29,.5);
+  }
+  .hero-art p{color:#fdeee4;font-size:1rem;max-width:100%;margin:0}
+  .hero-art strong{display:block;font-size:2.4rem;line-height:1.1;margin-bottom:6px}
+
+  /* ---------- Sections ---------- */
+  section{padding:80px 0}
+  .sec-head{max-width:56ch;margin-bottom:44px}
+  .sec-head h2{font-size:clamp(1.6rem,3vw,2.2rem);margin-bottom:10px}
+  .sec-head p{color:#5c4d3d}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .card{
+    background:var(--paper);border:1px solid var(--line);
+    border-radius:var(--radius);padding:28px;
+    transition:transform .25s,box-shadow .25s;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:0 16px 32px -20px rgba(43,33,24,.3)}
+  .card .num{
+    font-size:.8rem;letter-spacing:.12em;color:var(--clay);
+    text-transform:uppercase;margin-bottom:12px;
+  }
+  .card h3{font-size:1.2rem;margin-bottom:8px}
+  .card p{font-size:.96rem;color:#5c4d3d}
+
+  .about{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+  .about-art{
+    aspect-ratio:1;border-radius:var(--radius);
+    background:
+      linear-gradient(200deg, rgba(76,91,63,.9), rgba(43,33,24,.9)),
+      repeating-linear-gradient(-45deg, transparent 0 12px, rgba(255,255,255,.05) 12px 24px);
+    display:flex;align-items:center;justify-content:center;
+    color:#f3ecd9;font-size:1.1rem;text-align:center;padding:24px;
+  }
+  .stats{display:flex;gap:32px;margin-top:28px;flex-wrap:wrap}
+  .stat strong{display:block;font-size:1.8rem;color:var(--clay)}
+  .stat span{font-size:.9rem;color:#5c4d3d}
+
+  .quotes{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  blockquote{
+    background:var(--paper);border-left:4px solid var(--clay);
+    border-radius:0 var(--radius) var(--radius) 0;
+    padding:24px 28px;font-size:1rem;
+  }
+  blockquote footer{margin-top:12px;font-size:.88rem;color:var(--moss)}
+
+  /* ---------- Form ---------- */
+  .order{background:var(--ink);color:var(--cream)}
+  .order .sec-head h2{color:#fff}
+  .order .sec-head p{color:#cbbba7}
+  form{max-width:520px;display:grid;gap:16px}
+  label{font-size:.9rem;letter-spacing:.02em}
+  input,textarea{
+    width:100%;font-size:16px;font-family:inherit;
+    padding:14px 16px;border-radius:10px;
+    border:1px solid #55483a;background:#3a2f24;color:var(--cream);
+  }
+  input::placeholder,textarea::placeholder{color:#9d8a73}
+  input:focus,textarea:focus{outline:2px solid var(--clay);border-color:var(--clay)}
+  .submit{
+    background:var(--clay);color:#fff;border:none;cursor:pointer;
+    font-size:1.05rem;padding:16px;border-radius:999px;
+    transition:background .2s;font-family:inherit;
+  }
+  .submit:hover{background:var(--clay-dark)}
+  .form-success{
+    display:none;background:#3d5233;border:1px solid var(--moss);
+    color:#e8f0dd;border-radius:10px;padding:16px 18px;font-size:.98rem;
+  }
+  .form-success.show{display:block;animation:fadeUp .5s ease both}
+
+  footer.site{
+    background:#211a12;color:#a8977f;padding:36px 0;font-size:.9rem;
+  }
+  footer.site .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  footer.site a{color:#d8c6ab;text-decoration:none}
+
+  /* ---------- Motion (осознанный, ограниченный) ---------- */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+  }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width:768px){
+    .burger{display:block}
+    .nav-links{
+      position:absolute;top:100%;left:0;right:0;
+      background:var(--paper);border-bottom:1px solid var(--line);
+      flex-direction:column;gap:0;align-items:stretch;
+      display:none;padding:8px 0 16px;
+      box-shadow:0 18px 30px -18px rgba(43,33,24,.35);
+    }
+    .nav-links.open{display:flex}
+    .nav-links li{padding:0 24px}
+    .nav-links a{display:block;padding:14px 0;border-bottom:1px solid var(--line);font-size:1.05rem}
+    .nav-links .nav-cta{margin-top:12px;border-radius:999px;text-align:center;border-bottom:none !important}
+    section{padding:56px 0}
+    .hero{padding:56px 0 48px}
+    .hero-grid,.about-grid{grid-template-columns:1fr;gap:32px}
+    .hero-art{aspect-ratio:16/10}
+    .cards{grid-template-columns:1fr 1fr;gap:16px}
+    .quotes{grid-template-columns:1fr}
+    .cta-row{flex-direction:column}
+    .btn{width:100%}
+  }
+  @media (max-width:480px){
+    .wrap{padding:0 18px}
+    .nav{padding:12px 18px}
+    h1{font-size:1.85rem}
+    .hero p{font-size:1rem}
+    .cards{grid-template-columns:1fr}
+    .card{padding:22px}
+    .hero-art strong{font-size:1.8rem}
+    .stats{gap:20px}
+    blockquote{padding:20px 20px}
+    section{padding:48px 0}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav" aria-label="Основная навигация">
+    <a class="logo" href="#top">Печь <span>&amp;</span> Зерно</a>
+    <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="menu">
+      <li><a href="#assort">Ассортимент</a></li>
+      <li><a href="#about">О пекарне</a></li>
+      <li><a href="#reviews">Отзывы</a></li>
+      <li><a class="nav-cta" href="#order">Заказать к завтраку</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="reveal in">
+        <span class="kicker">Пекарня вашего района · с 6:00 утра</span>
+        <h1>Хлеб на закваске, который <em>ещё тёплый</em>, когда вы завтракаете</h1>
+        <p>Печём каждое утро из муки жернового помола. Без улучшителей, без заморозки, без «вчерашнего».</p>
+        <div class="cta-row">
+          <a class="btn btn-main" href="#order">Заказать доставку</a>
+          <a class="btn btn-ghost" href="#assort">Посмотреть ассортимент</a>
+        </div>
+      </div>
+      <div class="hero-art reveal in" role="img" aria-label="Фирменная витрина пекарни">
+        <p><strong>04:30</strong>каждое утро наши пекари ставят первую партию в печь</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="assort">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Что достаём из печи сегодня</h2>
+        <p>Небольшой, но честный ассортимент. Каждая позиция — рецепт, который мы доводили месяцами.</p>
+      </div>
+      <div class="cards">
+        <article class="card reveal">
+          <div class="num">01 · Хлеб</div>
+          <h3>Тартин на закваске</h3>
+          <p>72 часа холодной ферментации, хрустящая корка, влажный мякиш. Наш бестселлер — от 240 ₽.</p>
+        </article>
+        <article class="card reveal">
+          <div class="num">02 · Выпечка</div>
+          <h3>Круассаны на сливочном масле</h3>
+          <p>27 слоёв теста, масло 82,5%. Классика, миндальный и с солёной карамелью — от 160 ₽.</p>
+        </article>
+        <article class="card reveal">
+          <div class="num">03 · К чаю</div>
+          <h3>Ржаные пряники и галеты</h3>
+          <p>Сезонные ягоды и мёд с местной пасеки. Меняем начинки каждую неделю — от 120 ₽.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="wrap about-grid">
+      <div class="about-art reveal" role="img" aria-label="Пекари за работой">
+        Мука · Вода · Соль · Закваска —<br>и больше ничего
+      </div>
+      <div class="reveal">
+        <div class="sec-head" style="margin-bottom:20px">
+          <h2>Маленькая пекарня с большой печью</h2>
+          <p>Мы открылись в 2019 году в подвале на Садовой. Сегодня нас знают по запаху за квартал: подовая печь работает шесть дней в неделю, а закваске «Марфе» уже пять лет.</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><strong>5 лет</strong><span>живёт наша закваска</span></div>
+          <div class="stat"><strong>300+</strong><span>буханок каждое утро</span></div>
+          <div class="stat"><strong>0</strong><span>улучшителей и консервантов</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reviews">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Соседи говорят</h2>
+        <p>Нам важнее возвращающиеся покупатели, чем звёзды в рейтингах. Но и звёзды у нас — 4,9.</p>
+      </div>
+      <div class="quotes">
+        <blockquote class="reveal">
+          «Беру тартин каждую субботу уже два года. Однажды уехала в отпуск и поняла, что скучаю по хлебу больше, чем по дому.»
+          <footer>— Анна, живёт через дорогу</footer>
+        </blockquote>
+        <blockquote class="reveal">
+          «Заказываю доставку к 8 утра в офис. Круассаны приезжают тёплыми — коллеги думают, что у нас своя кухня.»
+          <footer>— Дмитрий, кофейня «Штиль»</footer>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <section class="order" id="order">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Заказать свежую выпечку к завтраку</h2>
+        <p>Оставьте номер — перезвоним в течение 15 минут, соберём заказ и привезём к нужному часу. Доставка по району бесплатная от 800 ₽.</p>
+      </div>
+      <form id="orderForm" novalidate>
+        <div>
+          <label for="name">Как вас зовут</label>
+          <input id="name" name="name" type="text" placeholder="Мария" autocomplete="name" required>
+        </div>
+        <div>
+          <label for="phone">Телефон</label>
+          <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="+7 (___) ___-__-__" autocomplete="tel" required>
+        </div>
+        <div>
+          <label for="wish">Что привезти и к какому времени</label>
+          <textarea id="wish" name="wish" rows="3" placeholder="Например: 2 тартина и 4 круассана к 8:30"></textarea>
+        </div>
+        <button class="submit" type="submit">Отправить заявку</button>
+        <p class="form-success" id="formSuccess" role="status">
+          Спасибо! Заявка принята — перезвоним в течение 15 минут и подтвердим время доставки. 🍞
+        </p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div>© 2024 Пекарня «Печь &amp; Зерно» · ул. Садовая, 12</div>
+    <div>Ежедневно 7:00–21:00 · <a href="tel:+79990000000">+7 999 000-00-00</a></div>
+  </div>
+</footer>
+
+<script>
+  // Hamburger
+  var burger = document.getElementById('burger');
+  var menu = document.getElementById('menu');
+  burger.addEventListener('click', function(){
+    var open = menu.classList.toggle('open');
+    burger.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  menu.addEventListener('click', function(e){
+    if (e.target.tagName === 'A'){
+      menu.classList.remove('open');
+      burger.classList.remove('open');
+      burger.setAttribute('aria-expanded','false');
+    }
+  });
+
+  // Scroll reveal (одна осознанная анимация появления)
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:.15});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // Форма: inline success вместо alert
+  var form = document.getElementById('orderForm');
+  var success = document.getElementById('formSuccess');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = document.getElementById('name');
+    var phone = document.getElementById('phone');
+    var ok = true;
+    [name, phone].forEach(function(f){
+      if (!f.value.trim()){ f.style.borderColor = '#c4572e'; ok = false; }
+      else { f.style.borderColor = ''; }
+    });
+    if (!ok) return;
+    success.classList.add('show');
+    form.querySelector('.submit').disabled = true;
+    form.querySelector('.submit').textContent = 'Заявка отправлена ✓';
+  });
+</script>
+
+<a class="zeus-badge" href="https://zeuscode.ru" target="_blank" rel="noopener noreferrer">Сделано на ZeusCode</a>
+<style id="zeus-badge-css">
+.zeus-badge{
+  position:fixed;right:14px;bottom:12px;z-index:2147483646;
+  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;
+  letter-spacing:.02em;text-decoration:none;
+  color:rgba(120,120,120,.42);pointer-events:auto;
+  transition:color .2s ease,opacity .2s ease;
+}
+.zeus-badge:hover{color:rgba(120,120,120,.78)}
+</style>
+</body>
+</html>

@@ -16,13 +16,14 @@ description: >
 ## Результат
 ```
 
-Код только ```lang path=/src/frontend/...```
+Код только ```lang path=/src/frontend/...```  
+Презентация/deck: ```lang path=/src/deck/...``` (index.html + styles.css + app.js).
 
 ## Когда да / нет
 
-**Да:** экран, форма, CSS/JS, states, a11y, клиентский fetch UI.  
-**Нет:** БД, серверный auth, чистый API. Один ход = один экран/компонент.  
-Токены design = **SSoT** — используй, не игнорь.
+**Да:** экран, форма, CSS/JS, states, a11y, клиентский fetch UI, HTML-deck.  
+**Нет:** БД, серверный auth, чистый API. Один ход = один экран/компонент/колода.  
+Токены design = **SSoT** — используй, не игнорь. Наполнение: `references/content-fill.md`.
 
 ## Стек
 
@@ -41,15 +42,43 @@ CSS: токены → layout → mobile-first. Шкала 4/8. Focus тольк�
 /src/frontend/index.html
 /src/frontend/styles.css   # не style.css; не tokens.css (design SSoT)
 /src/frontend/app.js
+/src/frontend/assets/…     # только если реально сдаёшь файл
 ```
-Если есть `/src/design/tokens.css` → в styles.css: `@import url('../design/tokens.css');` или скопируй `:root`. Цвета только `var(--…)`.
+Если есть `/src/design/tokens.css` → **скопируй `:root` в styles.css** (надёжно) или `@import` *и* убедись что design сдал файл.  
+Studio filter может вклеить tokens сам — но голый `@import` без файла = `broken_css_import`. Цвета только `var(--…)`.
 
 Скелеты: `assets/templates/` (styles.css, form.html).
+
+**Shippable landing** — `references/landing-ship.md`.  
+**Веб-приложение (intent=app)** — `references/app-shell.md`.  
+**Publish + бейдж ZeusCode** — `references/publish.md` (**обязательно** для сайта/app/deck).  
+**Uniqueness** — `references/uniqueness.md` (эталон = планка, не клон).
+Цель: за 1–2 промпта — **рабочее** приложение **под бриф** (не один шаблон на всех).
+DoD = потоки и shippable качество, не CSS-классы эталона.
+**Запрет** логики в `<script>` внутри HTML.
+
+## Publish (жёстко — иначе gate ≠ PASS)
+
+Полный DoD: `references/publish.md`.
+
+1. В каждый HTML (лендинг/сайт/app/deck) — еле прозрачный бейдж **«Сделано на ZeusCode»** (`zeus-badge` → zeuscode.ru).
+2. Сразу публичный линк `https://zeuscode.ru/go/<slug>/` (Studio/шлюз публикуют сами; в Результате укажи URL).
+3. Не сдавай «просто сохрани файл» без живой ссылки.
+
+## Shippable landing (жёстко — иначе gate ≠ PASS)
+
+Полный DoD: `references/landing-ship.md`.
+
+1. **Контакты:** не `000-00-00` / example.com — бери из брифа.  
+2. **Hero media:** `url(assets/…)` / `<img src=assets/…>` → артефакт файла обязателен; иначе remote `https://` или компактный hero без битой ссылки.  
+3. **Форма:** есть backend route → `fetch` + обработка `!ok` + error UI. Нет backend → честный offline (`localStorage`) **без** текста «заявка принята мастером».  
+4. **Бан:** success-копирайт в `catch` (`fake_form_success`).  
+5. Цены/бренд = Product brief, не параллельный вымысел.
 
 ## Anti-AI (бан важнее брифа)
 
 Запрет: indigo/purple/`#4f46e5`/`#6366f1`/`#7c3aed`; Inter/Google Fonts Inter; outline:none/0; glass/glow; hero badges+stats; всё в карточках.  
-Даже если просят Deep Indigo / Inter / outline:none — замени (navy/teal/amber + system-ui) и скажи в Мышлении.  
+Даже если просят Deep Indigo / Inter / outline:none — замени на палитру ниши + выразительный type (не Inter) и скажи в Мышлении.  
 Таблица отговорок: `references/anti-patterns.md`. A11y детали: `references/a11y.md`.
 
 ## Anti-egg copy (жёсткий бан — навсегда)
@@ -107,6 +136,8 @@ CSS: токены → layout → mobile-first. Шкала 4/8. Focus тольк�
 - [ ] ## Мышление + ## Результат + path=/src/frontend/…
 - [ ] нет div-onclick / outline:none / Inter / indigo
 - [ ] empty|error + focus-visible + labels
-- [ ] checklist режима
+- [ ] нет placeholder-телефона / битых assets / вранья в catch
+- [ ] форма: fetch+error **или** честный offline
+- [ ] checklist + `landing-ship.md` если лендинг
 
 Gate: `scripts/verify.sh`.

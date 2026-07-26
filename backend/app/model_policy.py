@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-# Studio product ids that still run on Gemini workers under the hood
+# Studio / Fusion product ids that still run on Gemini workers under the hood
 _STUDIO_IDS = frozenset(
     {
         "ultra-mode",
@@ -16,6 +16,17 @@ _STUDIO_IDS = frozenset(
         "studio-standard",
         "studio-ultra",
         "studio-premium",
+        "zeuscode",
+        "zeuscode-simple",
+        "zeuscode-power",
+        "zeuscode-custom",
+        "zeus/fusion",
+        "zeus-fusion",
+        "fusion",
+        "zeus/fusion-fast",
+        "zeus/fusion-full",
+        "fusion-fast",
+        "fusion-full",
     }
 )
 

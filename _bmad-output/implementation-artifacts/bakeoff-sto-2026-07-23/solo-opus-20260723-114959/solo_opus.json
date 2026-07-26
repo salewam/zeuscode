@@ -1,0 +1,29 @@
+{
+  "status": 200,
+  "latency_s": 46.14,
+  "usage": {
+    "prompt_tokens": 279,
+    "completion_tokens": 4096,
+    "total_tokens": 4375
+  },
+  "billing": {
+    "currency": "RUB",
+    "charged_rub": 12.1877,
+    "markup": 1.5,
+    "balance_left_rub": 810.22,
+    "key_spent_rub": 76.4481,
+    "key_budget_rub": 0.0,
+    "path": null,
+    "policy_path": null,
+    "routed_by": null,
+    "trace_id": null,
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "error": null,
+  "publish_url": "https://zeuscode.ru/go/site-c7d4/",
+  "content_preview": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>МоторХаус — Автосервис на Каширском шоссе, Москва</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Oswald:wght@400;500"
+}

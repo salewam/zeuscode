@@ -56,17 +56,25 @@ description: >
 
 В Handoff для лендинга/промо **обязателен** визуальный якорь: фото/сцена продукта edge-to-edge.  
 Запрещён signature «большой пустой градиент + текст в углу».  
-Пиши в Handoff: какой media URL / сюжет (зерно, чашка, интерьер), где veil, что заполняет 1-й экран.  
-**Как находить фото:** `references/media.md`. Строка в Handoff обязательна:
-`Media: сюжет=…; url|assets/…; veil=…`  
-Frontend сохраняет файл в `/src/frontend/assets/` (не только внешний CDN).  
+Пиши в Handoff: какой media URL / сюжет (бокс, чашка, интерьер), где veil, что заполняет 1-й экран.  
+**Как находить фото:** `references/media.md` + `references/landing-ship.md`. Строка в Handoff обязательна:
+`Media: сюжет=…; path=/src/frontend/assets/… OR https://…; veil=…`  
+Если указал локальный path — frontend **обязан** сдать файл (иначе `missing_asset`).  
 См. `references/anti-patterns.md`.
 
 ## Path
 
 Только `/src/design/...`.
 
+## Publish handoff
+
+В Handoff для лендинга/сайта/app укажи:
+`Publish: zeus-badge обязателен; публичный URL = https://zeuscode.ru/go/<slug>/ (Studio публикует сам).`
+См. frontend `references/publish.md`.
+
 ## Перед сдачей
 
-- [ ] tokens + Handoff + states · нет indigo/Inter/outline:none · path=/src/design/…
+- [ ] tokens + Handoff + states · Media-строка · нет 000-телефона в handoff
+- [ ] нет indigo/Inter/outline:none · path=/src/design/…
+- [ ] Publish-строка в Handoff (бейдж + /go/)
 Gate: `scripts/verify.sh`.

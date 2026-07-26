@@ -1,0 +1,7 @@
+{
+  "id": "F15",
+  "bucket": "docs",
+  "prompt": "опиши README для fusion session store",
+  "expected_path": "CASCADE",
+  "expect_code_fence": false
+}

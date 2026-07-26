@@ -1,0 +1,97 @@
+{
+  "cid": "u05_sql_review",
+  "prompt": "Review SQL injection риска: cursor.execute(f\"SELECT * FROM orders WHERE id={order_id}\"). Что не так и как правильно?",
+  "zeus": {
+    "mode": "power"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "### Как правильно (Параметризованный запрос)\n\nДля **SQLite / pyodbc**:\n```python\ncursor.execute(\"SELECT * FROM orders WHERE id = ?\", (order_id,))\n```\n\nДля **PostgreSQL (psycopg2) / MySQL**:\n```python\ncursor.execute(\"SELECT * FROM orders WHERE id = %s\", (order_id,))\n```\n\n### Что не так в исходном коде\nИспользование f-строк (`f\"...\"`) напрямую вставляет значение переменной `order_id` в SQL-запрос. Если `order_id` содержит пользовательский ввод, злоумышленник может передать вредоносный код (например, `1; DROP TABLE orders`), который база данных выполнит.\n\nПередача переменной кортежем `(order_id,)` вторым аргументом в `cursor.execute` заставляет драйвер базы данных экранировать ввод и обрабатывать его строго как данные, а не как исполняемый SQL-код.",
+  "answer_excerpt": "### Как правильно (Параметризованный запрос)\n\nДля **SQLite / pyodbc**:\n```python\ncursor.execute(\"SELECT * FROM orders WHERE id = ?\", (order_id,))\n```\n\nДля **PostgreSQL (psycopg2) / MySQL**:\n```python\ncursor.execute(\"SELECT * FROM orders WHERE id = %s\", (order_id,))\n```\n\n### Что не так в исходном коде\nИспользование f-строк (`f\"...\"`) напрямую вставляет значение переменной `order_id` в SQL-запрос. Если `order_id` содержит пользовательский ввод, злоумышленник может передать вредоносный код (наприме",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "power",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "51b769ded4634d1a",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 61,
+        "completion_tokens": 212,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "### Как правильно (Параметризованный запрос)\n\nДля **SQLite / pyodbc**:\n```python\ncursor.execute(\"SELECT * FROM orders WHERE id = ?\", (order_id,))\n```\n\nДля **PostgreSQL (psycopg2) / MySQL**:\n```python\ncursor.execute(\"SELECT * FROM orders WHERE id = %s\", (order_id,))\n```\n\n### Что не так в исходном коде\nИспользование f-строк (`f\"...\"`) напрямую вставляет значение переменной `order_id` в SQL-запрос. Если `order_id` содержит пользовательский ввод, злоумышленник может передать вредоносный код (например, `1; DROP TABLE orders`), который база данных выполнит.\n\nПередача переменной кортежем `(order_id,)` вторым аргументом в `cursor.execute` заставляет драйвер базы данных экранировать ввод и обрабатывать его строго как данные, а не как исполняемый SQL-код.",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "review",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 61,
+    "completion_tokens": 212,
+    "total_tokens": 273
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.1092,
+    "markup": 1.5,
+    "balance_left_rub": 878.53,
+    "key_spent_rub": 0.352,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "51b769ded4634d1a",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "51b769ded4634d1a",
+  "escalate_from": "CASCADE",
+  "latency_s": 12.283,
+  "ok": true
+}

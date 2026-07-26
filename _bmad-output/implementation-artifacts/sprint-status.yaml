@@ -1,0 +1,78 @@
+# generated: 2026-07-22
+# last_updated: 2026-07-22
+# project: ZeusCode (Zeus Fusion)
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review
+
+generated: 2026-07-22
+last_updated: 2026-07-22
+# epic-1/2/3 validated 2026-07-22 (see reports/epic-*-validation-*.md)
+project: ZeusCode (Zeus Fusion)
+project_key: NOKEY
+tracking_system: file-system
+story_location: "{project-root}/_bmad-output/implementation-artifacts"
+
+development_status:
+  epic-1: done
+  1-1-fusion-package-facade-without-behavior-break: done
+  1-2-fusionresult-handoff-and-billable-states: done
+  1-3-onestack-path-fields-legacy-routed-by-split: done
+  1-4-scrub-once-anti-bloat-brief-contract: done
+  epic-1-retrospective: optional
+
+  epic-2: done
+  2-1-classify-phase-complexity-confidence-effort-plus-1: done
+  2-2-path-policy-engine-table-mor-clamps: done
+  2-3-cascade-mini-verifier-escalate-leader-failover: done
+  2-4-custom-panel-rules-unknown-mode-ignore: done
+  2-5-policy-fixture-harness-cheap-path-set: done
+  epic-2-retrospective: optional
+
+  epic-3: done
+  3-1-race-path-both-fail-terminal: done
+  3-2-full-panel-brief-diversity-aspects-near-duplicate: done
+  3-3-rank-then-fuse-structured-judge: done
+  3-4-soft-stop-and-cancel-mid-flight: done
+  3-5-prompt-adaptation-v1: done
+  epic-3-retrospective: optional
+
+  epic-4: done
+  4-1-sticky-session-store-leader-stack-only: done
+  4-2-prefs-surfaces-effort-kill-switch: done
+  4-3-shadow-mode-baseline-id-canary-flags: done
+  4-4-eval-suite-fixtures-pass-oracle-harness: done
+  4-5-runtime-budgets-presence: done
+  4-6-feedback-ingest-routing-log-no-elo: done
+  4-7-publish-regression-gate: done
+  4-8-observability-baseline-trace-id-metrics-alerts: done
+  4-9-canary-exit-ops-load-test-incident-runbook: done
+  epic-4-retrospective: optional

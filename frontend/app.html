@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Кабинет — ZeusCode</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/app.css?v=zeus35" />
+  <link rel="stylesheet" href="/static/app.css?v=zeus50" />
 </head>
 <body>
   <div class="top" id="app-top">
@@ -19,9 +19,7 @@
 
   <div id="view-auth" class="auth-wrap">
     <div class="auth-box">
-      <p class="auth-kicker">// личный кабинет</p>
       <h2>войти в ZeusCode</h2>
-      <p class="auth-hint">Регистрация → ключ создаётся сам → выбираешь модели → кнопка «сгенерировать». Баланс <strong>90 ₽</strong>.</p>
       <div class="field">
         <label>почта</label>
         <input id="email" type="email" placeholder="ivan@mail.ru" autocomplete="email" />
@@ -36,8 +34,8 @@
         <p class="auth-hint" style="margin:6px 0 0">На GitHub Pages бэкенда нет. Либо укажи живой API здесь, либо войди на том же хосте, где крутится API (например http://127.0.0.1:8080/app).</p>
       </div>
       <div class="row-actions">
-        <button type="button" class="btn btn-p" id="btn-login">войти</button>
-        <button type="button" class="btn btn-s" id="btn-register">регистрация + ключ</button>
+        <button type="button" class="btn btn-s" id="btn-login">войти</button>
+        <button type="button" class="btn btn-p" id="btn-register">регистрация</button>
       </div>
       <div class="err" id="auth-err"></div>
     </div>
@@ -64,9 +62,10 @@
             <p class="sub">ключ · модели · баланс</p>
           </div>
           <div class="dash-actions">
-            <button type="button" class="btn btn-s" data-goto="billing">пополнить</button>
+            <button type="button" class="btn btn-p" data-action="copy-pack">скопировать всё</button>
             <button type="button" class="btn btn-s" data-goto="models">модели</button>
-            <button type="button" class="btn btn-p" data-action="launch-studio">в студию</button>
+            <button type="button" class="btn btn-s" data-goto="billing">пополнить</button>
+            <button type="button" class="btn ghost sm" data-action="launch-studio">студия</button>
           </div>
         </div>
 
@@ -94,7 +93,7 @@
 
         <div class="my-setup slim" id="my-setup-dash">
           <div class="polza-field">
-            <label>Base URL <span class="hint">(для Cursor / Cline)</span></label>
+            <label>Base URL <span class="hint">(OpenAI-compatible · любой клиент)</span></label>
             <div class="polza-copy-row">
               <code id="dash-base-url">http://127.0.0.1:8080/v1</code>
               <button type="button" class="btn ghost sm" data-copy="#dash-base-url">копировать</button>
@@ -112,6 +111,13 @@
             <button type="button" class="btn btn-s" data-action="copy-pack">скопировать всё</button>
           </div>
           <div class="my-setup-status muted small" data-setup="status" style="margin-top:8px"></div>
+
+          <div class="client-guides" data-setup="clients" style="margin-top:20px">
+            <div class="my-setup-label">Подключить клиент</div>
+            <p class="muted small" style="margin:6px 0 10px">Один ключ — любой инструмент с OpenAI-compatible API. Выбери свой.</p>
+            <div class="client-tabs" data-setup="client-tabs" role="tablist"></div>
+            <div class="client-panel" data-setup="client-panel"></div>
+          </div>
 
           <div class="my-setup-label" style="margin-top:20px">Модели · ₽ / 1M</div>
           <div class="setup-models" data-setup="models"></div>
@@ -378,7 +384,7 @@
           <div class="pick-bar-r">
             <button type="button" class="btn ghost sm" id="btn-pick-clear">сбросить</button>
             <button type="button" class="btn btn-s" data-goto="dash">к набору</button>
-            <button type="button" class="btn btn-p" id="btn-gen-pack">скопировать подключение</button>
+            <button type="button" class="btn btn-p" id="btn-gen-pack">скопировать для клиента</button>
           </div>
         </div>
         <pre class="polza-code hidden" id="models-pack-out" style="margin-top:12px"></pre>
@@ -386,7 +392,7 @@
 
       <section id="tab-keys" class="hidden">
         <h1>ключ</h1>
-        <p class="sub">Base URL + API Key</p>
+        <p class="sub">Один Base URL + ключ — подключается в любой OpenAI-compatible клиент</p>
 
         <div class="my-setup slim" id="my-setup-keys">
           <div class="polza-field">
@@ -409,6 +415,13 @@
             <button type="button" class="btn ghost sm" data-goto="models">модели</button>
           </div>
           <div class="my-setup-status muted small" data-setup="status" style="margin-top:8px"></div>
+
+          <div class="client-guides" data-setup="clients" style="margin-top:18px">
+            <div class="my-setup-label">Подключить клиент</div>
+            <div class="client-tabs" data-setup="client-tabs" role="tablist"></div>
+            <div class="client-panel" data-setup="client-panel"></div>
+          </div>
+
           <div class="setup-models hidden" data-setup="models"></div>
           <div class="setup-cost hidden" data-setup="cost"></div>
           <div class="setup-balance hidden" data-setup="balance"></div>
@@ -491,6 +504,6 @@
     </main>
   </div>
 
-  <script src="/static/app.js?v=zeus41"></script>
+  <script src="/static/app.js?v=zeus61"></script>
 </body>
 </html>

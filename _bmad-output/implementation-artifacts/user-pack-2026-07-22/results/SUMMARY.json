@@ -1,0 +1,168 @@
+{
+  "n": 12,
+  "ok": 12,
+  "fail": 0,
+  "http_200": 12,
+  "http_429": 0,
+  "kie_credits_before": 879.06,
+  "kie_credits_after": 870.94,
+  "kie_spent_est": 8.12,
+  "balance_before": {
+    "balance_rub": null,
+    "credits": 879.06
+  },
+  "balance_after": {
+    "balance_rub": null,
+    "credits": 870.94
+  },
+  "sticky_leaders": [
+    "gemini-3.1-pro",
+    "gemini-3.1-pro"
+  ],
+  "cases": [
+    {
+      "cid": "u01_hi",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "claude-haiku-4-5",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "85c8d725c7c54d3c",
+      "latency_s": 12.995,
+      "credits_consumed": null,
+      "answer_excerpt": "Привет! Да, я на связи. \n\nЯ Claude, ассистент от Anthropic. Я готов помочь вам с различными задачами — ответить на вопросы, помочь с анализом информации, написанием текстов, кодированием и многим другим.\n\nЧем я могу вам помочь?"
+    },
+    {
+      "cid": "u02_css",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "claude-haiku-4-5",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "43b3b19a18634510",
+      "latency_s": 15.552,
+      "credits_consumed": null,
+      "answer_excerpt": "```css\n.button-primary {\n  background-color: #0066cc;\n  color: white;\n  padding: 10px 20px;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n  font-size: 16px;\n  transition: background-color 0.2s;\n}\n\n.button-primary:hover {\n  background-color: #0052a3;\n}\n```\n\nHTML для использования:\n```html\n<button class=\"button-primary\">Нажми меня</button>\n```"
+    },
+    {
+      "cid": "u03_bugfix",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "gemini-3.1-pro",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "5d2d32fd98434d75",
+      "latency_s": 13.745,
+      "credits_consumed": null,
+      "answer_excerpt": "```javascript\n// Вариант 1: вернет undefined вместо падения\nusers.map(u => u.name?.toUpperCase())\n\n// Вариант 2: вернет пустую строку, если нужна строка\nusers.map(u => u.name?.toUpperCase() ?? \"\")\n```\n\n**Почему:** Оператор опциональной последовательности (`?.`) предотвращает вызов метода у `null` или `undefined`, а оператор нулевого слияния (`??`) позволяет задать фоллбек (дефолтное значение)."
+    },
+    {
+      "cid": "u04_python",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "gemini-3.1-pro",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "3f86bb54a4da4c8f",
+      "latency_s": 11.475,
+      "credits_consumed": null,
+      "answer_excerpt": "```python\ndef chunk_list(items, size):\n    return [items[i:i + size] for i in range(0, len(items), size)]\n\n# Пример использования:\nmy_list = [1, 2, 3, 4, 5, 6, 7, 8]\nchunked = chunk_list(my_list, 3)\n\nprint(chunked)\n# Вывод: [[1, 2, 3], [4, 5, 6], [7, 8]]\n```\n\n**Как это работает:**\nФункция использует генератор списков (list comprehension) и функцию `range` с шагом, равным заданному размеру `size`. На каждой итерации она берет срез исходного списка от текущего индекса `i` до `i + size`. Если элеме"
+    },
+    {
+      "cid": "u05_sql_review",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "gemini-3.1-pro",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "51b769ded4634d1a",
+      "latency_s": 12.283,
+      "credits_consumed": null,
+      "answer_excerpt": "### Как правильно (Параметризованный запрос)\n\nДля **SQLite / pyodbc**:\n```python\ncursor.execute(\"SELECT * FROM orders WHERE id = ?\", (order_id,))\n```\n\nДля **PostgreSQL (psycopg2) / MySQL**:\n```python\ncursor.execute(\"SELECT * FROM orders WHERE id = %s\", (order_id,))\n```\n\n### Что не так в исходном коде\nИспользование f-строк (`f\"...\"`) напрямую вставляет значение переменной `order_id` в SQL-запрос. Если `order_id` содержит пользовательский ввод, злоумышленник может передать вредоносный код (наприме"
+    },
+    {
+      "cid": "u06_api_design",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "gemini-3.1-pro",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "c283170df402424f",
+      "latency_s": 13.275,
+      "credits_consumed": null,
+      "answer_excerpt": "### Поля модели (Заметка)\n*   `id` (string/uuid) — уникальный идентификатор\n*   `title` (string) — заголовок заметки\n*   `content` (text) — текст заметки\n*   `created_at` (datetime) — дата создания\n*   `updated_at` (datetime) — дата последнего обновления\n\n### Endpoints (Маршруты)\n*   `GET /notes` — получить список всех заметок\n*   `GET /notes/{id}` — получить конкретную заметку по ID\n*   `POST /notes` — создать новую заметку (в теле: `title`, `content`)\n*   `PUT /notes/{id}` — обновить существую"
+    },
+    {
+      "cid": "u07_refactor",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "claude-haiku-4-5",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "913a370a20fd4fa7",
+      "latency_s": 19.926,
+      "credits_consumed": null,
+      "answer_excerpt": "# Упрощение кода\n\nВот упрощенный вариант:\n\n```python\ndef f(x):\n    return bool(x)\n```\n\n**Или еще проще:**\n\n```python\ndef f(x):\n    return x\n```\n\n**Объяснение:**\n- Исходный код просто преобразует значение в булево значение\n- `bool(x)` явно приводит любое значение к типу `bool`\n- Если просто `return x`, функция вернет то же самое (так как `True == True` и `False == False`)\n- Самый минималистичный вариант — вообще избавиться от функции и использовать значение напрямую\n\n**Выбор зависит от контекста:"
+    },
+    {
+      "cid": "u08_explain",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "claude-haiku-4-5",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "1a3403a516a84971",
+      "latency_s": 17.302,
+      "credits_consumed": null,
+      "answer_excerpt": "# Webhook и Retry\n\n**Webhook** — это механизм, когда одно приложение отправляет HTTP-запрос другому приложению при возникновении определённого события (например, оплата, создание пользователя, обновление статуса). Вместо того чтобы постоянно опрашивать сервер (\"есть ли что-то новое?\"), webhook \"толкает\" данные прямо в нужное место в момент события.\n\n**Retry** (повторная попытка) нужен, потому что сетевые ошибки, временные сбои сервера или перегрузки случаются постоянно — первый запрос может не д"
+    },
+    {
+      "cid": "u09_sticky_a",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "gemini-3.1-pro",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "8abb61738da941bf",
+      "latency_s": 10.353,
+      "credits_consumed": null,
+      "answer_excerpt": "Название проекта **NovaBoard** подтверждаю. Это Kanban-доска на FastAPI. Готов приступить к задачам."
+    },
+    {
+      "cid": "u10_sticky_b",
+      "http_status": 200,
+      "ok": true,
+      "path": "FULL",
+      "leader": "gemini-3.1-pro",
+      "routed_by": "cascade_escalate_full",
+      "trace_id": "75e4d3b33c074214",
+      "latency_s": 46.696,
+      "credits_consumed": null,
+      "answer_excerpt": "Так как история предыдущей переписки недоступна, я использую пример стандартного проекта. \n\n**Название проекта:** TaskFlow (пример)\n**Стек проекта:** React, Node.js (NestJS), PostgreSQL, TypeScript, Prisma.\n\nВот 3 варианта модели данных для «карточки» (задачи) в зависимости от уровня и используемой технологии:\n\n### 1. TypeScript интерфейс (Frontend / Backend DTO)\nИспользуется для типизации данных на клиенте или при передаче по сети.\n```typescript\nexport interface TaskCard {\n  id: string;\n  title"
+    },
+    {
+      "cid": "u11_hard",
+      "http_status": 200,
+      "ok": true,
+      "path": "FULL",
+      "leader": "deepseek-v4-pro",
+      "routed_by": "cascade_escalate_full",
+      "trace_id": "afeef16de3114d15",
+      "latency_s": 48.405,
+      "credits_consumed": null,
+      "answer_excerpt": "Таблица `outgoing_webhooks` хранит задачи: поля `id`, `url`, `payload`, `status` (pending/processing/done/failed), `attempts`, `next_retry_at`, `created_at`, `updated_at` и уникальный `idempotency_key`.  \nWorker периодически выбирает записи со статусом pending и `next_retry_at <= now` с блокировкой `FOR UPDATE SKIP LOCKED`, чтобы избежать двойной обработки.  \nПеред отправкой статус меняется на processing атомарно в той же транзакции.  \nHTTP-запрос отправляется с заголовком `Idempotency-Key`, сод"
+    },
+    {
+      "cid": "u12_ui_copy",
+      "http_status": 200,
+      "ok": true,
+      "path": "CASCADE",
+      "leader": "claude-haiku-4-5",
+      "routed_by": "cascade_escalate_stronger",
+      "trace_id": "5a53197a107e459e",
+      "latency_s": 14.952,
+      "credits_consumed": null,
+      "answer_excerpt": "# Варианты CTA для AI-кодинг инструмента\n\n## Вариант 1 (Прямой и активный)\n**\"Начать кодить бесплатно\"**\n\nЛаконичный, побуждает к немедленному действию. Хорошо работает для конверсии пользователей, готовых попробовать.\n\n## Вариант 2 (С социальным доказательством)\n**\"Присоединиться к 50K+ разработчиков\"**\n\nДобавляет доверие через цифру. Эффективен для FOMO-мотивации и показа популярности.\n\n## Вариант 3 (Результат-ориентированный)\n**\"Ускори разработку на 5x\"**\n\nФокусируется на конкретном преимущес"
+    }
+  ]
+}

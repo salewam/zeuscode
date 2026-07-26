@@ -52,9 +52,39 @@ async def _ensure_sqlite_columns(conn) -> None:
         ),
         ("monthly_budget_rub", "ALTER TABLE users ADD COLUMN monthly_budget_rub FLOAT DEFAULT 0.0"),
         ("model_family", "ALTER TABLE users ADD COLUMN model_family VARCHAR(40) DEFAULT ''"),
+        ("telegram_id", "ALTER TABLE users ADD COLUMN telegram_id INTEGER"),
+        ("fusion_pref", "ALTER TABLE users ADD COLUMN fusion_pref VARCHAR(20) DEFAULT 'power'"),
+        ("fusion_models", "ALTER TABLE users ADD COLUMN fusion_models TEXT DEFAULT ''"),
+        ("fusion_effort", "ALTER TABLE users ADD COLUMN fusion_effort VARCHAR(20) DEFAULT 'normal'"),
+        (
+            "fusion_kill_switch",
+            "ALTER TABLE users ADD COLUMN fusion_kill_switch INTEGER DEFAULT 0",
+        ),
+        ("onboarding_done", "ALTER TABLE users ADD COLUMN onboarding_done INTEGER DEFAULT 0"),
+        (
+            "telegram_username",
+            "ALTER TABLE users ADD COLUMN telegram_username VARCHAR(120) DEFAULT ''",
+        ),
+        (
+            "telegram_first_name",
+            "ALTER TABLE users ADD COLUMN telegram_first_name VARCHAR(120) DEFAULT ''",
+        ),
+        (
+            "telegram_last_seen_at",
+            "ALTER TABLE users ADD COLUMN telegram_last_seen_at DATETIME",
+        ),
     ]:
         if name not in user_cols:
             await conn.execute(text(ddl))
+    # Unique index for telegram_id (SQLite allows multiple NULLs)
+    await conn.execute(
+        text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_telegram_id ON users(telegram_id)")
+    )
+    await conn.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS ix_users_telegram_username ON users(telegram_username)"
+        )
+    )
 
     key_cols = await cols("api_keys")
     for name, ddl in [

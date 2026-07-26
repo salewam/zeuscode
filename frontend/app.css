@@ -2783,3 +2783,114 @@ code { font-family: "IBM Plex Mono", monospace; color: var(--lime); }
   color: var(--lime);
   font-weight: 600;
 }
+
+.client-guides {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.client-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.client-tab {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--muted);
+  font: 500 12px/1 "IBM Plex Sans", sans-serif;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.client-tab:hover { color: var(--ink); border-color: rgba(182, 255, 59, 0.35); }
+.client-tab.on {
+  color: var(--ink);
+  border-color: rgba(182, 255, 59, 0.55);
+  background: rgba(182, 255, 59, 0.08);
+}
+.client-panel {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  padding: 12px 14px;
+}
+.client-steps {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.client-steps li { margin-bottom: 5px; }
+.client-config {
+  margin: 0 0 10px;
+  max-height: 220px;
+}
+
+/* ===== First-run connect card ===== */
+.connect-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: rgba(8, 10, 12, 0.72);
+  backdrop-filter: blur(6px);
+}
+.connect-overlay.hidden { display: none; }
+.connect-card {
+  width: min(520px, 100%);
+  max-height: min(92vh, 720px);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 22px 22px 18px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+.connect-kicker {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--lime);
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+}
+.connect-card h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+.connect-hint {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.connect-models {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.connect-actions {
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.connect-foot {
+  margin: 14px 0 0;
+  line-height: 1.4;
+}
+@media (max-width: 560px) {
+  .connect-card { padding: 18px 16px 14px; }
+  .connect-card h2 { font-size: 19px; }
+}

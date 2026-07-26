@@ -9,6 +9,7 @@ import re
 import time
 import uuid
 from collections.abc import AsyncIterator
+from pathlib import Path
 from typing import Any
 
 from app import upstream
@@ -21,6 +22,11 @@ from app.brief_expand import (
 from app.catalog import get_model
 from app.config import get_settings
 from app import evidence as evidence_mod
+from app.media_packs import (
+    allowlisted_image_ids,
+    catalog_image_urls,
+    detect_media_niche,
+)
 from app.skills import (
     INTENT_META,
     THINK_PROMPT,
@@ -118,6 +124,73 @@ def normalize_intent(intent: str | None) -> str:
     return i if i in INTENT_META else "feature"
 
 
+def _task_needs_api_backend(user_text: str | None) -> bool:
+    """Brief/task mentions API or lead form that must hit a real backend route."""
+    if not (user_text or "").strip():
+        return False
+    return bool(
+        re.search(
+            r"(?i)/api/[a-zA-Z0-9_/\-]+|POST\s+/api/|\bbooking\b|"
+            r"форма\s+запис|оставить\s+заявк|api/lead|api/booking",
+            user_text or "",
+        )
+    )
+
+
+def _ensure_api_backend(team: list[str], user_text: str | None) -> list[str]:
+    """If task needs API and team has ≥2 slots, backend must be present.
+
+    Never drop frontend from a UI/landing team — swap tests/design only.
+    """
+    if not _task_needs_api_backend(user_text) or len(team) < 2:
+        return team
+    if "backend" in team:
+        # Ensure frontend stays if this looks like a landing/site
+        text = user_text or ""
+        if re.search(r"(?i)лендинг|сайт|landing|автосервис|сто\b|кофейн", text):
+            if "frontend" not in team:
+                out = list(team)
+                for cand in ("tests", "design"):
+                    if cand in out:
+                        out[out.index(cand)] = "frontend"
+                        return out
+        return team
+    out = list(team)
+    for cand in ("tests", "design"):
+        if cand in out:
+            out[out.index(cand)] = "backend"
+            # keep frontend if present
+            return out
+    # last resort: replace non-frontend
+    for i in range(len(out) - 1, -1, -1):
+        if out[i] != "frontend":
+            out[i] = "backend"
+            return out
+    return out
+
+
+def _ensure_app_team(team: list[str], n: int, user_text: str | None) -> list[str]:
+    """App intent: keep FE+BE+tests when N≥3 (Flash often skips tests otherwise)."""
+    n = max(1, min(4, int(n)))
+    if n == 1:
+        return ["frontend"]
+    if n == 2:
+        return _ensure_api_backend(["frontend", "backend"], user_text)
+    # N=3: drop design before tests — contracts matter more for apps
+    core = ["frontend", "backend", "tests"]
+    if n >= 4:
+        core = ["design", "frontend", "backend", "tests"]
+    # preserve any extra ranking hint from incoming team order for ties
+    ordered: list[str] = []
+    for r in team:
+        if r in core and r not in ordered:
+            ordered.append(r)
+    for r in core:
+        if r not in ordered:
+            ordered.append(r)
+    return _ensure_api_backend(ordered[:n], user_text)
+
+
 def resolve_team(
     intent: str,
     mode: str,
@@ -132,6 +205,9 @@ def resolve_team(
 
     Ask / chitchat always stays a single general reply — never inflate to
     design+frontend just because the UI requested N>1 agents.
+
+    Landing tasks with /api/booking (etc.) force backend into the team when N≥2.
+    App intent keeps tests in the team when N≥3.
     """
     effective = intent
     if user_text and intent in ("feature", "ask"):
@@ -148,22 +224,46 @@ def resolve_team(
     team = list(team_for_intent(effective))
     if agents_n is not None:
         n = max(1, min(4, int(agents_n)))
+        if effective == "app":
+            return _ensure_app_team(team, n, user_text)
         if n >= 3 and len(team) < n:
             team = list(team_for_intent("feature"))
         if user_text and n < len(team):
             team = rank_roles_for_task(user_text, team)
-        return team[:n]
+        cut = team[:n]
+        # Single-agent landing/site must be frontend (not API-only backend)
+        if n == 1 and user_text and re.search(
+            r"(?i)лендинг|сайт|landing|автосервис|сто\b|кофейн|магазин|клиник|салон",
+            user_text,
+        ):
+            return ["frontend"]
+        if n == 1 and user_text and re.search(
+            r"(?i)приложен|web\s*app|\bapp\b|to-?do|задач",
+            user_text,
+        ):
+            return ["frontend"]
+        return _ensure_api_backend(cut, user_text)
     meta = MODE_META[mode]
     if mode in ("ultra", "premium"):
+        if effective == "app":
+            return _ensure_app_team(team, 4, user_text)
         base = team_for_intent("feature") if len(team) < 4 else team
         if user_text:
             base = rank_roles_for_task(user_text, list(base))
             # keep full 4 but preferred order for waves still via _phased_team
-        return base[:4]
+        return _ensure_api_backend(base[:4], user_text)
     cut = team[: int(meta["max_agents"])]
+    if effective == "app":
+        return _ensure_app_team(team, len(cut) or int(meta["max_agents"]), user_text)
     if user_text and len(team) > len(cut):
         cut = rank_roles_for_task(user_text, team)[: int(meta["max_agents"])]
-    return cut
+    # mode=light max_agents=1 → same landing rule
+    if len(cut) == 1 and user_text and re.search(
+        r"(?i)лендинг|сайт|landing|автосервис|сто\b|кофейн|магазин|клиник|салон",
+        user_text,
+    ):
+        return ["frontend"]
+    return _ensure_api_backend(cut, user_text)
 
 
 def _model_strength(model_id: str) -> float:
@@ -197,7 +297,10 @@ def resolve_pack_models(team_models: list[str] | None) -> dict[str, Any] | None:
         return None
     ranked = sorted(clean, key=_model_strength, reverse=True)
     judge = ranked[0]
-    workers = ranked[1:] or [judge]
+    # Workers: cheapest first so bulk code roles (design/FE early waves)
+    # burn less $ and fragile providers (e.g. grok) don't block wave 1.
+    rest = ranked[1:] or [judge]
+    workers = sorted(rest, key=_model_strength)
     return {"judge": judge, "workers": workers, "all": clean}
 
 
@@ -206,17 +309,36 @@ def bind_team_models(team_models: list[str] | None, team: list[str]) -> dict[str
     if not pack:
         _TEAM_MODEL_MAP.set(None)
         return None
-    workers: list[str] = pack["workers"]
+    workers: list[str] = list(pack["workers"])
+    workers_asc = sorted(workers, key=_model_strength)  # cheap → expensive
+    workers_desc = list(reversed(workers_asc))
     role_map: dict[str, str] = {}
+    # Frontend carries the landing — prefer stable Gemini flash over flaky grok/haiku.
+    if "frontend" in team:
+        gemini_fe = [
+            w
+            for w in workers_desc
+            if "gemini" in w.lower() and "flash" in w.lower()
+        ]
+        role_map["frontend"] = gemini_fe[0] if gemini_fe else workers_desc[0]
     wi = 0
     for role in team:
-        if role in JUDGE_ROLES:
+        if role in JUDGE_ROLES or role in role_map:
             continue
-        role_map[role] = workers[wi % len(workers)]
+        mid = workers_asc[wi % len(workers_asc)]
+        # Prefer variety vs frontend when possible
+        if (
+            len(workers_asc) > 1
+            and mid == role_map.get("frontend")
+            and role != "frontend"
+        ):
+            wi += 1
+            mid = workers_asc[wi % len(workers_asc)]
+        role_map[role] = mid
         wi += 1
     payload = {
         "judge": pack["judge"],
-        "workers": workers,
+        "workers": workers_asc,
         "role_map": role_map,
         "all": pack["all"],
     }
@@ -327,7 +449,8 @@ ROLE_SRC_PREFIX = {
     "design": "/src/design/",
     "tests": "/src/tests/",
 }
-ALLOWED_SRC_ROOTS = tuple(ROLE_SRC_PREFIX.values())
+# /src/deck/ — HTML presentations (same frontend agent)
+ALLOWED_SRC_ROOTS = tuple(ROLE_SRC_PREFIX.values()) + ("/src/deck/",)
 
 _OUTLINE_KILL = re.compile(r"outline\s*:\s*(?:none|0)\s*;?", re.I)
 _INTER_FONT = re.compile(
@@ -346,6 +469,20 @@ _INTER_IN_FAMILY = re.compile(r"(['\"]?)Inter\1\s*,\s*", re.I)
 _INTER_VAR_FONT = re.compile(
     r"(--(?:[a-z0-9-]*font[a-z0-9-]*)\s*:\s*)(?:['\"]?)Inter(?:['\"]?)(\s*,)?",
     re.I,
+)
+# Flash app traps
+_ALERT_SUCCESS = re.compile(
+    r"""alert\s*\(\s*(['\"`])([^'\"`]*?(?:заказ|сохран|принят|успех|оформлен|отправлен|готово)[^'\"`]*)\1\s*\)""",
+    re.I,
+)
+_INLINE_ONCLICK = re.compile(r"""\sonclick\s*=\s*(['\"])[\s\S]*?\1""", re.I)
+_LOCAL_ASSET_URL = re.compile(
+    r"""(['\"])(/assets/[a-zA-Z0-9_\-./]+\.(?:png|jpe?g|webp|gif|svg))\1""",
+    re.I,
+)
+_REMOTE_FLOWER = (
+    "https://images.unsplash.com/photo-1490750967868-88aa4486c946"
+    "?auto=format&fit=crop&w=800&q=80"
 )
 
 
@@ -373,6 +510,154 @@ def harden_artifact_content(path: str, content: str) -> str:
             out,
         )
         out = _INTER_IN_FAMILY.sub("", out)
+        # Drop success alert(...) — forces honest status UI
+        out = _ALERT_SUCCESS.sub(
+            "/* hardened: removed success alert — use role=status/alert */ undefined",
+            out,
+        )
+        # Strip inline onclick= (prefer addEventListener)
+        out = _INLINE_ONCLICK.sub("", out)
+    # App DoD: logic only in app.js — GPT/Haiku dump second loadOrders into index.html
+    if pl.endswith((".html", ".htm")) and "/frontend/" in pl.replace("\\", "/"):
+        # Keep external <script src="...">, drop inline <script>...</script>
+        if re.search(r"<script\b(?![^>]*\bsrc=)[^>]*>", out, re.I):
+            out2 = re.sub(
+                r"<script\b(?![^>]*\bsrc=)[^>]*>[\s\S]*?</script\s*>",
+                "<!-- hardened: removed inline script — use app.js -->",
+                out,
+                flags=re.I,
+            )
+            # Ensure app.js is linked
+            if "app.js" in out2 and not re.search(
+                r"""<script[^>]+src=["'][^"']*app\.js["']""", out2, re.I
+            ):
+                out2 = out2.replace(
+                    "</body>",
+                    '<script src="app.js"></script>\n</body>',
+                    1,
+                )
+            elif "app.js" not in out2 and "</body>" in out2:
+                out2 = out2.replace(
+                    "</body>",
+                    '<script src="app.js"></script>\n</body>',
+                    1,
+                )
+            out = out2
+    if pl.endswith(".js") and "/frontend/" in pl.replace("\\", "/"):
+        # Subpath demos (/demo/…/) break on API="" → fetch("/api/…") hits site root 404
+        out = re.sub(
+            r"""(const|let|var)\s+API\s*=\s*["']/?["']\s*;""",
+            r'const API = ".";',
+            out,
+        )
+        out = re.sub(
+            r"""(const|let|var)\s+API\s*=\s*["']["']\s*;""",
+            r'const API = ".";',
+            out,
+        )
+        # Absolute /api from pages under /demo/…/
+        out = re.sub(r"""fetch\(\s*(['\"])/api/""", r"fetch(\1./api/", out)
+        # Flash often renders data-id buttons without click wiring
+        if re.search(r"data-id=", out) and not re.search(
+            r"dataset\.id|getAttribute\(\s*['\"]data-id['\"]|\[data-id\]|data-pick",
+            out,
+        ):
+            out += (
+                "\n\n/* hardened: wire catalog CTA */\n"
+                "document.addEventListener('click', (e) => {\n"
+                "  const btn = e.target && e.target.closest && e.target.closest('[data-id]');\n"
+                "  if (!btn) return;\n"
+                "  const id = btn.getAttribute('data-id');\n"
+                "  const sel = document.querySelector('#bouquet_id, #product_id, #item_id, select[name=\"bouquet_id\"], select[name=\"product_id\"]');\n"
+                "  if (sel) sel.value = id;\n"
+                "  const orderBtn = document.querySelector('[data-nav=\"order\"], [data-view=\"order\"]');\n"
+                "  if (orderBtn) orderBtn.click();\n"
+                "});\n"
+            )
+        # Field aliases: Flash invents .title while API has .name
+        out = out.replace("${i.title}", "${i.name || i.title}")
+        out = out.replace("${b.title}", "${b.name || b.title}")
+        out = out.replace("${item.title}", "${item.name || item.title}")
+        out = out.replace("i.title}", "i.name || i.title}")
+        out = re.sub(
+            r"\$\{(\w+)\.title\}",
+            r"${\1.name || \1.title}",
+            out,
+        )
+        out = re.sub(
+            r"\b(state\.cart|cart|selected|b|i|item)\.title\b",
+            r"(\1.name || \1.title)",
+            out,
+        )
+        # image alias
+        out = re.sub(
+            r"\$\{(\w+)\.image\}",
+            r"${\1.image || \1.image_url}",
+            out,
+        )
+        if "image_url" in out and not re.search(r"\b\.image\b|b\.image|item\.image", out):
+            out = out.replace("${b.image_url}", "${b.image || b.image_url}")
+            out = out.replace("${item.image_url}", "${item.image || item.image_url}")
+            out = out.replace("${i.image_url}", "${i.image || i.image_url}")
+        # Prefer numeric data-pick=id over JSON blob in attribute
+        out = re.sub(
+            r"""data-pick=['\"]\$\{JSON\.stringify\((\w+)\)\}['\"]""",
+            r'data-pick="${\1.id}"',
+            out,
+        )
+    if pl.endswith(".py") and "/backend/" in pl.replace("\\", "/"):
+        # Ghost local assets in mock DB → remote https
+        out = _LOCAL_ASSET_URL.sub(lambda m: f"{m.group(1)}{_REMOTE_FLOWER}{m.group(1)}", out)
+        # Public MVP must not require mystery auth headers
+        out = re.sub(
+            r"(\w+)\s*:\s*str\s*=\s*Header\(\s*\.\.\.\s*\)",
+            r'\1: str = Header(default="demo")',
+            out,
+        )
+        # Alias image_url field in seed dicts → also expose image
+        if "image_url" in out and '"image"' not in out and "'image'" not in out:
+            out = out.replace('"image_url":', '"image":')
+        # title-only seeds → name (FE + orders product_name)
+        if re.search(r"""['\"]title['\"]\s*:""", out) and not re.search(
+            r"""['\"]name['\"]\s*:""", out
+        ):
+            out = re.sub(
+                r"""(['\"])title\1\s*:\s*""",
+                r'\1name\1: ',
+                out,
+            )
+            out = out.replace('"title":', '"name":').replace("'title':", "'name':")
+        # description → desc alias for etalon FE
+        if re.search(r"""['\"]description['\"]\s*:""", out) and not re.search(
+            r"""['\"]desc['\"]\s*:""", out
+        ):
+            out = out.replace('"description":', '"desc":').replace(
+                "'description':", "'desc':"
+            )
+        # Replace seed images with verified media-pack URLs (Flash invents 404 IDs)
+        niche = "grocery" if re.search(
+            r"PRODUCTS\s*=|/api/products|category['\"]\s*:\s*['\"]Овощи", out
+        ) else ("flowers" if re.search(r"BOUQUETS\s*=|/api/bouquets", out) else None)
+        if niche:
+            allowed = allowlisted_image_ids(niche)
+            pack = catalog_image_urls(niche, n=12)
+            idx = 0
+
+            def _swap(m: re.Match[str]) -> str:
+                nonlocal idx
+                url = m.group(2)
+                pid = re.search(r"photo-([0-9a-zA-Z_-]+)", url)
+                if pid and pid.group(1) in allowed:
+                    return m.group(0)
+                repl = pack[idx % len(pack)]
+                idx += 1
+                return f"{m.group(1)}{repl}{m.group(3)}"
+
+            out = re.sub(
+                r"""(['\"]image(?:_url)?['\"]\s*:\s*['\"])(https?://[^'\"]+)(['\"])""",
+                _swap,
+                out,
+            )
     if pl.endswith(".py") and "/tests/" in pl.replace("\\", "/"):
         out = re.sub(
             r"(?m)^(\s*)assert\s+True\b.*$",
@@ -387,6 +672,267 @@ def harden_artifact_content(path: str, content: str) -> str:
     return out
 
 
+_APP_SHOP_DIR = (
+    Path(__file__).resolve().parent
+    / "agent_skills"
+    / "frontend"
+    / "templates"
+    / "app-shop"
+)
+_APP_SHOP_PRODUCTS_DIR = (
+    Path(__file__).resolve().parent
+    / "agent_skills"
+    / "frontend"
+    / "templates"
+    / "app-shop-products"
+)
+_APP_SHOP_CSS = _APP_SHOP_DIR / "styles.css"
+_APP_SHOP_HTML = _APP_SHOP_DIR / "index.html"
+_APP_SHOP_JS = _APP_SHOP_DIR / "app.js"
+_APP_SHOP_PRODUCTS_HTML = _APP_SHOP_PRODUCTS_DIR / "index.html"
+_APP_SHOP_PRODUCTS_JS = _APP_SHOP_PRODUCTS_DIR / "app.js"
+_APP_DENSITY_CSS = (
+    Path(__file__).resolve().parent
+    / "agent_skills"
+    / "frontend"
+    / "templates"
+    / "app-density.css"
+)
+
+
+def _catalogish_blob(blob: str) -> bool:
+    return bool(
+        re.search(
+            r"bouquet|каталог|catalog|/api/bouquets|/api/products|order-form|"
+            r"data-filter|букет|app-shop|продукт|товар|магазин|grocery",
+            blob,
+            re.I,
+        )
+    )
+
+
+def _ensure_app_density(
+    arts_by_path: dict[str, dict[str, Any]],
+    *,
+    allow_etalon_replace: bool = False,
+) -> None:
+    """Catalog/shop density.
+
+    Gate/repair: do NOT replace HTML/JS (model invents under brief).
+    Final ship only: if still behaviorally thin, inject adapted template as failsafe.
+    """
+    from app.skills import skills_enabled
+
+    if not skills_enabled():
+        # Skill packs / golden etalon off — never stamp templates onto agents' work.
+        return
+
+    styles = arts_by_path.get("/src/frontend/styles.css")
+    html = arts_by_path.get("/src/frontend/index.html")
+    js = arts_by_path.get("/src/frontend/app.js")
+    blob = "\n".join((a.get("content") or "") for a in (html, styles, js) if a)
+    if not _catalogish_blob(blob):
+        # non-shop: do NOT append shop density CSS (Instrument Serif / panel stamps).
+        # Thin CSS is a gate problem — uniqueness > forced chrome pack.
+        return
+
+    if not allow_etalon_replace:
+        return
+
+    html_body = (html or {}).get("content") or ""
+    js_body = (js or {}).get("content") or ""
+    css_body = (styles or {}).get("content") or ""
+
+    # Behavioral thin — not “missing panel__head from one template”
+    products = _is_products_domain(blob, None)
+    thin_html = not _app_shop_file_ok("index.html", html_body, products=products)
+    thin_js = not _app_shop_file_ok("app.js", js_body, products=products)
+    thin_css = not _app_shop_file_ok("styles.css", css_body, products=products)
+    et_html = _APP_SHOP_PRODUCTS_HTML if products and _APP_SHOP_PRODUCTS_HTML.is_file() else _APP_SHOP_HTML
+    et_js = _APP_SHOP_PRODUCTS_JS if products and _APP_SHOP_PRODUCTS_JS.is_file() else _APP_SHOP_JS
+    if products:
+        if "cart-badge" not in html_body and "addToCart" not in js_body:
+            thin_html = True
+            thin_js = True
+
+    # Preserve brand name from model if present
+    brand = "Свежая Полка" if products else "Букет Лайн"
+    m = re.search(
+        r"""brand__name["'][^>]*>\s*([^<]+)\s*<|class=["'][^"']*brand__name[^"']*["'][^>]*>\s*([^<]+)"""
+        r"""|<title>\s*([^<]{2,40})""",
+        html_body,
+        re.I,
+    )
+    if m:
+        brand = (m.group(1) or m.group(2) or m.group(3) or brand).strip() or brand
+
+    if thin_css and _APP_SHOP_CSS.is_file() and "hardened: golden app-shop" not in css_body:
+        pack = _APP_SHOP_CSS.read_text(encoding="utf-8")
+        arts_by_path["/src/frontend/styles.css"] = {
+            **(styles or {"path": "/src/frontend/styles.css", "title": "styles.css"}),
+            "path": "/src/frontend/styles.css",
+            "title": "styles.css",
+            "content": "/* hardened: golden app-shop styles (skill etalon) */\n" + pack,
+            "hardened": True,
+            "role": (styles or {}).get("role") or "frontend",
+        }
+
+    if thin_html and et_html.is_file() and "hardened: golden app-shop html" not in html_body:
+        h = et_html.read_text(encoding="utf-8")
+        if brand not in h:
+            h = h.replace("Букет Лайн", brand).replace("Свежая Полка", brand)
+        arts_by_path["/src/frontend/index.html"] = {
+            **(html or {"path": "/src/frontend/index.html", "title": "index.html"}),
+            "path": "/src/frontend/index.html",
+            "title": "index.html",
+            "content": "<!-- hardened: golden app-shop html (skill etalon) -->\n" + h,
+            "hardened": True,
+            "role": (html or {}).get("role") or "frontend",
+        }
+
+    if thin_js and et_js.is_file() and "hardened: golden app-shop js" not in js_body:
+        j = et_js.read_text(encoding="utf-8")
+        arts_by_path["/src/frontend/app.js"] = {
+            **(js or {"path": "/src/frontend/app.js", "title": "app.js"}),
+            "path": "/src/frontend/app.js",
+            "title": "app.js",
+            "content": "/* hardened: golden app-shop js (skill etalon) */\n" + j,
+            "hardened": True,
+            "role": (js or {}).get("role") or "frontend",
+        }
+
+    # Fonts if HTML somehow lacks them
+    html2 = arts_by_path.get("/src/frontend/index.html")
+    if html2 and "fonts.googleapis.com" not in (html2.get("content") or ""):
+        h = html2.get("content") or ""
+        link = (
+            '<link rel="preconnect" href="https://fonts.googleapis.com" />\n'
+            '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />\n'
+            '<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />\n'
+        )
+        if "<head>" in h:
+            html2["content"] = h.replace("<head>", "<head>\n" + link, 1)
+            arts_by_path["/src/frontend/index.html"] = html2
+
+
+def _app_shop_repair_bundle() -> str:
+    """Repair hint: density reference — invent under brief, don't clone brand."""
+    chunks: list[str] = [
+        "Repair: приложение сломано/тонкое. Сдай плотный UI **под бриф юзера**. "
+        "Ниже — справка по потокам (не копируй бренд/CSS эталона байт-в-байт). "
+        "DoD: nav≥2 экрана, каталог+заказ/корзина+история, fetch+res.ok, app.js only."
+    ]
+    for fname, lang in (
+        ("index.html", "html"),
+        ("styles.css", "css"),
+        ("app.js", "javascript"),
+    ):
+        path = {
+            "index.html": _APP_SHOP_HTML,
+            "styles.css": _APP_SHOP_CSS,
+            "app.js": _APP_SHOP_JS,
+        }[fname]
+        if path.is_file():
+            body = path.read_text(encoding="utf-8")
+            hint = body[:1400] + ("\n/* … trim … */\n" if len(body) > 1400 else "")
+            chunks.append(
+                f"\n### path=/src/frontend/{fname} (паттерн)\n```{lang}\n"
+                + hint
+                + "\n```"
+            )
+    return "\n".join(chunks)
+
+
+def _seed_facet_values(be_blob: str) -> list[str]:
+    vals = [
+        v.strip()
+        for v in re.findall(
+            r"""['\"](?:category|tag)['\"]\s*:\s*['\"]([^'\"]+)['\"]""",
+            be_blob or "",
+        )
+        if v.strip()
+    ]
+    # unique preserve order
+    out: list[str] = []
+    for v in vals:
+        if v not in out:
+            out.append(v)
+    return out
+
+
+def _sync_catalog_filters(arts_by_path: dict[str, dict[str, Any]]) -> None:
+    """Rewrite FE data-filter chips to match backend seed category/tag values."""
+    html = arts_by_path.get("/src/frontend/index.html")
+    js = arts_by_path.get("/src/frontend/app.js")
+    be_blob = "\n".join(
+        (a.get("content") or "")
+        for p, a in arts_by_path.items()
+        if p.startswith("/src/backend") and p.endswith(".py")
+    )
+    if not html or not be_blob:
+        return
+    facets = _seed_facet_values(be_blob)
+    if len(facets) < 2:
+        return
+    html_body = html.get("content") or ""
+    chips = {
+        c
+        for c in re.findall(r"""data-filter=["']([^"']+)["']""", html_body, re.I)
+        if c.lower() not in ("all", "все", "*")
+    }
+    if chips and chips.issubset(set(facets)):
+        return
+    # Rebuild filters block
+    chip_html = ['<button type="button" class="chip is-on" data-filter="all">Все</button>']
+    for fac in facets[:6]:
+        chip_html.append(
+            f'<button type="button" class="chip" data-filter="{fac}">{fac}</button>'
+        )
+    new_filters = '<div class="filters" role="toolbar" aria-label="Фильтры">\n          ' + "\n          ".join(chip_html) + "\n        </div>"
+    if re.search(r'<div class="filters"[^>]*>.*?</div>', html_body, re.S | re.I):
+        html_body = re.sub(
+            r'<div class="filters"[^>]*>.*?</div>',
+            new_filters,
+            html_body,
+            count=1,
+            flags=re.S | re.I,
+        )
+    else:
+        # insert after panel__head / before catalog-list
+        html_body = html_body.replace(
+            'id="catalog-list"',
+            new_filters + '\n        <div id="catalog-list"',
+            1,
+        )
+    html["content"] = html_body
+    html["hardened"] = True
+    arts_by_path["/src/frontend/index.html"] = html
+
+    if js:
+        js_body = js.get("content") or ""
+        # Prefer category then tag for filter match
+        js_body = re.sub(
+            r"""filter\s*===\s*["']all["']\s*\|\|\s*p\.(tag|category)\s*===\s*filter""",
+            'filter === "all" || p.category === filter || p.tag === filter',
+            js_body,
+        )
+        js_body = re.sub(
+            r"""filter\s*===\s*["']all["']\s*\|\|\s*\w+\.(tag|category)\s*===\s*filter""",
+            'filter === "all" || p.category === filter || p.tag === filter',
+            js_body,
+        )
+        # Kill tiny inline preview hacks
+        js_body = re.sub(
+            r"""\s*style=["']max-width:\s*120px;?[^"']*["']""",
+            "",
+            js_body,
+            flags=re.I,
+        )
+        js["content"] = js_body
+        js["hardened"] = True
+        arts_by_path["/src/frontend/app.js"] = js
+
+
 def harden_artifacts(arts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for a in arts or []:
@@ -398,7 +944,10 @@ def harden_artifacts(arts: list[dict[str, Any]]) -> list[dict[str, Any]]:
             item["content"] = fixed
             item["hardened"] = True
         out.append(item)
-    return out
+    by_path = {(a.get("path") or ""): a for a in out if a.get("path")}
+    _ensure_app_density(by_path, allow_etalon_replace=False)
+    # rebuild list preserving order, with updated density
+    return [by_path.get(a.get("path") or "", a) for a in out]
 
 
 def sanitize_role_artifacts(role: str, arts: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -446,7 +995,11 @@ def sanitize_role_artifacts(role: str, arts: list[dict[str, Any]]) -> list[dict[
     return out
 
 
-def filter_studio_artifacts(arts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def filter_studio_artifacts(
+    arts: list[dict[str, Any]],
+    *,
+    allow_etalon_replace: bool = False,
+) -> list[dict[str, Any]]:
     """Drop paths outside Studio zones; prefer longer content per path; SSoT harden."""
     by_path: dict[str, dict[str, Any]] = {}
     for a in arts or []:
@@ -457,6 +1010,10 @@ def filter_studio_artifacts(arts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if path == "/src/frontend/tokens.css":
             # Prefer merging into styles later; drop if design tokens exist
             path = "/src/frontend/tokens.css"
+        # Drop junk dumps: backend_1.txt / design_2.css numbered scratch files
+        base = path.rsplit("/", 1)[-1]
+        if re.match(r"^(frontend|backend|design|tests)_\d+\.(txt|md)$", base, re.I):
+            continue
         if not path.startswith(ALLOWED_SRC_ROOTS):
             continue
         item = dict(a)
@@ -465,21 +1022,29 @@ def filter_studio_artifacts(arts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         prev = by_path.get(path)
         if not prev or len(item.get("content") or "") >= len(prev.get("content") or ""):
             by_path[path] = item
-    # SSoT: design tokens win — drop FE tokens.css; inject @import into styles.css
+    # SSoT: design tokens win — drop FE tokens.css; INLINE tokens into styles.css
+    # (preview/srcdoc/static demos cannot resolve @import ../design/tokens.css)
     if "/src/design/tokens.css" in by_path:
-        fe_tok = by_path.pop("/src/frontend/tokens.css", None)
+        by_path.pop("/src/frontend/tokens.css", None)
         styles = by_path.get("/src/frontend/styles.css")
-        if styles:
+        tokens_body = (by_path["/src/design/tokens.css"].get("content") or "").strip()
+        if styles and tokens_body:
             body = styles.get("content") or ""
-            if "@import" not in body or "tokens.css" not in body:
+            body = re.sub(
+                r"@import\s+url\([\"']?[^\"')]*tokens\.css[\"']?\)\s*;?\s*",
+                "",
+                body,
+                flags=re.I,
+            )
+            if "/* inlined design tokens" not in body:
                 styles["content"] = (
-                    "@import url('../design/tokens.css');\n" + body.lstrip()
+                    "/* inlined design tokens (SSoT) */\n"
+                    + tokens_body
+                    + "\n\n"
+                    + body.lstrip()
                 )
                 styles["hardened"] = True
                 by_path["/src/frontend/styles.css"] = styles
-        elif fe_tok:
-            # no styles yet — keep design only; discard FE tokens duplicate
-            pass
     elif "/src/frontend/tokens.css" in by_path:
         # No design pack — fold FE tokens into styles.css
         tok = by_path.pop("/src/frontend/tokens.css")
@@ -494,6 +1059,8 @@ def filter_studio_artifacts(arts: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "path": "/src/frontend/styles.css",
                 "title": "styles.css",
             }
+    _ensure_app_density(by_path, allow_etalon_replace=allow_etalon_replace)
+    _sync_catalog_filters(by_path)
     return list(by_path.values())
 
 
@@ -576,23 +1143,23 @@ def _role_call_user_text(
         f"**даже если задача просит** — замени (navy/teal/amber + system-ui) и объясни в Мышлении\n"
         f"- outline:none / outline:0 запрещены — только :focus-visible усиление\n"
         f"- Соблюдай ## Product brief / must-have оркестратора — это SSoT по секциям и API\n"
+        f"- Темп: ## Мышление ≤8 строк, затем ## Результат с готовыми файлами (без воды)\n"
     )
     if role == "frontend":
         rules += (
-            "- Если в handoff есть `/src/design/tokens.css` — **SSoT**:\n"
-            "  1) в `styles.css` первой строкой "
-            "`@import url('../design/tokens.css');` "
-            "ИЛИ скопируй весь `:root { ... }` из tokens без новых indigo/Inter;\n"
-            "  2) цвета только через `var(--…)`;\n"
-            "  3) не заводи параллельную `:root` палитру\n"
-            "- Файл стилей: `styles.css` (не style.css)\n"
+            "- Токены design = SSoT: **свой `:root` в styles.css** "
+            "(предпочтительно). Голый `@import '../design/tokens.css'` ломает static demo.\n"
+            "- Файл стилей: `styles.css` (не style.css). Цвета через `var(--…)`.\n"
             "- Интерактив = button/a, не div onclick\n"
             "- fetch/API: только path из Locked contract (если есть)\n"
-            "- **Визуальная планка (лендинг/кафе/СТО/страница):** НЕ текст на белом.\n"
-            "  Нужны: атмосфера (фон/градиент/фото-плоскость), сильный hero, ритм отступов,\n"
-            "  услуги/меню или 3+ карточки с ценами, социальное доказательство, форма/CTA.\n"
-            "  1–2 CSS transition. Страница = место/продукт, не черновик markdown.\n"
-            "- Фото клади в `/src/frontend/assets/` если добавляешь img\n"
+            "- **Лендинг/сайт DoD (принципы, НЕ один шаблон):**\n"
+            "  UNIQUE из брифа (бренд, IA, палитра, копирайт) — см. uniqueness.md;\n"
+            "  предметный media-якорь; честные контакты; форма без лжи в catch;\n"
+            "  достаточная плотность секций/контента; motion+mobile; anti-AI look;\n"
+            "  zeus-badge + публичный /go/. "
+            "Эталоны good_* = планка качества, не обязательные классы/#vitrine/.top__nav.\n"
+            "- Презентация: path=/src/deck/, достаточное число слайдов, разные фото, CTA\n"
+            "- Remote https из Media pack brief; не assets/ без файла\n"
         )
     if role == "backend":
         rules += (
@@ -651,6 +1218,62 @@ SYNTH_SYSTEM = """Ты Senior-архитектор ZeusCode Studio — скле�
 """
 
 
+def _parts_have_path_conflicts(parts: list[dict[str, Any]]) -> bool:
+    """True when two agents wrote different substantial bodies for the same path."""
+    by_path: dict[str, str] = {}
+    for p in parts:
+        if p.get("role") in ("synth", "reviewer"):
+            continue
+        for a in p.get("artifacts") or []:
+            path = (a.get("path") or "").strip()
+            body = (a.get("content") or "").strip()
+            if not path or len(body) < 40:
+                continue
+            prev = by_path.get(path)
+            if prev is not None and prev != body:
+                return True
+            by_path[path] = body
+    return False
+
+
+def _assemble_fast_merge(
+    parts: list[dict[str, Any]],
+    *,
+    user_text: str,
+) -> tuple[str, list[dict[str, Any]]]:
+    """Deterministic merge — preserves agent code, skips slow/lossy LLM synth."""
+    role_order = {"design": 0, "frontend": 1, "backend": 2, "tests": 3, "docs": 4, "general": 5}
+    by_path: dict[str, dict[str, Any]] = {}
+    for p in sorted(parts, key=lambda x: role_order.get(x.get("role") or "", 99)):
+        if p.get("role") in ("synth", "reviewer"):
+            continue
+        for a in p.get("artifacts") or []:
+            path = (a.get("path") or "").strip()
+            if not path:
+                continue
+            prev = by_path.get(path)
+            body = a.get("content") or ""
+            if not prev or len(body) >= len(prev.get("content") or ""):
+                by_path[path] = dict(a)
+    arts = filter_studio_artifacts(list(by_path.values()))
+    lines = [
+        "## Мышление",
+        "Склейка без повторной генерации: пути агентов не конфликтуют — "
+        "сохраняю исходный код команд (качество выше, чем переписывать судьёй).",
+        "",
+        f"Задача: {user_text.strip()[:240]}",
+        "",
+        "## Результат",
+    ]
+    for a in arts:
+        path = a.get("path") or "/src/frontend/out.txt"
+        lang = a.get("language") or path.rsplit(".", 1)[-1]
+        body = a.get("content") or ""
+        lines.append(f"```{lang} path={path}\n{body}\n```")
+        lines.append("")
+    return "\n".join(lines).strip(), arts
+
+
 def _history_messages(
     history: list[dict[str, Any]], user_text: str
 ) -> list[dict[str, Any]]:
@@ -673,7 +1296,18 @@ async def _role_call(
 ) -> dict[str, Any]:
     t0 = time.perf_counter()
     messages = [{"role": "system", "content": system}] + _history_messages(history, user_text)
-    data = await upstream.chat_completions(model=model, messages=messages)
+    # App-shop etalon ~20KB FE — Flash must emit full HTML+CSS+JS without truncation
+    try:
+        from app.config import get_settings as _gs
+
+        _ceil = int(getattr(_gs(), "UPSTREAM_MAX_OUTPUT_TOKENS", 65536) or 65536)
+    except Exception:  # noqa: BLE001
+        _ceil = 65536
+    # No per-role artificial cutoffs — same high ceiling for every Studio agent.
+    max_tok = max(1024, _ceil)
+    data = await upstream.chat_completions(
+        model=model, messages=messages, max_tokens=max_tok
+    )
     prompt, completion = upstream.extract_usage(data)
     text = upstream.extract_text(data)
     thinking, result = split_thinking_result(text)
@@ -690,6 +1324,275 @@ async def _role_call(
         "completion_tokens": completion,
         "latency_s": round(time.perf_counter() - t0, 2),
         "artifacts": arts,
+    }
+
+
+def _app_shop_file_ok(fname: str, body: str, *, products: bool = False) -> bool:
+    """Behavioral density — not etalon class-name clone."""
+    b = body or ""
+    if fname == "index.html":
+        multi = len(re.findall(r"data-screen\s*=", b, re.I)) >= 2 or bool(
+            re.search(r"data-view\s*=", b, re.I)
+        )
+        has_list = bool(
+            re.search(
+                r"id=[\"'][^\"']*(catalog|list|grid|items|products|bouquets)",
+                b,
+                re.I,
+            )
+        )
+        has_form = bool(re.search(r"<form\b", b, re.I)) or bool(
+            re.search(r"cart-badge|id=[\"']cart", b, re.I)
+        )
+        no_inline_logic = not re.search(
+            r"<script\b(?![^>]*\bsrc=)[^>]*>[\s\S]{40,}?</script>", b, re.I
+        )
+        return len(b) >= 2800 and multi and has_list and has_form and no_inline_logic
+    if fname == "styles.css":
+        layout = bool(re.search(r"display\s*:\s*(grid|flex)", b, re.I))
+        return len(b) >= 3500 and layout and ("{" in b)
+    if fname == "app.js":
+        has_fetch = bool(re.search(r"\bfetch\s*\(", b))
+        has_api = bool(re.search(r"""API\s*=\s*["']\.|["']/api/|`\$\{API\}|/api/""", b))
+        has_orders = bool(re.search(r"loadOrders|/api/orders|orders-list", b, re.I))
+        has_catalog = bool(
+            re.search(r"renderCatalog|catalog-list|/api/(products|bouquets|items)", b, re.I)
+        )
+        has_cta = bool(re.search(r"addToCart|data-pick|dataset\.pick|В корзину|В заказ", b))
+        has_ok = bool(re.search(r"\.ok\b|!res\.ok|!r\.ok", b))
+        cart_ok = (not products) or bool(re.search(r"addToCart|cart-badge|В корзину", b))
+        return (
+            len(b) >= 3200
+            and has_fetch
+            and has_api
+            and has_orders
+            and has_catalog
+            and has_cta
+            and has_ok
+            and cart_ok
+        )
+    return bool(b)
+
+
+def _pick_brand_from_task(user_text: str) -> str | None:
+    m = re.search(r"[«\"]([^»\"]{2,40})[»\"]", user_text or "")
+    if m:
+        return m.group(1).strip()
+    return None
+
+
+def _is_products_domain(user_text: str, brief: str | None = None) -> bool:
+    """Grocery/products shop — bare «цвет» is CSS, not flowers."""
+    blob = f"{user_text or ''}\n{brief or ''}"
+    grocery = bool(
+        re.search(
+            r"/api/products|продукт|grocery|лавка|супермаркет|овощ|фрукт|молоч|"
+            r"свежая\s+полка|в\s+корзину|cart-badge",
+            blob,
+            re.I,
+        )
+    )
+    flowers = bool(
+        re.search(
+            r"/api/bouquets|букет|bouquet|flower|флорист|роза|тюльпан",
+            blob,
+            re.I,
+        )
+    )
+    if grocery and not flowers:
+        return True
+    if grocery and flowers:
+        return bool(
+            re.search(r"/api/products|овощ|фрукт|молоч|в\s+корзину|grocery", blob, re.I)
+        )
+    return False
+
+
+def _adapt_shop_domain(body: str, *, brand: str, products: bool) -> str:
+    """Map flower etalon labels/API → product shop when task demands it."""
+    out = body or ""
+    if brand and brand != "Букет Лайн":
+        out = out.replace("Букет Лайн", brand)
+    if not products:
+        return out
+    reps = (
+        ("/api/bouquets", "/api/products"),
+        ("bouquets", "products"),
+        ("bouquet_id", "product_id"),
+        ("Bouquet", "Product"),
+        ("bouquet", "product"),
+        ("Букеты", "Товары"),
+        ("букеты", "товары"),
+        ("Букет", "Товар"),
+        ("букет", "товар"),
+        ("Каталог букетов", "Каталог товаров"),
+        ("Выберите букет", "Выберите товар"),
+        ('data-filter="хит"', 'data-filter="Овощи"'),
+        ('data-filter="премиум"', 'data-filter="Фрукты"'),
+        ('data-filter="новый"', 'data-filter="Молочка"'),
+        (">хит<", ">Овощи<"),
+        (">премиум<", ">Фрукты<"),
+        (">новый<", ">Молочка<"),
+    )
+    for a, b in reps:
+        out = out.replace(a, b)
+    # JS filter by category for grocery
+    out = re.sub(
+        r"""filter\s*===\s*["']all["']\s*\|\|\s*\w+\.tag\s*===\s*filter""",
+        'filter === "all" || p.category === filter || p.tag === filter',
+        out,
+    )
+    return out
+
+
+async def _role_call_app_frontend(
+    *,
+    brief: str | None,
+    intent: str,
+    mode: str,
+    history: list[dict[str, Any]],
+    user_text: str,
+    model: str,
+    prior_parts: list[dict[str, Any]] | None = None,
+    locked_contract: dict[str, Any] | None = None,
+    product_brief: str | None = None,
+) -> dict[str, Any]:
+    """Per-file FE for weak models: invent under brief; template only if DoD fails.
+
+    DoD is behavioral (screens/fetch/cart/orders), not class-name clone of app-shop.
+    """
+    t0 = time.perf_counter()
+    products = _is_products_domain(user_text, brief)
+    brand = _pick_brand_from_task(user_text) or (
+        "Свежая Полка" if products else "Букет Лайн"
+    )
+    html_src = _APP_SHOP_PRODUCTS_HTML if products and _APP_SHOP_PRODUCTS_HTML.is_file() else _APP_SHOP_HTML
+    js_src = _APP_SHOP_PRODUCTS_JS if products and _APP_SHOP_PRODUCTS_JS.is_file() else _APP_SHOP_JS
+    files = (
+        ("index.html", "html", html_src),
+        ("styles.css", "css", _APP_SHOP_CSS),
+        ("app.js", "javascript", js_src),
+    )
+    arts: list[dict[str, Any]] = []
+    texts: list[str] = []
+    prompt_tokens = 0
+    completion_tokens = 0
+    sources: dict[str, str] = {}
+
+    base_user = _role_call_user_text(
+        "frontend",
+        user_text,
+        prior_parts or [],
+        locked_contract=locked_contract,
+        product_brief=product_brief,
+    )
+    domain_note = (
+        "Домен: магазин продуктов. API /api/products + /api/orders. "
+        "Нужна корзина (В корзину + badge) и экран покупок. "
+        "Поля карточки под продукты — НЕ composition/size/stems.\n"
+        if products
+        else "Домен по brief (цветы/другое). API из задачи. "
+        "Карточка и фильтры = сущность brief, не чужой ниши.\n"
+    )
+
+    for fname, lang, _path in files:
+        # Principles only — never dump app-shop HTML/CSS into the prompt (stamps clones)
+        density_hint = (
+            "Плотность: chrome+nav, каталог с карточками (img+цена+CTA), "
+            "корзина/заказ, история; empty/error/loading; "
+            "фильтры меняют список; fetch с res.ok. "
+            "Визуал и классы — под бриф, не «Букет Лайн»/«Свежая Полка»."
+        )
+        system = (
+            f"Роль: frontend. Интент APP. Сейчас сдаёшь ТОЛЬКО один файл.\n"
+            f"path=/src/frontend/{fname}\n"
+            f"{domain_note}"
+            f"Бренд из задачи: «{brand}». Изобрети UI под ЭТОТ бриф — "
+            f"не клонируй один шаблон всем юзерам.\n"
+            f"DoD: nav≥2 экрана; каталог+заказ/корзина+история; fetch+res.ok; "
+            f"filters↔seed; логика только в app.js; API=\".\"; "
+            f"файл плотный (не скелет). Имена CSS-классов — любые.\n"
+            f"НЕ React. НЕ пиши другие файлы.\n"
+            f"Формат: path=/src/frontend/{fname} затем ```{lang} … ```\n\n"
+            f"{density_hint}\n"
+            f"(Файл-эталон `{fname}` на диске — failsafe/справка, в промпт HTML не кладём.)"
+        )
+        if brief:
+            system += f"\n\nБриф (источник правды):\n{(brief or '')[:2000]}"
+        part = await _role_call(
+            role="frontend",
+            system=system,
+            history=history,
+            user_text=(
+                base_user
+                + f"\n\nСдай ТОЛЬКО /src/frontend/{fname} под задачу и бренд «{brand}». "
+                f"Уникальный UI, рабочий DoD."
+            ),
+            model=model,
+        )
+        prompt_tokens += int(part.get("prompt_tokens") or 0)
+        completion_tokens += int(part.get("completion_tokens") or 0)
+        texts.append(part.get("text") or "")
+        got = ""
+        for a in part.get("artifacts") or []:
+            if (a.get("path") or "").endswith(fname):
+                got = a.get("content") or ""
+                break
+        if not got:
+            for a in part.get("artifacts") or []:
+                c = a.get("content") or ""
+                if fname.endswith(".html") and "<html" in c.lower():
+                    got = c
+                elif fname.endswith(".css") and "{" in c and len(c) > len(got):
+                    got = c
+                elif fname.endswith(".js") and ("function" in c or "const " in c) and len(c) > len(got):
+                    got = c
+        got = _adapt_shop_domain(got, brand=brand, products=products)
+        src = "model"
+        if not got.strip():
+            # Empty only — never stamp golden shop HTML onto every user
+            got = (
+                f"/* empty {fname}: model failed; do not ship clone */\n"
+                if fname.endswith((".css", ".js"))
+                else f"<!-- empty {fname}: model failed; do not ship clone -->\n"
+            )
+            src = "empty"
+        elif not _app_shop_file_ok(fname, got, products=products):
+            # Keep model output even if thin — gate will catch; uniqueness > template
+            src = "model_thin"
+        sources[fname] = src
+        arts.append(
+            {
+                "path": f"/src/frontend/{fname}",
+                "title": fname,
+                "role": "frontend",
+                "content": got,
+                "hardened": False,
+            }
+        )
+
+    note = (
+        "## Результат\n"
+        + "\n".join(f"- {k}: {v}" for k, v in sources.items())
+        + "\n\n"
+        + "\n\n".join(
+            f"path=/src/frontend/{a['title']}\n```\n{(a.get('content') or '')[:200]}…\n```"
+            for a in arts
+        )
+    )
+    return {
+        "role": "frontend",
+        "title": get_skill("frontend")["title"],
+        "label": get_skill("frontend")["label"],
+        "model": model,
+        "text": note,
+        "thinking": "app: invent under brief (template fill only if DoD fails)",
+        "result_body": note,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "latency_s": round(time.perf_counter() - t0, 2),
+        "artifacts": arts,
+        "app_shop_sources": sources,
     }
 
 
@@ -1213,19 +2116,34 @@ async def iter_studio_events(
         lock_snap = locked_contract
 
         async def _build(role: str) -> dict[str, Any]:
-            part = await _role_call(
-                role=role,
-                system=build_system(role, brief, intent, mode),
-                history=hist,
-                user_text=_role_call_user_text(
-                    role,
-                    user_text,
-                    prior,
+            if role == "frontend" and intent == "app" and _catalogish_blob(
+                f"{user_text}\n{brief or ''}"
+            ):
+                part = await _role_call_app_frontend(
+                    brief=brief,
+                    intent=intent,
+                    mode=mode,
+                    history=hist,
+                    user_text=user_text,
+                    model=model_for_role(mode, role),
+                    prior_parts=prior,
                     locked_contract=lock_snap,
                     product_brief=product_brief,
-                ),
-                model=model_for_role(mode, role),
-            )
+                )
+            else:
+                part = await _role_call(
+                    role=role,
+                    system=build_system(role, brief, intent, mode),
+                    history=hist,
+                    user_text=_role_call_user_text(
+                        role,
+                        user_text,
+                        prior,
+                        locked_contract=lock_snap,
+                        product_brief=product_brief,
+                    ),
+                    model=model_for_role(mode, role),
+                )
             if not part.get("thinking") and think_map.get(role):
                 part["thinking"] = think_map[role]
             return part
@@ -1309,60 +2227,98 @@ async def iter_studio_events(
         synth_model = parts[0]["model"]
     else:
         synth_model = model_for_role(mode, "synth")
-        yield {"type": "synth_start", "model": synth_model}
-        yield _status("Склеиваю ответы команды в один результат…", phase="synth")
-        blob = []
-        for p in parts:
-            paths = ", ".join(
-                (a.get("path") or "?") for a in (p.get("artifacts") or [])[:12]
+        conflict = _parts_have_path_conflicts(parts)
+        # Fast merge keeps agent code intact (often higher quality than LLM rewrite).
+        # LLM synth only when two agents wrote different bodies for the same path.
+        use_llm_synth = conflict
+
+        if not use_llm_synth:
+            yield {"type": "synth_start", "model": "fast-merge"}
+            yield _status(
+                "Склеиваю артефакты без переписывания (пути не конфликтуют)…",
+                phase="synth",
             )
-            blob.append(
-                f"\n===== {p['title'].upper()} ({p['model']}) paths: {paths} =====\n"
-                f"Мышление:\n{p.get('thinking') or '—'}\n\n"
-                f"Результат:\n{(p.get('result_body') or p['text'])[:5000]}\n"
-            )
-        lock_block = evidence_mod.format_contract_lock(locked_contract)
-        synth = await upstream.chat_completions(
-            model=synth_model,
-            messages=[
-                {"role": "system", "content": SYNTH_SYSTEM},
+            final_text, synth_arts = _assemble_fast_merge(parts, user_text=user_text)
+            parts.append(
                 {
-                    "role": "user",
-                    "content": (
-                        f"Задача:\n{user_text}\n\n"
-                        f"Бриф:\n{(brief or '—')[:1500]}\n\n"
-                        f"{lock_block}\n\n"
-                        f"Куски агентов (уже path-sanitized по ролям):\n{''.join(blob)}"
-                    ),
-                },
-            ],
-        )
-        final_text = upstream.extract_text(synth)
-        sp, sc = upstream.extract_usage(synth)
-        synth_arts = filter_studio_artifacts(extract_artifacts("docs", final_text))
-        # Prefer agent artifacts; synth may add merged files under allowed roots
-        parts.append(
-            {
-                "role": "synth",
-                "title": "Сборка",
-                "label": "сборка",
-                "model": synth_model,
+                    "role": "synth",
+                    "title": "Сборка",
+                    "label": "сборка",
+                    "model": "fast-merge",
+                    "text": final_text,
+                    "thinking": "",
+                    "result_body": final_text,
+                    "prompt_tokens": 0,
+                    "completion_tokens": 0,
+                    "latency_s": 0,
+                    "artifacts": synth_arts,
+                }
+            )
+            yield {
+                "type": "synth_done",
                 "text": final_text,
-                "thinking": "",
-                "result_body": final_text,
-                "prompt_tokens": sp,
-                "completion_tokens": sc,
-                "latency_s": 0,
-                "artifacts": synth_arts,
+                "preview": final_text[:500],
+                "artifacts": _sse_artifacts(synth_arts),
             }
-        )
-        yield {
-            "type": "synth_done",
-            "text": final_text,
-            "preview": final_text[:500],
-            "artifacts": _sse_artifacts(synth_arts),
-        }
-        yield _status("Сборка готова — гоню проверки качества", phase="check")
+            yield _status("Сборка готова — гоню проверки качества", phase="check")
+        else:
+            yield {"type": "synth_start", "model": synth_model}
+            yield _status(
+                "Конфликт путей — судья склеивает без потери контракта…",
+                phase="synth",
+            )
+            blob = []
+            for p in parts:
+                paths = ", ".join(
+                    (a.get("path") or "?") for a in (p.get("artifacts") or [])[:12]
+                )
+                blob.append(
+                    f"\n===== {p['title'].upper()} ({p['model']}) paths: {paths} =====\n"
+                    f"Мышление:\n{p.get('thinking') or '—'}\n\n"
+                    f"Результат:\n{(p.get('result_body') or p['text'])[:5000]}\n"
+                )
+            lock_block = evidence_mod.format_contract_lock(locked_contract)
+            synth = await upstream.chat_completions(
+                model=synth_model,
+                messages=[
+                    {"role": "system", "content": SYNTH_SYSTEM},
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Задача:\n{user_text}\n\n"
+                            f"Бриф:\n{(brief or '—')[:1500]}\n\n"
+                            f"{lock_block}\n\n"
+                            f"Куски агентов (уже path-sanitized по ролям):\n{''.join(blob)}"
+                        ),
+                    },
+                ],
+                max_tokens=8192,
+            )
+            final_text = upstream.extract_text(synth)
+            sp, sc = upstream.extract_usage(synth)
+            synth_arts = filter_studio_artifacts(extract_artifacts("docs", final_text))
+            parts.append(
+                {
+                    "role": "synth",
+                    "title": "Сборка",
+                    "label": "сборка",
+                    "model": synth_model,
+                    "text": final_text,
+                    "thinking": "",
+                    "result_body": final_text,
+                    "prompt_tokens": sp,
+                    "completion_tokens": sc,
+                    "latency_s": 0,
+                    "artifacts": synth_arts,
+                }
+            )
+            yield {
+                "type": "synth_done",
+                "text": final_text,
+                "preview": final_text[:500],
+                "artifacts": _sse_artifacts(synth_arts),
+            }
+            yield _status("Сборка готова — гоню проверки качества", phase="check")
 
     # Deterministic gate BEFORE LLM reviewer (visible in stream)
     pre_arts: list[dict[str, Any]] = []
@@ -1387,6 +2343,192 @@ async def iter_studio_events(
         "findings": gate_findings[:24],
         "contract": locked_contract,
     }
+
+    # One cheap repair pass for Flash traps on app/frontend
+    _REPAIR_CODES = frozenset(
+        {
+            "react_without_ask",
+            "fake_alert_success",
+            "inline_onclick",
+            "fake_form_success",
+            "wrong_product_shape",
+            "missing_state",
+            "thin_catalog",
+            "thin_styles",
+            "dead_select",
+            "missing_json_headers",
+            "missing_address_field",
+            "missing_orders_screen",
+            "thin_app_chrome",
+            "missing_filters",
+            "missing_order_preview",
+            "dead_pick_cta",
+            "mystery_auth_header",
+            "thin_catalog_seed",
+            "thin_app_html",
+            "thin_app_js",
+            "filter_seed_mismatch",
+            "seed_title_not_name",
+            "thin_catalog_fields",
+            "dead_catalog_images",
+            "missing_cart",
+            "inline_script_in_html",
+        }
+    )
+    repair_hits = [f for f in gate_findings if f.get("code") in _REPAIR_CODES]
+    # Backend seed repair first (contract + images)
+    _BE_SEED_CODES = frozenset(
+        {
+            "thin_catalog_seed",
+            "seed_title_not_name",
+            "thin_catalog_fields",
+            "filter_seed_mismatch",
+            "dead_catalog_images",
+        }
+    )
+    if any(f.get("code") in _BE_SEED_CODES for f in repair_hits) and any(
+        p.get("role") == "backend" for p in parts
+    ):
+        be_codes = sorted(
+            {f.get("code") for f in repair_hits if f.get("code") in _BE_SEED_CODES}
+        )
+        yield _status(
+            f"Чиню backend seed (1× Flash): {', '.join(be_codes[:4])}",
+            phase="build",
+        )
+        yield {
+            "type": "repair_start",
+            "role": "backend",
+            "codes": be_codes,
+            "model": model_for_role(mode, "backend"),
+        }
+        try:
+            be_repair = await _role_call(
+                role="backend",
+                system=build_system("backend", brief, intent, mode),
+                history=[],
+                user_text=_role_call_user_text(
+                    "backend",
+                    user_text
+                    + "\n\nREPAIR seed: ≥4 позиций, **name** (не title), image unsplash, "
+                    "desc|composition, category|tag. "
+                    "Значения category/tag = data-filter на FE (продукты: Овощи/Фрукты/Молочка; "
+                    "цветы: хит/премиум/новый). "
+                    "POST orders → product_name/bouquet_name = item['name']. "
+                    "См. app-api.md.",
+                    [p for p in parts if p.get("role") != "backend"],
+                    locked_contract=locked_contract,
+                    product_brief=product_brief,
+                ),
+                model=model_for_role(mode, "backend"),
+            )
+            be_repair["repaired"] = True
+            parts = [p for p in parts if p.get("role") != "backend"]
+            parts.append(be_repair)
+            yield _agent_done_event(be_repair, preview_len=300)
+            yield {
+                "type": "repair_done",
+                "role": "backend",
+                "artifacts_n": len(be_repair.get("artifacts") or []),
+            }
+            pre_arts = []
+            for p in parts:
+                if p.get("role") in ("synth", "reviewer"):
+                    continue
+                pre_arts.extend(p.get("artifacts") or [])
+            pre_arts = filter_studio_artifacts(pre_arts)
+            gate_findings = evidence_mod.scan_all(pre_arts)
+            repair_hits = [f for f in gate_findings if f.get("code") in _REPAIR_CODES]
+        except Exception as e:  # noqa: BLE001
+            yield _status(f"Ремонт backend не удался: {e}", phase="check")
+
+    if repair_hits and any(p.get("role") == "frontend" for p in parts):
+        _FE_CODES = _REPAIR_CODES - {
+            "thin_catalog_seed",
+            "seed_title_not_name",
+            "thin_catalog_fields",
+        }
+        codes = sorted(
+            {f.get("code") for f in repair_hits if f.get("code") in _FE_CODES}
+        )
+        if not codes:
+            pass
+        else:
+            yield _status(
+                f"Чиню фронт (1× Flash): {', '.join(codes[:5])}",
+                phase="build",
+            )
+            yield {
+                "type": "repair_start",
+                "role": "frontend",
+                "codes": codes,
+                "model": model_for_role(mode, "frontend"),
+            }
+            fe_prev = []
+            for p in parts:
+                if p.get("role") == "frontend":
+                    fe_prev.extend(p.get("artifacts") or [])
+            repair_brief = (
+                (brief or "")
+                + "\n\n## REPAIR PASS (обязательно)\n"
+                + "Предыдущая сдача провалила gate: "
+                + ", ".join(codes)
+                + ".\nПерепиши фронт под бриф: /src/frontend/index.html + styles.css + app.js.\n"
+                "ЗАПРЕТ: React/Vue/JSX/createRoot/react-query/npm.\n"
+                "ЗАПРЕТ: alert(), onclick=, inline <script> логика.\n"
+                "DoD: nav≥2 экрана; каталог+заказ/корзина+история; fetch+res.ok; "
+                "для продуктов — addToCart + cart-badge + «В корзину».\n"
+                "Не клонируй чужой бренд; плотность не скелет.\n"
+            )
+            try:
+                # Same per-file copy path as first pass — one-shot repair Flash only shrinks
+                repair_part = await _role_call_app_frontend(
+                    brief=repair_brief,
+                    intent=intent,
+                    mode=mode,
+                    history=[],
+                    user_text=user_text
+                    + "\n\nREPAIR: почини gate (корзина/экраны/fetch) под этот бриф.",
+                    model=model_for_role(mode, "frontend"),
+                    prior_parts=[p for p in parts if p.get("role") != "frontend"],
+                    locked_contract=locked_contract,
+                    product_brief=product_brief,
+                )
+                repair_part["repaired"] = True
+                parts = [p for p in parts if p.get("role") != "frontend"]
+                parts.append(repair_part)
+                yield _agent_done_event(repair_part, preview_len=300)
+                yield {
+                    "type": "repair_done",
+                    "role": "frontend",
+                    "artifacts_n": len(repair_part.get("artifacts") or []),
+                    "app_shop_sources": repair_part.get("app_shop_sources"),
+                }
+                # re-scan after repair
+                pre_arts = []
+                for p in parts:
+                    if p.get("role") in ("synth", "reviewer"):
+                        continue
+                    pre_arts.extend(p.get("artifacts") or [])
+                pre_arts = filter_studio_artifacts(pre_arts)
+                gate_findings = evidence_mod.scan_all(pre_arts)
+                g_score, g_grade, g_gate = evidence_mod.score_from_findings(gate_findings)
+                yield _status(
+                    f"После ремонта: {g_gate} · {g_score} · находок {len(gate_findings)}",
+                    phase="check",
+                )
+                yield {
+                    "type": "gate_done",
+                    "score": g_score,
+                    "grade": g_grade,
+                    "gate": g_gate,
+                    "findings_n": len(gate_findings),
+                    "findings": gate_findings[:24],
+                    "contract": locked_contract,
+                    "after_repair": True,
+                }
+            except Exception as e:  # noqa: BLE001
+                yield _status(f"Ремонт фронта не удался: {e}", phase="check")
 
     # Evidence gate: reuse scan (no second Playwright); LLM reviewer for standard+
     use_llm = mode in ("standard", "ultra", "premium")
@@ -1531,7 +2673,8 @@ def _pack_result(
     if mode in ("ultra", "premium", "standard", "solo"):
         artifacts.extend(filter_studio_artifacts(extract_artifacts("docs", final_text)))
 
-    artifacts = filter_studio_artifacts(artifacts)
+    # Final ship: density hints only — NEVER inject golden HTML/JS clone
+    artifacts = filter_studio_artifacts(artifacts, allow_etalon_replace=False)
     by_path: dict[str, dict[str, Any]] = {}
     for a in artifacts:
         prev = by_path.get(a["path"])

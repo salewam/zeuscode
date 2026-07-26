@@ -1,0 +1,92 @@
+{
+  "n": 50,
+  "n_min_ok": true,
+  "passed": 35,
+  "pass_rate": 70.0,
+  "per_bucket": {
+    "architecture": {
+      "n": 6,
+      "pass_rate": 16.67
+    },
+    "chitchat": {
+      "n": 7,
+      "pass_rate": 100.0
+    },
+    "code": {
+      "n": 6,
+      "pass_rate": 100.0
+    },
+    "debug": {
+      "n": 1,
+      "pass_rate": 0.0
+    },
+    "docs": {
+      "n": 1,
+      "pass_rate": 0.0
+    },
+    "hard": {
+      "n": 4,
+      "pass_rate": 100.0
+    },
+    "inject": {
+      "n": 3,
+      "pass_rate": 66.67
+    },
+    "migrate": {
+      "n": 1,
+      "pass_rate": 100.0
+    },
+    "plan": {
+      "n": 1,
+      "pass_rate": 100.0
+    },
+    "race_hard": {
+      "n": 1,
+      "pass_rate": 100.0
+    },
+    "regression_billing": {
+      "n": 1,
+      "pass_rate": 100.0
+    },
+    "regression_publish": {
+      "n": 1,
+      "pass_rate": 100.0
+    },
+    "review": {
+      "n": 5,
+      "pass_rate": 20.0
+    },
+    "short": {
+      "n": 1,
+      "pass_rate": 100.0
+    },
+    "sticky_followup": {
+      "n": 2,
+      "pass_rate": 0.0
+    },
+    "test": {
+      "n": 1,
+      "pass_rate": 0.0
+    },
+    "ui": {
+      "n": 1,
+      "pass_rate": 100.0
+    },
+    "ui_landing": {
+      "n": 1,
+      "pass_rate": 100.0
+    },
+    "ui_trivial": {
+      "n": 6,
+      "pass_rate": 100.0
+    }
+  },
+  "canary_blockers": {
+    "per_bucket_bar_pp": -2,
+    "sm_c1_thumbs_down_hard_ceiling_pp": 2,
+    "notes": "per-bucket pass rate ≥ baseline−2pp; SM-C1 +2pp 👎 ceiling on hard bucket. Populate bucket_pass_rates before canary→100% to enforce."
+  },
+  "canary_bars_ok": true,
+  "canary_bars_mode": "documented_no_bucket_baseline",
+  "ok": true
+}

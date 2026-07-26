@@ -1,0 +1,176 @@
+{
+  "cid": "11_sticky_t3",
+  "prompt": "Кратко: какой Leader уместен для code review этого проекта?",
+  "stream": false,
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "power",
+    "path": "FULL",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_full",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "gemini-3.1-pro",
+      "claude-opus-4-8",
+      "deepseek-v4-pro"
+    ],
+    "trace_id": "0cca367040a2460a",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 67,
+        "completion_tokens": 347,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "completed",
+        "prompt_tokens": 188,
+        "completion_tokens": 985,
+        "role": "agent"
+      },
+      {
+        "model": "deepseek-v4-pro",
+        "model_id": "deepseek-v4-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 113,
+        "completion_tokens": 2348,
+        "role": "agent"
+      },
+      {
+        "model": "aspect:correctness",
+        "model_id": "aspect:correctness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      },
+      {
+        "model": "aspect:completeness",
+        "model_id": "aspect:completeness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      }
+    ],
+    "answer_only": "1. **Определите стек изменений:** Проанализируйте, какую часть проекта затрагивает код (Backend, Frontend, DevOps, Data Science).\n2. **Выберите профильного лидера:**\n   - *Tech Lead (Backend/Frontend):* для архитектурных изменений, сложной бизнес-логики и стандартов кода.\n   - *Team Lead:* для продуктовых фичей, затрагивающих интеграцию нескольких систем.\n   - *DevOps/Security Lead:* для изменений в инфраструктуре, CI/CD или политиках доступа.\n3. **Назначьте ревьюера (пример для GitHub):**\n\n```bash\n# Назначить выбранного лидера ревьюером пулл-реквеста\ngh pr edit <PR_NUMBER> --add-reviewer <LEADER_USERNAME>\n```\n\n**Обоснование:** Выбор лидера диктуется техническим доменом изменений. Для более точного ответа укажите стек технологий и суть вашего проекта.\n\n—\nДополнения из других веток: ## --- .openapi. /api/ /auth/ /crypto/ /proto/ 80",
+    "thinking_visible": true,
+    "epic3": {
+      "families": {
+        "gemini-3.1-pro": "gemini",
+        "claude-opus-4-8": "claude",
+        "deepseek-v4-pro": "deepseek"
+      },
+      "ranked": [
+        [
+          "claude-opus-4-8",
+          0.402
+        ],
+        [
+          "gemini-3.1-pro",
+          0.3129
+        ],
+        [
+          "deepseek-v4-pro",
+          0.2181
+        ]
+      ],
+      "top_k": [
+        "claude-opus-4-8",
+        "gemini-3.1-pro"
+      ],
+      "near_duplicate_score": 0.08032128514056225,
+      "aspects_must_fail": false,
+      "anti_bias_fail": false,
+      "judge_analysis": {
+        "consensus": [],
+        "contradictions": [
+          "branch_approaches_diverge"
+        ],
+        "unique": [
+          "gemini-3.1-pro:distinct"
+        ],
+        "blind_spots": []
+      }
+    },
+    "classifier": {
+      "stack": "full",
+      "task": "review",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.402,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "raw_error": null,
+  "answer_excerpt": "1. **Определите стек изменений:** Проанализируйте, какую часть проекта затрагивает код (Backend, Frontend, DevOps, Data Science).\n2. **Выберите профильного лидера:**\n   - *Tech Lead (Backend/Frontend):* для архитектурных изменений, сложной бизнес-логики и стандартов кода.\n   - *Team Lead:* для проду",
+  "usage": {
+    "prompt_tokens": 368,
+    "completion_tokens": 3680,
+    "total_tokens": 4048
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 3.8315,
+    "markup": 1.5,
+    "balance_left_rub": 879.06,
+    "key_spent_rub": 10.051,
+    "key_budget_rub": 0.0,
+    "path": "FULL",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_full",
+    "trace_id": "0cca367040a2460a",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "fusion_result_keys": [
+    "answer",
+    "branches",
+    "complexity",
+    "escalate_from",
+    "leader",
+    "path",
+    "phase",
+    "policy_path",
+    "routed_by",
+    "trace_id"
+  ],
+  "http_status": 200,
+  "latency_s": 69.041,
+  "path": "FULL",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_full",
+  "trace_id": "0cca367040a2460a",
+  "escalate_from": "CASCADE",
+  "human_stub": "ok",
+  "why": "http200 non-empty or cancel sim"
+}

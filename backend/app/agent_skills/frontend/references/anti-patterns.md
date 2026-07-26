@@ -56,6 +56,12 @@
 | Fetch без loading/error | Битый UX | States явно |
 | Секреты в JS | Безопасность | Без keys |
 | API молча переписан | Ломает команду | Допущение в Мышлении |
+| `fetch('/api/…')` без backend в артефактах | `api_orphan` — мёртвая форма | Жди route **или** offline-stub с честным текстом |
+| В `catch` «Заявка принята» / «мы свяжемся» | `fake_form_success` — враньё | В catch только ошибка + «позвоните» |
+| Success UI без `fetch` и без offline-лейбла | Тот же gate | Либо сеть, либо «сохранено локально (демо)» |
+| Тел. `+7 (495) 000-00-00` | `placeholder_contact` | Номер из брифа |
+| `url('assets/hero.jpg')` без файла | `missing_asset` | Сдай файл **или** убери ссылку / remote https |
+| `@import '../design/tokens.css'` без tokens | `broken_css_import` | Inline `:root` в styles.css |
 
 ---
 

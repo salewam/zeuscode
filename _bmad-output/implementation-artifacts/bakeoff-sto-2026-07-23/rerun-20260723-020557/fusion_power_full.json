@@ -1,0 +1,136 @@
+{
+  "status": 200,
+  "latency_s": 147.43727379199845,
+  "onestack": {
+    "path": "FULL",
+    "leader": "claude-opus-4-8",
+    "routed_by": "forced_full",
+    "panel": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro",
+      "gemini-3.1-pro"
+    ],
+    "product_mode": "power",
+    "trace_id": "8467e6f3839143a1",
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 268,
+        "completion_tokens": 3897,
+        "role": "agent"
+      },
+      {
+        "model": "deepseek-v4-pro",
+        "model_id": "deepseek-v4-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 311,
+        "completion_tokens": 6144,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "cancelled_no_tokens",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "agent"
+      },
+      {
+        "model": "aspect:correctness",
+        "model_id": "aspect:correctness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      },
+      {
+        "model": "aspect:completeness",
+        "model_id": "aspect:completeness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      },
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 4365,
+        "completion_tokens": 4470,
+        "role": "judge"
+      }
+    ],
+    "epic3": {
+      "families": {
+        "claude-opus-4-8": "claude",
+        "deepseek-v4-pro": "deepseek",
+        "gemini-3.1-pro": "gemini"
+      },
+      "ranked": [
+        [
+          "gemini-3.1-pro",
+          0.47
+        ],
+        [
+          "deepseek-v4-pro",
+          0.47
+        ]
+      ],
+      "top_k": [
+        "gemini-3.1-pro",
+        "deepseek-v4-pro"
+      ],
+      "near_duplicate_score": 0.29516129032258065,
+      "aspects_must_fail": false,
+      "anti_bias_fail": false,
+      "judge_analysis": {
+        "consensus": [
+          "Full-screen hero section with large brand name, slogan, and CTA.",
+          "Services section listing the required services.",
+          "Why us section with key advantages.",
+          "Responsive design using CSS Grid/Flexbox.",
+          "Colors: asphalt (dark greys) and amber (orange/yellow)."
+        ],
+        "contradictions": [
+          "Variant A uses Montserrat and Oswald, Variant B uses Montserrat and Russo One.",
+          "Variant A uses a photo background for the hero, Variant B uses a CSS pattern."
+        ],
+        "unique": [
+          "Variant A includes a photo background for the form section.",
+          "Variant B uses Russo One which fits the automotive theme well."
+        ],
+        "blind_spots": [
+          "Both variants got cut off and did not finish the HTML.",
+          "Neither fully completed the reviews and footer sections due to length."
+        ]
+      }
+    }
+  },
+  "usage": {
+    "prompt_tokens": 4944,
+    "completion_tokens": 14511,
+    "total_tokens": 19455
+  },
+  "billing": {
+    "currency": "RUB",
+    "charged_rub": 6.3454,
+    "markup": 1.5,
+    "balance_left_rub": 840.21,
+    "key_spent_rub": 37.3491,
+    "key_budget_rub": 0.0,
+    "path": "FULL",
+    "policy_path": "FULL",
+    "routed_by": "forced_full",
+    "trace_id": "8467e6f3839143a1",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "content_preview": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>МоторХаус — Автосервис на Каширском шоссе</title>\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Mon",
+  "error": null,
+  "publish_url": "https://zeuscode.ru/go/site-1805/"
+}

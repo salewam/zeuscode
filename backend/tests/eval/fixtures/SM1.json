@@ -1,0 +1,18 @@
+{
+  "id": "SM1",
+  "metric": "SM-1",
+  "title": "small stays cheap on light/ui trivia",
+  "intent": "pipeline=small; doer_panel<=2; no Pipeline v1; GREEN-first without escalate preference",
+  "binds": ["FR-3", "FR-6", "FR-18"],
+  "fr16_deferred": true,
+  "prompts": [
+    "поменяй цвет кнопки на синий",
+    "добавь padding 8px",
+    "переименуй заголовок"
+  ],
+  "expect": {
+    "pipeline": "small",
+    "max_doer_panel": 2,
+    "forbid_pipeline": ["v1"]
+  }
+}

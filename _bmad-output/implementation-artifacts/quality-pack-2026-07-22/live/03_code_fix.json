@@ -1,0 +1,107 @@
+{
+  "cid": "03_code_fix",
+  "prompt": "Исправь: функция sum(a,b) возвращает строку вместо числа. Дай короткий патч на python.",
+  "stream": false,
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "power",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "39312eeb5dbc4f1d",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 57,
+        "completion_tokens": 106,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "```python\ndef sum(a, b):\n    return float(a) + float(b)  # или int(a) + int(b), если нужны только целые числа\n```\n\n**Причина:** \nЕсли аргументы передавались как строки (например, из `input()`), операция `+` их конкатенировала (склеивала). Приведение типов через `float()` или `int()` перед сложением гарантирует математическую операцию и возврат числового типа.",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "code",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.404,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "raw_error": null,
+  "answer_excerpt": "```python\ndef sum(a, b):\n    return float(a) + float(b)  # или int(a) + int(b), если нужны только целые числа\n```\n\n**Причина:** \nЕсли аргументы передавались как строки (например, из `input()`), операция `+` их конкатенировала (склеивала). Приведение типов через `float()` или `int()` перед сложением ",
+  "usage": {
+    "prompt_tokens": 57,
+    "completion_tokens": 106,
+    "total_tokens": 163
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.0565,
+    "markup": 1.5,
+    "balance_left_rub": 886.24,
+    "key_spent_rub": 0.1062,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "39312eeb5dbc4f1d",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "fusion_result_keys": [
+    "answer",
+    "branches",
+    "complexity",
+    "escalate_from",
+    "leader",
+    "path",
+    "phase",
+    "policy_path",
+    "routed_by",
+    "trace_id"
+  ],
+  "http_status": 200,
+  "latency_s": 13.102,
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "39312eeb5dbc4f1d",
+  "escalate_from": "CASCADE",
+  "human_stub": "ok",
+  "why": "http200 non-empty or cancel sim"
+}

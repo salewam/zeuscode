@@ -1,0 +1,169 @@
+{
+  "cid": "u10_sticky_b",
+  "prompt": "Какой стек у проекта? Название проекта скажи ещё раз и предложи 3 модели данных для карточки.",
+  "zeus": {
+    "mode": "power",
+    "session_id": "userpack-sess-20260722"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "Так как история предыдущей переписки недоступна, я использую пример стандартного проекта. \n\n**Название проекта:** TaskFlow (пример)\n**Стек проекта:** React, Node.js (NestJS), PostgreSQL, TypeScript, Prisma.\n\nВот 3 варианта модели данных для «карточки» (задачи) в зависимости от уровня и используемой технологии:\n\n### 1. TypeScript интерфейс (Frontend / Backend DTO)\nИспользуется для типизации данных на клиенте или при передаче по сети.\n```typescript\nexport interface TaskCard {\n  id: string;\n  title: string;\n  description: string | null;\n  status: 'TODO' | 'IN_PROGRESS' | 'DONE';\n  assigneeId: string | null;\n  createdAt: Date;\n  updatedAt: Date;\n}\n```\n\n### 2. Prisma Schema (Реляционная БД / PostgreSQL)\nИспользуется для описания структуры таблицы и связей в реляционной базе данных.\n```prisma\nmodel Card {\n  id          String   @id @default(uuid())\n  title       String   @db.VarChar(255)\n  description String?  @db.Text\n  status      Status   @default(TODO)\n  assigneeId  String?\n  assignee    User?    @relation(fields: [assigneeId], references: [id])\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\nenum Status {\n  TODO\n  IN_PROGRESS\n  DONE\n}\n```\n\n### 3. Mongoose Schema (Документоориентированная БД / MongoDB)\nАльтернативный вариант, если в стеке используется NoSQL база данных.\n```javascript\nimport mongoose from 'mongoose';\n\nconst cardSchema = new mongoose.Schema({\n  title: { type: String, required: true },\n  description: { type: String, default: null },\n  status: { \n    type: String, \n    enum: ['TODO', 'IN_PROGRESS', 'DONE'], \n    default: 'TODO' \n  },\n  assigneeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }\n}, { \n  timestamps: true \n});\n\nexport const CardModel = mongoose.model('Card', cardSchema);\n``` \n\n*Если вы имели в виду конкретный проект из нашей прошлой беседы, пожалуйста, напомните его детали, так как контекст очистился.*\n\n—\nДополнения из других веток: --- // /div /h3 /p 14 adaptivecard adaptivecardprops; ## // assignee_id backlog body brief card_id card_tags",
+  "answer_excerpt": "Так как история предыдущей переписки недоступна, я использую пример стандартного проекта. \n\n**Название проекта:** TaskFlow (пример)\n**Стек проекта:** React, Node.js (NestJS), PostgreSQL, TypeScript, Prisma.\n\nВот 3 варианта модели данных для «карточки» (задачи) в зависимости от уровня и используемой технологии:\n\n### 1. TypeScript интерфейс (Frontend / Backend DTO)\nИспользуется для типизации данных на клиенте или при передаче по сети.\n```typescript\nexport interface TaskCard {\n  id: string;\n  title",
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "power",
+    "path": "FULL",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_full",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "gemini-3.1-pro",
+      "claude-opus-4-8",
+      "deepseek-v4-pro"
+    ],
+    "trace_id": "75e4d3b33c074214",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 53,
+        "completion_tokens": 557,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "completed",
+        "prompt_tokens": 205,
+        "completion_tokens": 1105,
+        "role": "agent"
+      },
+      {
+        "model": "deepseek-v4-pro",
+        "model_id": "deepseek-v4-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 124,
+        "completion_tokens": 1508,
+        "role": "agent"
+      },
+      {
+        "model": "aspect:correctness",
+        "model_id": "aspect:correctness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      },
+      {
+        "model": "aspect:completeness",
+        "model_id": "aspect:completeness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      }
+    ],
+    "answer_only": "Так как история предыдущей переписки недоступна, я использую пример стандартного проекта. \n\n**Название проекта:** TaskFlow (пример)\n**Стек проекта:** React, Node.js (NestJS), PostgreSQL, TypeScript, Prisma.\n\nВот 3 варианта модели данных для «карточки» (задачи) в зависимости от уровня и используемой технологии:\n\n### 1. TypeScript интерфейс (Frontend / Backend DTO)\nИспользуется для типизации данных на клиенте или при передаче по сети.\n```typescript\nexport interface TaskCard {\n  id: string;\n  title: string;\n  description: string | null;\n  status: 'TODO' | 'IN_PROGRESS' | 'DONE';\n  assigneeId: string | null;\n  createdAt: Date;\n  updatedAt: Date;\n}\n```\n\n### 2. Prisma Schema (Реляционная БД / PostgreSQL)\nИспользуется для описания структуры таблицы и связей в реляционной базе данных.\n```prisma\nmodel Card {\n  id          String   @id @default(uuid())\n  title       String   @db.VarChar(255)\n  description String?  @db.Text\n  status      Status   @default(TODO)\n  assigneeId  String?\n  assignee    User?    @relation(fields: [assigneeId], references: [id])\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\nenum Status {\n  TODO\n  IN_PROGRESS\n  DONE\n}\n```\n\n### 3. Mongoose Schema (Документоориентированная БД / MongoDB)\nАльтернативный вариант, если в стеке используется NoSQL база данных.\n```javascript\nimport mongoose from 'mongoose';\n\nconst cardSchema = new mongoose.Schema({\n  title: { type: String, required: true },\n  description: { type: String, default: null },\n  status: { \n    type: String, \n    enum: ['TODO', 'IN_PROGRESS', 'DONE'], \n    default: 'TODO' \n  },\n  assigneeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }\n}, { \n  timestamps: true \n});\n\nexport const CardModel = mongoose.model('Card', cardSchema);\n``` \n\n*Если вы имели в виду конкретный проект из нашей прошлой беседы, пожалуйста, напомните его детали, так как контекст очистился.*\n\n—\nДополнения из других веток: --- // /div /h3 /p 14 adaptivecard adaptivecardprops; ## // assignee_id backlog body brief card_id card_tags",
+    "thinking_visible": true,
+    "epic3": {
+      "families": {
+        "gemini-3.1-pro": "gemini",
+        "claude-opus-4-8": "claude",
+        "deepseek-v4-pro": "deepseek"
+      },
+      "ranked": [
+        [
+          "gemini-3.1-pro",
+          0.4689
+        ],
+        [
+          "deepseek-v4-pro",
+          0.4679
+        ],
+        [
+          "claude-opus-4-8",
+          0.4125
+        ]
+      ],
+      "top_k": [
+        "gemini-3.1-pro",
+        "deepseek-v4-pro",
+        "claude-opus-4-8"
+      ],
+      "near_duplicate_score": 0.13382899628252787,
+      "aspects_must_fail": false,
+      "anti_bias_fail": false,
+      "judge_analysis": {
+        "consensus": [],
+        "contradictions": [
+          "branch_approaches_diverge"
+        ],
+        "unique": [
+          "deepseek-v4-pro:distinct",
+          "claude-opus-4-8:distinct"
+        ],
+        "blind_spots": []
+      }
+    },
+    "classifier": {
+      "stack": "fast",
+      "task": "light",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.402,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 382,
+    "completion_tokens": 3170,
+    "total_tokens": 3552
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 4.0357,
+    "markup": 1.5,
+    "balance_left_rub": 875.01,
+    "key_spent_rub": 4.773,
+    "key_budget_rub": 0.0,
+    "path": "FULL",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_full",
+    "trace_id": "75e4d3b33c074214",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "FULL",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_full",
+  "trace_id": "75e4d3b33c074214",
+  "escalate_from": "CASCADE",
+  "latency_s": 46.696,
+  "ok": true
+}

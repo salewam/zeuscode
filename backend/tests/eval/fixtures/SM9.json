@@ -1,0 +1,13 @@
+{
+  "id": "SM9",
+  "metric": "SM-9",
+  "title": "small eval LLM call ceiling",
+  "intent": "on small eval p95 doer-LLM calls ≤2 (orientir total ≤4 excl. forced alias)",
+  "binds": ["FR-3", "FR-18.9", "AD-31"],
+  "fr16_deferred": true,
+  "expect": {
+    "pipeline": "small",
+    "max_doer_llm": 2,
+    "orientir_total_llm": 4
+  }
+}

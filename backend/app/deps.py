@@ -50,11 +50,19 @@ async def get_current_user_preview(
 
 async def get_user_by_api_key(
     authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="x-api-key"),
     db: AsyncSession = Depends(get_db),
 ) -> tuple[User, ApiKey]:
-    if not authorization or not authorization.lower().startswith("bearer "):
-        raise HTTPException(401, "Missing API key (Authorization: Bearer …)")
-    raw = authorization.split(" ", 1)[1].strip()
+    """Accept OpenAI-style Bearer or Anthropic-style x-api-key (Claude Code)."""
+    raw = ""
+    if authorization and authorization.lower().startswith("bearer "):
+        raw = authorization.split(" ", 1)[1].strip()
+    elif x_api_key and x_api_key.strip():
+        raw = x_api_key.strip()
+    if not raw:
+        raise HTTPException(
+            401, "Missing API key (Authorization: Bearer … or x-api-key)"
+        )
     # zeus_/osk_ product keys, or raw hex seat keys (32–64 chars)
     ok_fmt = (
         raw.startswith("zeus_")

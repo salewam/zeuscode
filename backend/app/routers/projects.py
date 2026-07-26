@@ -406,6 +406,22 @@ async def list_messages(
     return out
 
 
+def _evidence_meta(evd: dict | None) -> dict | None:
+    """Persist gate + orchestrator unpack for Studio history."""
+    if not evd:
+        return None
+    out = {
+        "verdict": evd.get("verdict"),
+        "gate": evd.get("gate"),
+        "score": evd.get("score"),
+        "grade": evd.get("grade"),
+        "findings": evd.get("gate_findings") or evd.get("findings"),
+    }
+    if evd.get("brief_expand"):
+        out["brief_expand"] = evd["brief_expand"]
+    return out
+
+
 @router.post("/{project_id}/chats/{chat_id}/complete")
 async def complete_in_chat(
     project_id: int,
@@ -530,15 +546,7 @@ async def complete_in_chat(
         "team": onestack.get("team"),
         "agents": onestack.get("agents"),
         "wall_s": onestack.get("wall_s"),
-        "evidence": {
-            "verdict": evd.get("verdict"),
-            "gate": evd.get("gate"),
-            "score": evd.get("score"),
-            "grade": evd.get("grade"),
-            "findings": evd.get("gate_findings"),
-        }
-        if evd
-        else None,
+        "evidence": _evidence_meta(evd),
         "artifacts_preview": [
             {"kind": a.get("kind"), "path": a.get("path"), "title": a.get("title"), "role": a.get("role")}
             for a in arts[:40]
@@ -730,6 +738,43 @@ async def complete_in_chat_stream(
                 written = ws.apply_artifacts(root, arts)
                 if written:
                     yield _sse({"type": "file_changed", "files": written})
+
+                pub_url = None
+                try:
+                    from app.publish import inject_zeus_badge, publish_frontend_dir
+
+                    fe = root / "src" / "frontend"
+                    if (fe / "index.html").is_file():
+                        html_path = fe / "index.html"
+                        html_path.write_text(
+                            inject_zeus_badge(
+                                html_path.read_text(encoding="utf-8", errors="replace")
+                            ),
+                            encoding="utf-8",
+                        )
+                        for a in arts:
+                            if (a.get("path") or "").endswith("/frontend/index.html") and a.get(
+                                "content"
+                            ):
+                                a["content"] = inject_zeus_badge(a["content"])
+                        pub = publish_frontend_dir(
+                            fe,
+                            title=(brief or content or f"project-{project_id_i}")[:80],
+                            meta={"project_id": project_id_i, "user_id": user_id},
+                        )
+                        if pub:
+                            pub_url = pub.get("url")
+                            onestack["public_url"] = pub_url
+                            yield _sse(
+                                {
+                                    "type": "published",
+                                    "url": pub_url,
+                                    "slug": pub.get("slug"),
+                                }
+                            )
+                except Exception:
+                    pub_url = None
+
                 run_mode = onestack.get("mode") or mode
                 agents = onestack.get("agents") or []
                 upstream_cost = 0.0
@@ -761,6 +806,12 @@ async def complete_in_chat_stream(
                     text = data["choices"][0]["message"]["content"]
                 except (KeyError, IndexError, TypeError):
                     text = str(data)
+                if pub_url and pub_url not in (text or ""):
+                    text = (text or "").rstrip() + f"\n\n---\n🔗 Живая ссылка: {pub_url}\n"
+                    try:
+                        data["choices"][0]["message"]["content"] = text
+                    except Exception:
+                        pass
 
                 async with SessionLocal() as session:
                     u = await session.get(User, user_id)
@@ -784,15 +835,8 @@ async def complete_in_chat_stream(
                         "team": onestack.get("team"),
                         "agents": onestack.get("agents"),
                         "wall_s": onestack.get("wall_s"),
-                        "evidence": {
-                            "verdict": (onestack.get("evidence") or {}).get("verdict"),
-                            "gate": (onestack.get("evidence") or {}).get("gate"),
-                            "score": (onestack.get("evidence") or {}).get("score"),
-                            "grade": (onestack.get("evidence") or {}).get("grade"),
-                            "findings": (onestack.get("evidence") or {}).get("gate_findings"),
-                        }
-                        if onestack.get("evidence")
-                        else None,
+                        "evidence": _evidence_meta(onestack.get("evidence")),
+                        "public_url": pub_url or onestack.get("public_url"),
                         "artifacts_preview": [
                             {
                                 "kind": a.get("kind"),

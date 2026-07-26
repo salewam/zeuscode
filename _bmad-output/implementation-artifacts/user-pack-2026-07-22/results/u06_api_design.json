@@ -1,0 +1,97 @@
+{
+  "cid": "u06_api_design",
+  "prompt": "Нужен простой REST для заметок: endpoints, поля, коды ошибок. Коротко списком.",
+  "zeus": {
+    "mode": "power"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "### Поля модели (Заметка)\n*   `id` (string/uuid) — уникальный идентификатор\n*   `title` (string) — заголовок заметки\n*   `content` (text) — текст заметки\n*   `created_at` (datetime) — дата создания\n*   `updated_at` (datetime) — дата последнего обновления\n\n### Endpoints (Маршруты)\n*   `GET /notes` — получить список всех заметок\n*   `GET /notes/{id}` — получить конкретную заметку по ID\n*   `POST /notes` — создать новую заметку (в теле: `title`, `content`)\n*   `PUT /notes/{id}` — обновить существующую заметку целиком (в теле: `title`, `content`)\n*   `PATCH /notes/{id}` — частичное обновление заметки (в теле: `title` и/или `content`)\n*   `DELETE /notes/{id}` — удалить заметку\n\n### Коды ответов и ошибок (HTTP Status Codes)\n*   **200 OK** — успешный запрос (`GET`, `PUT`, `PATCH`, `DELETE`)\n*   **201 Created** — заметка успешно создана (`POST`)\n*   **204 No Content** — успешное удаление (альтернатива 200 для `DELETE`)\n*   **400 Bad Request** — ошибка валидации (например, пустое тело или превышена длина `title`)\n*   **404 Not Found** — заметка с указанным `id` не найдена\n*   **500 Internal Server Error** — непредвиденная ошибка на стороне сервера",
+  "answer_excerpt": "### Поля модели (Заметка)\n*   `id` (string/uuid) — уникальный идентификатор\n*   `title` (string) — заголовок заметки\n*   `content` (text) — текст заметки\n*   `created_at` (datetime) — дата создания\n*   `updated_at` (datetime) — дата последнего обновления\n\n### Endpoints (Маршруты)\n*   `GET /notes` — получить список всех заметок\n*   `GET /notes/{id}` — получить конкретную заметку по ID\n*   `POST /notes` — создать новую заметку (в теле: `title`, `content`)\n*   `PUT /notes/{id}` — обновить существую",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "power",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "c283170df402424f",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 52,
+        "completion_tokens": 369,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "### Поля модели (Заметка)\n*   `id` (string/uuid) — уникальный идентификатор\n*   `title` (string) — заголовок заметки\n*   `content` (text) — текст заметки\n*   `created_at` (datetime) — дата создания\n*   `updated_at` (datetime) — дата последнего обновления\n\n### Endpoints (Маршруты)\n*   `GET /notes` — получить список всех заметок\n*   `GET /notes/{id}` — получить конкретную заметку по ID\n*   `POST /notes` — создать новую заметку (в теле: `title`, `content`)\n*   `PUT /notes/{id}` — обновить существующую заметку целиком (в теле: `title`, `content`)\n*   `PATCH /notes/{id}` — частичное обновление заметки (в теле: `title` и/или `content`)\n*   `DELETE /notes/{id}` — удалить заметку\n\n### Коды ответов и ошибок (HTTP Status Codes)\n*   **200 OK** — успешный запрос (`GET`, `PUT`, `PATCH`, `DELETE`)\n*   **201 Created** — заметка успешно создана (`POST`)\n*   **204 No Content** — успешное удаление (альтернатива 200 для `DELETE`)\n*   **400 Bad Request** — ошибка валидации (например, пустое тело или превышена длина `title`)\n*   **404 Not Found** — заметка с указанным `id` не найдена\n*   **500 Internal Server Error** — непредвиденная ошибка на стороне сервера",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "code",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.404,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 52,
+    "completion_tokens": 369,
+    "total_tokens": 421
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.1862,
+    "markup": 1.5,
+    "balance_left_rub": 878.26,
+    "key_spent_rub": 0.5382,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "c283170df402424f",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "c283170df402424f",
+  "escalate_from": "CASCADE",
+  "latency_s": 13.275,
+  "ok": true
+}

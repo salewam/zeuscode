@@ -66,14 +66,25 @@
 - [ ] Стабильные accessible names для tests
 - [ ] Design-токены не переписаны молча; конфликт назван
 
+## I. Shippable landing (если сайт/лендинг/услуга)
+
+- [ ] Телефон не `000-00-00` / `555-…` (gate: `placeholder_contact`)
+- [ ] Нет `url(assets/…)` / `src=assets/…` без артефакта файла (gate: `missing_asset`)
+- [ ] Нет `@import` на несуществующий tokens (gate: `broken_css_import`)
+- [ ] `fetch('/api/…')` только если backend route есть; иначе offline без вранья (gate: `api_orphan`)
+- [ ] В `catch` нет «заявка принята/отправлена» как успеха (gate: `fake_form_success`)
+- [ ] Цены/бренд согласованы с brief; footer год актуальный
+
+См. `landing-ship.md`.
+
 ## H. Режимная планка
 
 | Режим | Минимум |
 |--------|---------|
-| light | A + C (базово) + F (path) + happy; states можно кратко описать |
-| standard | A–G без диалог-ловушек если диалога нет; B обязательно если async/список |
-| ultra | A–G полностью + anti-patterns жёстко + готовность к склейке |
-| premium | ultra + сверка с `examples/good_output.md` + a11y.md self-check |
+| light | A + C + F + I (если лендинг) + happy; states кратко |
+| standard | A–G + I; B обязательно если async/список |
+| ultra | A–G + I полностью + anti-patterns жёстко |
+| premium | ultra + сверка с `examples/good_output.md` + a11y.md |
 
 ## Ещё не done (стоп-фразы)
 
@@ -81,3 +92,5 @@
 - красивое описание без кода с `path=`
 - empty экран без CTA
 - фиолетовый градиент / Inter «по умолчанию» без брифа
+- «API потом» / «успех в catch для демо»
+- `url(assets/hero.jpg)` без файла в артефактах

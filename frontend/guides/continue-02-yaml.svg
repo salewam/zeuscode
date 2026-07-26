@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="310" viewBox="0 0 480 310" role="img" aria-label="Continue: config.yaml">
+  <defs><style>
+  .bg { fill: #0e1116; }
+  .panel { fill: #151a22; stroke: #2a3140; stroke-width: 1.5; }
+  .side { fill: #12161e; stroke: #2a3140; stroke-width: 1; }
+  .top { fill: #1a1f2a; }
+  .muted { fill: #6b7385; font-family: -apple-system, system-ui, sans-serif; }
+  .txt { fill: #e8eaed; font-family: -apple-system, system-ui, sans-serif; }
+  .hint { fill: #8b93a7; font-family: -apple-system, system-ui, sans-serif; }
+  .accent { fill: #2aabee; }
+  .field { fill: #0e1116; stroke: #3a4458; stroke-width: 1.5; rx: 8; }
+  .field-on { fill: #0e1116; stroke: #e8a84a; stroke-width: 2.5; rx: 8; }
+  .btn { fill: #2aabee; }
+  .btn-t { fill: #fff; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+  .call { fill: #e8a84a; }
+  .call-t { fill: #1a1206; font-family: -apple-system, system-ui, sans-serif; font-weight: 800; }
+  .arrow { stroke: #e8a84a; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .arrow-h { fill: #e8a84a; }
+  .chip { fill: #243044; }
+  .sel { fill: #1e3a4f; stroke: #2aabee; stroke-width: 1.5; }
+  .ok { fill: #3dd68c; }
+</style>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" class="arrow-h"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="480" height="310" rx="16"/>
+  
+  <rect class="panel" x="12" y="12" width="456" height="286" rx="10"/>
+  <text class="txt" x="32" y="40" font-size="15" font-weight="800">config.yaml</text>
+  <text class="hint" x="32" y="60" font-size="11">~/.continue/config.yaml</text>
+  <rect class="field" x="24" y="76" width="432" height="170" rx="8"/>
+  <text class="muted" x="40" y="100" font-size="12" font-family="ui-monospace,monospace">models:</text>
+  <text class="muted" x="40" y="120" font-size="12" font-family="ui-monospace,monospace">  - name: ZeusCode</text>
+  <text class="txt" x="40" y="140" font-size="12" font-family="ui-monospace,monospace" fill="#e8a84a">    provider: openai</text>
+  <text class="txt" x="40" y="160" font-size="12" font-family="ui-monospace,monospace" fill="#e8a84a">    model: zeuscode</text>
+  <text class="txt" x="40" y="180" font-size="12" font-family="ui-monospace,monospace" fill="#e8a84a">    apiBase: https://zeuscode.ru/v1</text>
+  <text class="txt" x="40" y="200" font-size="12" font-family="ui-monospace,monospace" fill="#e8a84a">    apiKey: zeus_…</text>
+  
+    <circle class="call" cx="430" cy="170" r="14"/>
+    <text class="call-t" x="430" y="175" text-anchor="middle" font-size="14">1</text>
+    
+  <text class="call" x="240" y="280" text-anchor="middle" font-size="13" font-weight="700" fill="#e8a84a">Вставь блок настроек · сохрани файл</text>
+
+</svg>

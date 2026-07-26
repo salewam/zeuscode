@@ -1,0 +1,7 @@
+{
+  "id": "F14",
+  "bucket": "short",
+  "prompt": "ок",
+  "expected_path": "FAST",
+  "expect_code_fence": false
+}

@@ -1,0 +1,15 @@
+{
+  "id": "SM2",
+  "metric": "SM-2",
+  "title": "traceback → Log Analyst influences Gate",
+  "intent": "log_report.critical=true ⇒ gate=RED with reason log_critical",
+  "binds": ["FR-5", "FR-6"],
+  "fr16_deferred": true,
+  "prompts": [
+    "Traceback (most recent call last):\n  File app.py, line 1\nException: boom"
+  ],
+  "expect": {
+    "gate": "RED",
+    "gate_reasons_contains": ["log_critical"]
+  }
+}

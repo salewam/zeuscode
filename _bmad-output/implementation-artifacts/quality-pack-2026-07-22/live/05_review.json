@@ -1,0 +1,107 @@
+{
+  "cid": "05_review",
+  "prompt": "Сделай code review: def get(u): return db.execute(f\"select * from users where id={u}\"). Список рисков.",
+  "stream": false,
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "power",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "79d06a1613e34503",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 63,
+        "completion_tokens": 347,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "### Исправленный код (Безопасный вариант)\n\n```python\ndef get_user_by_id(user_id: int):\n    # Явно указываем нужные столбцы вместо *\n    query = \"SELECT id, username, email FROM users WHERE id = %s\" \n    # Используем параметризованный запрос (синтаксис зависит от драйвера БД, например %s или ?)\n    return db.execute(query, (user_id,))\n```\n\n### Список рисков исходного кода\n\n1. **SQL-инъекция (Критический риск)**: Использование f-строк `f\"...{u}\"` позволяет злоумышленнику передать вредоносный SQL-код (например, `1; DROP TABLE users`). Это прямой путь к взлому и потере данных.\n2. **Использование `SELECT *`**: Извлечение всех столбцов излишне нагружает сеть и память, а также может сломать код при изменении структуры таблицы (добавлении/удалении колонок).\n3. **Отсутствие валидации и типизации**: Переменная `u` может быть строкой или другим типом данных, что вызовет ошибку базы данных. Нет type hints.\n4. **Плохой нейминг**: Имя функции `get` и аргумент `u` неинформативны. Сложно понять, что именно делает функция (получает пользователя, пост, настройку?).\n5. **Отсутствие обработки ошибок**: Если база данных недоступна или запись не найдена, функция упадет с необработанным исключением.",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "review",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "raw_error": null,
+  "answer_excerpt": "### Исправленный код (Безопасный вариант)\n\n```python\ndef get_user_by_id(user_id: int):\n    # Явно указываем нужные столбцы вместо *\n    query = \"SELECT id, username, email FROM users WHERE id = %s\" \n    # Используем параметризованный запрос (синтаксис зависит от драйвера БД, например %s или ?)\n    r",
+  "usage": {
+    "prompt_tokens": 63,
+    "completion_tokens": 347,
+    "total_tokens": 410
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.1761,
+    "markup": 1.5,
+    "balance_left_rub": 885.69,
+    "key_spent_rub": 0.4827,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "79d06a1613e34503",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "fusion_result_keys": [
+    "answer",
+    "branches",
+    "complexity",
+    "escalate_from",
+    "leader",
+    "path",
+    "phase",
+    "policy_path",
+    "routed_by",
+    "trace_id"
+  ],
+  "http_status": 200,
+  "latency_s": 15.008,
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "79d06a1613e34503",
+  "escalate_from": "CASCADE",
+  "human_stub": "ok",
+  "why": "http200 non-empty or cancel sim"
+}

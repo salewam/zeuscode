@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="310" viewBox="0 0 480 310" role="img" aria-label="Скачать VS Code">
+  <defs><style>
+  .bg { fill: #0e1116; }
+  .panel { fill: #1e1e1e; stroke: #3c3c3c; stroke-width: 1; }
+  .bar { fill: #252526; }
+  .side { fill: #333333; }
+  .txt { fill: #cccccc; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .w { fill: #ffffff; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .muted { fill: #858585; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .blue { fill: #0078d4; }
+  .field { fill: #3c3c3c; }
+  .field-on { fill: #2a2d2e; stroke: #e8a84a; stroke-width: 2.5; }
+  .call { fill: #e8a84a; }
+  .call-t { fill: #1a1206; font-family: -apple-system, system-ui, sans-serif; font-weight: 800; }
+  .ok { fill: #3dd68c; }
+  .btn-t { fill: #fff; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .cap { fill: #e8a84a; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+</style>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#e8a84a"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="480" height="310" rx="14"/>
+  
+  <rect class="panel" x="16" y="16" width="448" height="278" rx="12"/>
+  <text class="w" x="40" y="56" font-size="20" font-weight="800">Шаг 1. Скачай VS Code</text>
+  <text class="muted" x="40" y="84" font-size="13">Бесплатная программа от Microsoft</text>
+  <rect class="blue" x="40" y="120" width="200" height="48" rx="8"/>
+  <text class="btn-t" x="140" y="150" text-anchor="middle" font-size="15">Download</text>
+  <circle class="call" cx="260" cy="144" r="15"/><text class="call-t" x="260" y="149" text-anchor="middle" font-size="14">1</text>
+  <text class="txt" x="40" y="200" font-size="14">Установи и открой VS Code.</text>
+  <text class="txt" x="40" y="228" font-size="14">Дальше поставим помощника Continue.</text>
+  <text class="cap" x="240" y="275" text-anchor="middle" font-size="13">Кнопка «Скачать VS Code» ниже в обучении</text>
+
+</svg>

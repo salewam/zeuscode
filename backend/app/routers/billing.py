@@ -155,9 +155,21 @@ async def billing_summary(
     )
     month_spent = await month_spent_rub(db, user.id)
     alerts = alert_payload(user, month_spent)
+    bal_meta: dict = {"credits": None, "synced": False}
+    try:
+        from app.kie_credits import sync_user_balance_from_kie
+
+        bal_meta = await sync_user_balance_from_kie(user)
+        await db.commit()
+        await db.refresh(user)
+        alerts = alert_payload(user, month_spent)
+    except Exception:  # noqa: BLE001
+        pass
     return {
         "currency": "RUB",
-        "balance_rub": round(user.balance_usd, 4),
+        "balance_rub": round(float(user.balance_usd or 0), 4),
+        "credits": bal_meta.get("credits", bal_meta.get("kie_credits")),
+        "synced": bool(bal_meta.get("synced") or bal_meta.get("kie_synced")),
         "spent_rub": round(float(spent.scalar_one()), 4),
         "requests": int(calls.scalar_one()),
         "api_keys": int(keys.scalar_one()),

@@ -9,7 +9,21 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import get_settings
 from app.db import init_db
-from app.routers import auth, billing, chat, keys, me, models, projects, github, studio_fs
+from app.routers import (
+    auth,
+    billing,
+    chat,
+    fusion_feedback,
+    keys,
+    me,
+    models,
+    projects,
+    github,
+    studio_fs,
+    publish,
+    tg_miniapp,
+    usage_admin,
+)
 
 settings = get_settings()
 ROOT = Path(__file__).resolve().parents[2]
@@ -81,7 +95,7 @@ class NoCacheFrontendMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         path = request.url.path
-        if path == "/app" or path == "/" or path.startswith("/static/"):
+        if path in ("/app", "/", "/tg", "/miniapp") or path.startswith("/static/"):
             response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
@@ -93,12 +107,16 @@ app.add_middleware(NoCacheFrontendMiddleware)
 app.include_router(auth.router)
 app.include_router(keys.router)
 app.include_router(me.router)
+app.include_router(fusion_feedback.router)
 app.include_router(projects.router)
 app.include_router(studio_fs.router)
 app.include_router(github.router)
 app.include_router(billing.router)
 app.include_router(models.router)
 app.include_router(chat.router)
+app.include_router(publish.router)
+app.include_router(tg_miniapp.router)
+app.include_router(usage_admin.router)
 
 app.mount("/static", StaticFiles(directory=str(FRONTEND)), name="static")
 
@@ -110,6 +128,21 @@ if _COFFEE_DEMO.is_dir():
         StaticFiles(directory=str(_COFFEE_DEMO), html=True),
         name="demo_coffee",
     )
+
+# Autoservice mode bake-off (gemini-only runs)
+for _mode, _uid, _pid in (
+    ("light", "27", "54"),
+    ("standard", "27", "55"),
+    ("ultra", "27", "56"),
+    ("premium", "27", "57"),
+):
+    _demo = ROOT / "data" / "workspaces" / _uid / _pid / "src" / "frontend"
+    if _demo.is_dir() and (_demo / "index.html").is_file():
+        app.mount(
+            f"/demo/sto-{_mode}",
+            StaticFiles(directory=str(_demo), html=True),
+            name=f"demo_sto_{_mode}",
+        )
 
 
 @app.get("/")
@@ -128,6 +161,16 @@ async def cabinet():
     )
 
 
+@app.get("/tg")
+@app.get("/miniapp")
+async def telegram_miniapp():
+    """Telegram Mini App shell (opened from the bot WebApp button)."""
+    return FileResponse(
+        FRONTEND / "tg-miniapp.html",
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+    )
+
+
 @app.get("/health")
 async def health():
     return {
@@ -137,6 +180,7 @@ async def health():
         "markup": settings.MARKUP,
         "currency": "RUB",
         "trial_rub": settings.TRIAL_RUB,
+        "miniapp": "/tg",
     }
 
 

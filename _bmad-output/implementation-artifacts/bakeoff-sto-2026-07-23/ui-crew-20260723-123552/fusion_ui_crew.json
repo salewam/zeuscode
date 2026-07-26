@@ -1,0 +1,22 @@
+{
+  "label": "fusion_ui_crew",
+  "ok": false,
+  "status": 502,
+  "latency_s": 114.84,
+  "routed_by": null,
+  "ui_crew": null,
+  "leader": null,
+  "task_kind": null,
+  "path": null,
+  "metrics": {
+    "bytes": 0,
+    "has_html_close": false,
+    "has_media": false,
+    "has_form": false,
+    "has_nav": false,
+    "sections": 0,
+    "live_link": null
+  },
+  "error": "{\"detail\":\"Fusion FULL: disaster (ui_author_empty)\"}",
+  "onestack": {}
+}

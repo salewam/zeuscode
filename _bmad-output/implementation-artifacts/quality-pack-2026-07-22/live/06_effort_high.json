@@ -1,0 +1,178 @@
+{
+  "cid": "06_effort_high",
+  "prompt": "Напиши функцию normalize_email на python с тестами идейно.",
+  "stream": false,
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "power",
+    "path": "FULL",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_full",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "deepseek-v4-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "e890593fb6b4428b",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 110,
+        "completion_tokens": 715,
+        "role": "agent"
+      },
+      {
+        "model": "deepseek-v4-pro",
+        "model_id": "deepseek-v4-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 47,
+        "completion_tokens": 1208,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "completed",
+        "prompt_tokens": 188,
+        "completion_tokens": 1360,
+        "role": "agent"
+      },
+      {
+        "model": "aspect:correctness",
+        "model_id": "aspect:correctness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      },
+      {
+        "model": "aspect:completeness",
+        "model_id": "aspect:completeness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      }
+    ],
+    "answer_only": "```python\nimport pytest\n\ndef normalize_email(email: str) -> str:\n    \"\"\"\n    Нормализует email-адрес:\n    - Убирает начальные/конечные пробелы\n    - Приводит к нижнему регистру\n    - Для доменов gmail.com и googlemail.com:\n        * удаляет все точки в локальной части\n        * удаляет субадресацию (всё после '+' включительно)\n    - Для остальных провайдеров локальная часть остаётся без изменений (только lowercase)\n    \"\"\"\n    if not email:\n        return \"\"\n\n    clean = email.strip().lower()\n    if '@' not in clean:\n        # некорректный email — возвращаем как есть или можно выбросить ошибку,\n        # здесь просто возвращаем очищенную строку\n        return clean\n\n    local, domain = clean.split('@', 1)\n\n    # Нормализация Gmail / Googlemail\n    if domain in ('gmail.com', 'googlemail.com'):\n        # удаляем субадрес (всё после '+')\n        if '+' in local:\n            local = local[:local.index('+')]\n        # удаляем все точки\n        local = local.replace('.', '')\n\n    return f\"{local}@{domain}\"\n\n\n# -------------------- тесты --------------------\ndef test_strip_and_lowercase():\n    assert normalize_email(\"  User@Example.COM  \") == \"user@example.com\"\n\ndef test_gmail_dots_removed():\n    assert normalize_email(\"user.name@gmail.com\") == \"username@gmail.com\"\n    assert normalize_email(\"u.s.e.r.n.a.m.e@gmail.com\") == \"username@gmail.com\"\n\ndef test_gmail_subaddress_removed():\n    assert normalize_email(\"username+tag@gmail.com\") == \"username@gmail.com\"\n    assert normalize_email(\"user.name+news@gmail.com\") == \"username@gmail.com\"\n\ndef test_googlemail_treated_as_gmail():\n    assert normalize_email(\"first.last+label@googlemail.com\") == \"firstlast@googlemail.com\"\n\ndef test_other_providers_keep_local_part():\n    assert normalize_email(\"User.Name+tag@yahoo.com\") == \"user.name+tag@yahoo.com\"\n    assert normalize_email(\"first.last@outlook.com\") == \"first.last@outlook.com\"\n\ndef test_empty_email():\n    assert normalize_email(\"\") == \"\"\n\ndef test_missing_at_symbol():\n    # наша функция просто возвращает очищенную строку без '@'\n    assert normalize_email(\"invalidemail\") == \"invalidemail\"\n    assert normalize_email(\"  NoAt  \") == \"noat\"\n\n# Запуск через pytest (в терминале: pytest этот_файл.py)\n```\n\n—\nДополнения из других веток: ## --- .com .decode .encode 255 5321 64/; +алиасов .decode .replace 1. 2. 3. ascii domain.encode",
+    "thinking_visible": true,
+    "epic3": {
+      "families": {
+        "deepseek-v4-pro": "deepseek",
+        "claude-opus-4-8": "claude",
+        "gemini-3.1-pro": "gemini"
+      },
+      "ranked": [
+        [
+          "deepseek-v4-pro",
+          0.4915
+        ],
+        [
+          "claude-opus-4-8",
+          0.4822
+        ],
+        [
+          "gemini-3.1-pro",
+          0.4338
+        ]
+      ],
+      "top_k": [
+        "deepseek-v4-pro",
+        "claude-opus-4-8",
+        "gemini-3.1-pro"
+      ],
+      "near_duplicate_score": 0.16751269035532995,
+      "aspects_must_fail": false,
+      "anti_bias_fail": false,
+      "judge_analysis": {
+        "consensus": [],
+        "contradictions": [
+          "branch_approaches_diverge"
+        ],
+        "unique": [
+          "claude-opus-4-8:distinct",
+          "gemini-3.1-pro:distinct"
+        ],
+        "blind_spots": []
+      }
+    },
+    "classifier": {
+      "stack": "full",
+      "task": "tests",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "heavy",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "raw_error": null,
+  "answer_excerpt": "```python\nimport pytest\n\ndef normalize_email(email: str) -> str:\n    \"\"\"\n    Нормализует email-адрес:\n    - Убирает начальные/конечные пробелы\n    - Приводит к нижнему регистру\n    - Для доменов gmail.com и googlemail.com:\n        * удаляет все точки в локальной части\n        * удаляет субадресацию ",
+  "usage": {
+    "prompt_tokens": 345,
+    "completion_tokens": 3283,
+    "total_tokens": 3628
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 4.7439,
+    "markup": 1.5,
+    "balance_left_rub": 882.03,
+    "key_spent_rub": 5.2266,
+    "key_budget_rub": 0.0,
+    "path": "FULL",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_full",
+    "trace_id": "e890593fb6b4428b",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "fusion_result_keys": [
+    "answer",
+    "branches",
+    "complexity",
+    "escalate_from",
+    "leader",
+    "path",
+    "phase",
+    "policy_path",
+    "routed_by",
+    "trace_id"
+  ],
+  "http_status": 200,
+  "latency_s": 40.187,
+  "path": "FULL",
+  "policy_path": "CASCADE",
+  "leader": "deepseek-v4-pro",
+  "routed_by": "cascade_escalate_full",
+  "trace_id": "e890593fb6b4428b",
+  "escalate_from": "CASCADE",
+  "human_stub": "ok",
+  "why": "http200 non-empty or cancel sim"
+}

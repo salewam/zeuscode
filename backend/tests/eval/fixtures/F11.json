@@ -1,0 +1,7 @@
+{
+  "id": "F11",
+  "bucket": "ui",
+  "prompt": "сделай hero секцию на tailwind",
+  "expected_path": "FULL",
+  "expect_code_fence": true
+}

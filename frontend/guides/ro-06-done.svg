@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="310" viewBox="0 0 480 310" role="img" aria-label="Roo done">
+  <defs><style>
+  .bg { fill: #0e1116; }
+  .panel { fill: #1e1e1e; stroke: #3c3c3c; stroke-width: 1; }
+  .bar { fill: #252526; }
+  .side { fill: #333333; }
+  .txt { fill: #cccccc; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .w { fill: #ffffff; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .muted { fill: #858585; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .blue { fill: #0078d4; }
+  .field { fill: #3c3c3c; }
+  .field-on { fill: #2a2d2e; stroke: #e8a84a; stroke-width: 2.5; }
+  .call { fill: #e8a84a; }
+  .call-t { fill: #1a1206; font-family: -apple-system, system-ui, sans-serif; font-weight: 800; }
+  .btn-t { fill: #fff; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+  .mono { font-family: ui-monospace, Menlo, monospace; }
+  .cap { fill: #e8a84a; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+</style></defs>
+  <rect class="bg" width="480" height="310" rx="14"/>
+  
+  <rect class="panel" x="16" y="16" width="448" height="278" rx="12"/>
+  <text class="w" x="36" y="50" font-size="18" font-weight="800">Готово</text>
+  <text class="txt" x="36" y="90" font-size="14">Настройки сохраняются сами.</text>
+  <rect class="field" x="36" y="120" width="408" height="70" rx="8"/>
+  <text class="muted" x="52" y="160" font-size="14">Start a task…</text>
+  <text class="cap" x="240" y="240" text-anchor="middle" font-size="13">Напиши задачу в Roo Code</text>
+
+</svg>

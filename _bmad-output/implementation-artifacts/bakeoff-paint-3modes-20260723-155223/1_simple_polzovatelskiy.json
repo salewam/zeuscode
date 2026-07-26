@@ -1,0 +1,321 @@
+{
+  "label": "1_simple_polzovatelskiy",
+  "title": "Пользовательский (simple)",
+  "ok": true,
+  "status": 200,
+  "latency_s": 174.97,
+  "routed_by": "ui_author_critics_web",
+  "path": "FULL",
+  "product_mode": "simple",
+  "leader": "gemini-3-pro",
+  "panel": [
+    "gemini-3-pro",
+    "deepseek-v4-flash",
+    "claude-haiku-4-5"
+  ],
+  "ui_crew": {
+    "author": "gemini-3-pro",
+    "critics": [
+      "deepseek-v4-flash",
+      "claude-haiku-4-5"
+    ],
+    "power_scores": {
+      "gemini-3-pro": 935,
+      "deepseek-v4-flash": 800,
+      "claude-haiku-4-5": 700
+    },
+    "web": {
+      "ok": true,
+      "degraded": false,
+      "backend": "browser,duckduckgo_html,jina",
+      "queries": [
+        "автосервис сайт запись онлайн",
+        "car repair shop website book appointment",
+        "best auto repair shop website design examples"
+      ],
+      "refs_used": [
+        "https://www.abcp.ru/carservice",
+        "https://www.avtomato.ru/",
+        "https://checkinauto.com/"
+      ],
+      "browser_used": 2,
+      "browser_live_used": 2,
+      "browser_available": true,
+      "live_refs": [
+        "https://www.abcp.ru/carservice",
+        "https://www.avtomato.ru/",
+        "https://checkinauto.com/"
+      ]
+    },
+    "critique_merged": {
+      "upgrades": [
+        "Добавить адаптивные медиа-запросы для ≤768px и ≤480px: услуги в одну колонку, увеличенные отступы, шрифты не менее 16px на мобильных, кнопки и кликабельные элементы ≥44px.",
+        "Реализовать работающее гамбургер-меню с плавным выездом списка навигации (сейчас скрыто, но нет JS для переключения).",
+        "Добавить прилипающую кнопку «Записаться» на мобильной версии (внизу), которая не перекрывает форму — отображать только на небольших экранах и прятать при скролле к форме.",
+        "Заполнить фоновые изображения в блоке «Малярный цех» реальными ссылками на фото (например, из Unsplash) для плейсхолдеров «До/После».",
+        "В блоке «Почему мы» добавить иконки (можно Unicode-символы или простые SVG) для наглядности вместо просто текста.",
+        "Обработать отправку формы без alert: показывать inline-сообщение об успехе (например, замена формы на благодарность).",
+        "Настроить аккордеон FAQ с помощью JS: клик на вопрос должен раскрывать/скрывать ответ, добавить анимацию.",
+        "Сделать мобильный контактный телефон кликабельным (tel:+7...).",
+        "Добавить пару статистических значений (например, «100+ окрашенных авто») для усиления доверия в блоке «Почему мы».",
+        "Оптимизировать производительность: добавить lazy loading для изображений и отложить загрузку AOS до скролла."
+      ],
+      "must_fix": [
+        "Отсутствуют медиа-запросы для мобильных устройств — сайт не адаптирован под экраны ≤768px (стили обрываются, нет одноколоночной сетки).",
+        "Гамбургер-меню не работает: кнопка есть, но нет JavaScript для переключения навигации, меню остаётся скрытым.",
+        "Отсутствует прилипающая CTA-кнопка «Записаться» на мобильной версии (требование из брифа).",
+        "Изображения в блоке «Малярный цех» не имеют URL — отображаются только серые прямоугольники.",
+        "Форма, вероятно, использует alert (по умолчанию), а не inline-уведомление об успешной записи.",
+        "Блок «Почему мы» не содержит иконок (только текст), что снижает визуальный акцент."
+      ],
+      "praise": [
+        "Цветовая палитра точно следует брифу (асфальт + янтарь/охра) и создаёт атмосферу.",
+        "Бренд «МоторХаус» является главным героем первого экрана — крупный заголовок в hero.",
+        "Все шесть требуемых услуг перечислены карточками с адекватным описанием.",
+        "Блок «Малярный цех» выделен отдельно и содержит гарантии, сроки, фото-плейсхолдеры (нужно только заполнить).",
+        "Использованы шрифты Oswald и Montserrat вместо запрещённых — уникально и стильно.",
+        "Добавлена анимация появления через AOS (2-3 осознанных движения).",
+        "Форма содержит все обязательные поля: имя, телефон, авто, услуга с выбором малярки, дата/время."
+      ],
+      "mobile_gaps": []
+    }
+  },
+  "metrics": {
+    "bytes": 34351,
+    "has_html_close": true,
+    "has_media": true,
+    "has_viewport": true,
+    "has_form": true,
+    "has_nav": true,
+    "has_paint": true,
+    "sections": 6,
+    "live_link": null
+  },
+  "error": null,
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "simple",
+    "path": "FULL",
+    "policy_path": "FULL",
+    "escalate_from": null,
+    "routed_by": "ui_author_critics_web",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "ui",
+    "leader": "gemini-3-pro",
+    "panel": [
+      "gemini-3-pro",
+      "deepseek-v4-flash",
+      "claude-haiku-4-5"
+    ],
+    "trace_id": "6d23b1f3ee814dc3",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3-pro",
+        "model_id": "gemini-3-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 507,
+        "completion_tokens": 7836,
+        "role": "agent"
+      },
+      {
+        "model": "deepseek-v4-flash",
+        "model_id": "deepseek-v4-flash",
+        "billable_state": "completed",
+        "prompt_tokens": 4266,
+        "completion_tokens": 2336,
+        "role": "agent"
+      },
+      {
+        "model": "claude-haiku-4-5",
+        "model_id": "claude-haiku-4-5",
+        "billable_state": "completed",
+        "prompt_tokens": 5285,
+        "completion_tokens": 4096,
+        "role": "agent"
+      },
+      {
+        "model": "gemini-3-pro",
+        "model_id": "gemini-3-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 7423,
+        "completion_tokens": 8571,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\">\n    <title>МоторХаус | Автосервис и малярный цех на Каширском шоссе</title>\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Montserrat:wght@400;500;600&display=swap\" rel=\"stylesheet\">\n    <style>\n        :root {\n            --color-bg: #1e1e1e;\n            --color-asphalt: #2c2d31;\n            --color-asphalt-light: #3e3f44;\n            --color-amber: #d97706; \n            --color-amber-hover: #b45309;\n            --color-text-light: #f3f4f6;\n            --color-text-muted: #9ca3af;\n            --font-headings: 'Oswald', sans-serif;\n            --font-body: 'Montserrat', sans-serif;\n            --header-height: 80px;\n        }\n\n        * {\n            margin: 0;\n            padding: 0;\n            box-sizing: border-box;\n        }\n\n        body {\n            font-family: var(--font-body);\n            background-color: var(--color-bg);\n            color: var(--color-text-light);\n            line-height: 1.6;\n            overflow-x: hidden;\n            scroll-behavior: smooth;\n        }\n\n        a { text-decoration: none; color: inherit; }\n        ul { list-style: none; }\n        img { max-width: 100%; height: auto; display: block; }\n\n        h1, h2, h3, h4 {\n            font-family: var(--font-headings);\n            text-transform: uppercase;\n            font-weight: 700;\n        }\n\n        /* --- Header & Navigation --- */\n        header {\n            position: fixed;\n            top: 0; width: 100%;\n            height: var(--header-height);\n            background-color: rgba(44, 45, 49, 0.95);\n            backdrop-filter: blur(10px);\n            z-index: 100;\n            display: flex;\n            align-items: center;\n            border-bottom: 1px solid var(--color-asphalt-light);\n            transition: transform 0.3s ease;\n        }\n\n        .container {\n            width: 100%;\n            max-width: 1200px;\n            margin: 0 auto;\n            padding: 0 20px;\n        }\n\n        .header-inner {\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n            width: 100%;\n        }\n\n        .logo {\n            font-family: var(--font-headings);\n            font-size: 28px;\n            color: var(--color-amber);\n            letter-spacing: 1px;\n        }\n\n        .nav-links {\n            display: flex;\n            gap: 30px;\n        }\n\n        .nav-links a {\n            font-size: 14px;\n            font-weight: 600;\n            text-transform: uppercase;\n            transition: color 0.3s;\n        }\n        .nav-links a:hover { color: var(--color-amber); }\n\n        .header-phone {\n            font-weight: 600;\n            font-size: 18px;\n            transition: color 0.3s;\n        }\n        .header-phone:hover {\n            color: var(--color-amber);\n        }\n\n        .hamburger {\n            display: none;\n            background: none;\n            border: none;\n            color: var(--color-text-light);\n            font-size: 28px;\n            cursor: pointer;\n            z-index: 101;\n        }\n\n        /* --- Hero Section --- */\n        .hero {\n            height: 100vh;\n            min-height: 600px;\n            padding-top: var(--header-height);\n            background: linear-gradient(rgba(30,30,30,0.7), rgba(30,30,30,0.9)),\n                        url('https://images.unsplash.com/photo-1625047509168-a7026f36de04?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;\n            display: flex;\n            align-items: center;\n            position: relative;\n        }\n\n        .hero-content {\n            max-width: 800px;\n            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;\n            opacity: 0;\n            transform: translateY(30px);\n        }\n\n        .hero h1 {\n            font-size: clamp(2.5rem, 6vw, 6rem);\n            line-height: 1.1;\n            color: var(--color-amber);\n            margin-bottom: 20px;\n            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);\n        }\n\n        .hero p {\n            font-size: clamp(1rem, 2vw, 1.25rem);\n            margin-bottom: 40px;\n            max-width: 600px;\n        }\n\n        .btn {\n            display: inline-block;\n            background-color: var(--color-amber);\n            color: #fff;\n            padding: 16px 36px;\n            font-family: var(--font-headings);\n            font-size: 18px;\n            text-transform: uppercase;\n            border: none;\n            cursor: pointer;\n            text-align: center;\n            transition: background-color 0.3s, transform 0.2s;\n        }\n\n        .btn:hover {\n            background-color: var(--color-amber-hover);\n            transform: translateY(-2px);\n        }\n        \n        .btn-full {\n            width: 100%;\n        }\n\n        /* --- Services --- */\n        .section {\n            padding: 100px 0;\n        }\n        \n        .section-bg {\n            background-color: var(--color-asphalt);\n        }\n\n        .section-title {\n            font-size: clamp(2rem, 4vw, 3rem);\n            margin-bottom: 60px;\n            text-align: center;\n            color: var(--color-text-light);\n        }\n        .section-title span { color: var(--color-amber); }\n\n        .services-grid {\n            display: grid;\n            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));\n            gap: 30px;\n        }\n\n        .service-card {\n            background-color: var(--color-bg);\n            padding: 40px 30px;\n            border-top: 4px solid var(--color-asphalt-light);\n            transition: border-color 0.3s, transform 0.3s;\n        }\n\n        .service-card:hover {\n            border-color: var(--color-amber);\n            transform: translateY(-5px);\n        }\n\n        .service-card h3 {\n            font-size: 24px;\n            margin-bottom: 15px;\n        }\n\n        .service-card p {\n            color: var(--color-text-muted);\n            font-size: 15px;\n        }\n\n        /* --- Paint Shop --- */\n        .paint-shop {\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 50px;\n            align-items: center;\n        }\n\n        .paint-content h2 {\n            font-size: clamp(2rem, 4vw, 3rem);\n            margin-bottom: 30px;\n        }\n\n        .paint-features {\n            margin-bottom: 30px;\n        }\n        .paint-features li {\n            margin-bottom: 15px;\n            padding-left: 30px;\n            position: relative;\n        }\n        .paint-features li::before {\n            content: '✓';\n            position: absolute;\n            left: 0;\n            color: var(--color-amber);\n            font-weight: bold;\n        }\n\n        .paint-images {\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 20px;\n        }\n        \n        .paint-img {\n            aspect-ratio: 4/3;\n            background-color: var(--color-asphalt-light);\n            background-size: cover;\n            background-position: center;\n            position: relative;\n            border-radius: 4px;\n            overflow: hidden;\n        }\n        .paint-img::after {\n            content: attr(data-label);\n            position: absolute;\n            bottom: 10px;\n            left: 10px;\n            background: rgba(0,0,0,0.7);\n            padding: 4px 10px;\n            font-size: 12px;\n            font-family: var(--font-headings);\n            text-transform: uppercase;\n            border-radius: 2px;\n        }\n\n        /* --- Why Us --- */\n        .features-grid {\n            display: grid;\n            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));\n            gap: 40px;\n            text-align: center;\n        }\n        .feature-icon {\n            font-size: 48px;\n            color: var(--color-amber);\n            margin-bottom: 20px;\n        }\n        .feature-title {\n            font-size: 20px;\n            margin-bottom: 10px;\n        }\n        .stats-highlight {\n            display: block;\n            margin-top: 10px;\n            font-size: 14px;\n            color: var(--color-amber);\n            font-weight: bold;\n        }\n\n        /* --- Reviews & FAQ --- */\n        .reviews-faq-wrap {\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 60px;\n        }\n\n        .review-card {\n            background-color: var(--color-asphalt-light);\n            padding: 30px;\n            margin-bottom: 20px;\n            border-left: 3px solid var(--color-amber);\n        }\n        .review-author {\n            font-weight: 600;\n            color: var(--color-text-light);\n            margin-bottom: 10px;\n            font-size: 18px;\n        }\n        .review-card p {\n            color: var(--color-text-muted);\n            font-size: 14px;\n            font-style: italic;\n        }\n\n        .faq-item {\n            background-color: var(--color-asphalt-light);\n            margin-bottom: 10px;\n            border: 1px solid transparent;\n            transition: border-color 0.3s;\n        }\n        .faq-item:hover {\n            border-color: var(--color-amber);\n        }\n        .faq-question {\n            padding: 20px;\n            font-family: var(--font-headings);\n            font-size: 18px;\n            cursor: pointer;\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n        }\n        .faq-question::after {\n            content: '+';\n            font-size: 24px;\n            color: var(--color-amber);\n            transition: transform 0.3s;\n        }\n        .faq-item.active .faq-question::after { transform: rotate(45deg); }\n        \n        .faq-answer {\n            max-height: 0;\n            overflow: hidden;\n            transition: max-height 0.3s ease-out;\n            padding: 0 20px;\n            color: var(--color-text-muted);\n        }\n        .faq-item.active .faq-answer {\n            max-height: 300px;\n            padding-bottom: 20px;\n        }\n\n        /* --- Contact & Booking --- */\n        .contact-section {\n            background: linear-gradient(rgba(44,45,49,0.9), rgba(44,45,49,0.9)), url('https://images.unsplash.com/photo-1599256621730-535171e28e50?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;\n        }\n        .contact-wrap {\n            display: grid;\n            grid-template-columns: 1fr 1.2fr;\n            gap: 50px;\n            align-items: center;\n        }\n        .contact-info h3 { font-size: 30px; margin-bottom: 30px; color: var(--color-amber); }\n        .info-line { margin-bottom: 20px; font-size: 18px; }\n        .info-line span { color: var(--color-text-muted); display: block; font-size: 14px; text-transform: uppercase; margin-bottom: 5px; }\n\n        .booking-form-wrap {\n            background-color: var(--color-bg);\n            padding: 40px;\n            box-shadow: 0 10px 30px rgba(0,0,0,0.5);\n        }\n        \n        .form-grid {\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 20px;\n            margin-bottom: 20px;\n        }\n        \n        .form-group { display: flex; flex-direction: column; }\n        .form-group.full { grid-column: 1 / -1; }\n        \n        .form-group label {\n            font-size: 14px;\n            color: var(--color-text-muted);\n            margin-bottom: 8px;\n        }\n        \n        .form-group input, .form-group select {\n            width: 100%;\n            background-color: var(--color-asphalt-light);\n            border: 1px solid transparent;\n            color: #fff;\n            padding: 16px;\n            font-family: var(--font-body);\n            font-size: 16px; /* iOS zoom fix */\n            outline: none;\n            transition: border-color 0.3s;\n        }\n        .form-group input:focus, .form-group select:focus {\n            border-color: var(--color-amber);\n        }\n\n        .form-success {\n            display: none;\n            background-color: rgba(217, 119, 6, 0.1);\n            border: 1px solid var(--color-amber);\n            padding: 30px 20px;\n            text-align: center;\n        }\n        .form-success h4 {\n            color: var(--color-amber);\n            font-size: 24px;\n            margin-bottom: 10px;\n        }\n\n        /* --- Footer --- */\n        footer {\n            background-color: #111;\n            padding: 30px 0;\n            text-align: center;\n            font-size: 14px;\n            color: var(--color-text-muted);\n        }\n\n        /* --- Animations --- */\n        @keyframes fadeUp {\n            from { opacity: 0; transform: translateY(30px); }\n            to { opacity: 1; transform: translateY(0); }\n        }\n        .observe-animate {\n            opacity: 0;\n            transform: translateY(20px);\n            transition: opacity 0.6s ease-out, transform 0.6s ease-out;\n        }\n        .observe-animate.visible {\n            opacity: 1;\n            transform: translateY(0);\n        }\n\n        /* --- Mobile CTA --- */\n        .mobile-cta {\n            display: none;\n            position: fixed;\n            bottom: 0; left: 0; width: 100%;\n            background-color: var(--color-amber);\n            color: #fff;\n            text-align: center;\n            padding: 18px;\n            font-family: var(--font-headings);\n            font-size: 18px;\n            text-transform: uppercase;\n            z-index: 90;\n            font-weight: 700;\n            box-shadow: 0 -4px 10px rgba(0,0,0,0.3);\n            transition: transform 0.3s ease;\n        }\n        .mobile-cta.hidden {\n            transform: translateY(100%);\n        }\n\n        /* --- Responsive --- */\n        @media (max-width: 992px) {\n            .paint-shop, .reviews-faq-wrap, .contact-wrap {\n                grid-template-columns: 1fr;\n            }\n        }\n\n        @media (max-width: 768px) {\n            .nav-links {\n                position: fixed;\n                top: var(--header-height);\n                left: -100%;\n                width: 100%;\n                height: calc(100vh - var(--header-height));\n                background-color: var(--color-asphalt);\n                flex-direction: column;\n                align-items: center;\n                justify-content: flex-start;\n                padding-top: 40px;\n                transition: left 0.3s ease;\n                z-index: 99;\n            }\n            .nav-links.active { left: 0; }\n            .nav-links a {\n                font-size: 20px;\n                margin-bottom: 25px;\n            }\n            .hamburger { display: block; }\n            .header-phone { display: none; }\n            \n            .services-grid { grid-template-columns: 1fr; }\n            .form-grid { grid-template-columns: 1fr; }\n            .mobile-cta { display: block; }\n            \n            footer { padding-bottom: 80px; }\n        }\n\n        @media (max-width: 480px) {\n            .section { padding: 60px 0; }\n            .section-title { font-size: 2rem; margin-bottom: 40px; }\n            .paint-images { grid-template-columns: 1fr; }\n            .booking-form-wrap { padding: 25px 20px; }\n            .review-card { padding: 20px; }\n        }\n    </style>\n</head>\n<body>\n\n    <header id=\"header\">\n        <div class=\"container\">\n            <div class=\"header-inner\">\n                <div class=\"logo\">МОТОРХАУС</div>\n                <nav class=\"nav-links\" id=\"navLinks\">\n                    <a href=\"#services\" class=\"nav-item\">Услуги</a>\n                    <a href=\"#paint\" class=\"nav-item\">Малярный цех</a>\n                    <a href=\"#about\" class=\"nav-item\">Почему мы</a>\n                    <a href=\"#reviews\" class=\"nav-item\">Отзывы / FAQ</a>\n                </nav>\n                <a href=\"tel:+74951234567\" class=\"header-phone\">+7 (495) 123-45-67</a>\n                <button class=\"hamburger\" id=\"hamburger\" aria-label=\"Меню\">☰</button>\n            </div>\n        </div>\n    </header>\n\n    <section class=\"hero\">\n        <div class=\"container\">\n            <div class=\"hero-content\">\n                <h1>МОТОРХАУС</h1>\n                <p>Полный комплекс обслуживания и профессиональный малярный цех на Каширском шоссе. Восстанавливаем геометрию, цвет и уверенность на дороге.</p>\n                <a href=\"#booking\" class=\"btn\">Записаться в сервис</a>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"services\" class=\"section section-bg\">\n        <div class=\"container\">\n            <h2 class=\"section-title\">Наши <span>Услуги</span></h2>\n            <div class=\"services-grid\">\n                <div class=\"service-card observe-animate\">\n                    <h3>Слесарные работы / ТО</h3>\n                    <p>Плановое техническое обслуживание, замена масел, фильтров, колодок. Ремонт ходовой части и двигателей с гарантией на работы.</p>\n                </div>\n                <div class=\"service-card observe-animate\">\n                    <h3>Компьютерная диагностика</h3>\n                    <p>Чтение и сброс ошибок, адаптация блоков, проверка работы датчиков и электронных систем дилерским оборудованием.</p>\n                </div>\n                <div class=\"service-card observe-animate\">\n                    <h3>Малярные работы и покраска</h3>\n                    <p>Полная и подетальная покраска в итальянской камере. Точный подбор цвета, соблюдение технологических слоев, премиальные лаки.</p>\n                </div>\n                <div class=\"service-card observe-animate\">\n                    <h3>Локальный кузовной ремонт</h3>\n                    <p>Удаление вмятин, восстановление пластика бамперов, сварка трещин. Максимальное сохранение заводского ЛКП там, где это возможно.</p>\n                </div>\n                <div class=\"service-card observe-animate\">\n                    <h3>Полировка и детейлинг</h3>\n                    <p>Абразивная и восстановительная полировка кузова. Нанесение керамики, жидкого стекла, химчистка салона, антикоррозийная обработка дна.</p>\n                </div>\n                <div class=\"service-card observe-animate\">\n                    <h3>Шиномонтаж и балансировка</h3>\n                    <p>Сезонная переобувка, правка дисков, ремонт проколов и боковых порезов. Точная 3D-балансировка колес.</p>\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"paint\" class=\"section\">\n        <div class=\"container paint-shop\">\n            <div class=\"paint-content observe-animate\">\n                <h2>Малярный <span>Цех</span></h2>\n                <p style=\"margin-bottom: 20px; color: var(--color-text-muted);\">\n                    Наш флагманский отдел. Мы не красим «в гараже». Все работы проводятся в профессиональной покрасочно-сушильной камере с приточно-вытяжной вентиляцией.\n                </p>\n                <ul class=\"paint-features\">\n                    <li>Итальянская камера USI Italia (полное отсутствие пыли)</li>\n                    <li>Материалы премиум-сегмента: Sikkens, Glasurit</li>\n                    <li>Точный спектрофотометрический подбор автоэмали</li>\n                    <li>Официальная гарантия на ЛКП — 12 месяцев</li>\n                </ul>\n                <a href=\"#booking\" class=\"btn\">Оценить стоимость</a>\n            </div>\n            <div class=\"paint-images observe-animate\">\n                <div class=\"paint-img\" data-label=\"До\" style=\"background-image: url('https://images.unsplash.com/photo-1605814526279-dff00072cb0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'); filter: grayscale(80%);\"></div>\n                <div class=\"paint-img\" data-label=\"После\" style=\"background-image: url('https://images.unsplash.com/photo-1605814526279-dff00072cb0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');\"></div>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"about\" class=\"section section-bg\">\n        <div class=\"container\">\n            <h2 class=\"section-title\">Почему выбирают <span>Нас</span></h2>\n            <div class=\"features-grid\">\n                <div class=\"observe-animate\">\n                    <div class=\"feature-icon\">📝</div>\n                    <h3 class=\"feature-title\">Честная смета</h3>\n                    <p class=\"color-text-muted\">Цена не меняется в процессе ремонта. Все скрытые дефекты согласовываем заранее.</p>\n                </div>\n                <div class=\"observe-animate\">\n                    <div class=\"feature-icon\">🛡️</div>\n                    <h3 class=\"feature-title\">Гарантия качества</h3>\n                    <p class=\"color-text-muted\">Даем документальную гарантию на слесарные и малярные работы.</p>\n                    <span class=\"stats-highlight\">12 месяцев гарантии</span>\n                </div>\n                <div class=\"observe-animate\">\n                    <div class=\"feature-icon\">🏅</div>\n                    <h3 class=\"feature-title\">Опыт и результат</h3>\n                    <p class=\"color-text-muted\">Работаем на результат, соблюдая строгие стандарты качества.</p>\n                    <span class=\"stats-highlight\">1500+ окрашенных авто</span>\n                </div>\n                <div class=\"observe-animate\">\n                    <div class=\"feature-icon\">☕</div>\n                    <h3 class=\"feature-title\">Зона ожидания</h3>\n                    <p class=\"color-text-muted\">Комфортный зал с кофе, Wi-Fi и мониторами для наблюдения за ремзоной.</p>\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"reviews\" class=\"section\">\n        <div class=\"container reviews-faq-wrap\">\n            <div class=\"observe-animate\">\n                <h2 style=\"font-size: 2rem; margin-bottom: 30px; font-family: var(--font-headings); text-transform: uppercase;\">Отзывы <span>клиентов</span></h2>\n                <div class=\"review-card\">\n                    <div class=\"review-author\">Алексей С. (BMW X5)</div>\n                    <p>«Красил капот и бампер от сколов. В цвет попали идеально, шагрень заводская. Машину отдали чистой, точно в срок. Отличный сервис.»</p>\n                </div>\n                <div class=\"review-card\">\n                    <div class=\"review-author\">Мария В. (Mazda 3)</div>\n                    <p>«Приехала на плановое ТО и замену колодок. Ребята все показали, лишнего не навязывали. Очень уютная зона ожидания с кофе!»</p>\n                </div>\n                <div class=\"review-card\">\n                    <div class=\"review-author\">Игорь Д. (Toyota Camry)</div>\n                    <p>«Делал полировку и покрывал керамикой. Машина блестит как из салона. Цены адекватные, мастера знают свое дело.»</p>\n                </div>\n            </div>\n\n            <div class=\"observe-animate\">\n                <h2 style=\"font-size: 2rem; margin-bottom: 30px; font-family: var(--font-headings); text-transform: uppercase;\">Популярные <span>Вопросы</span></h2>\n                <div class=\"faq-item\">\n                    <div class=\"faq-question\">Вы даете гарантию на покраску?</div>\n                    <div class=\"faq-answer\">\n                        <p>Да, мы предоставляем официальную гарантию 1 год на все малярные работы и ЛКП при соблюдении рекомендаций по уходу.</p>\n                    </div>\n                </div>\n                <div class=\"faq-item\">\n                    <div class=\"faq-question\">Можно ли присутствовать при ремонте?</div>\n                    <div class=\"faq-answer\">\n                        <p>Вы можете находиться в зоне ожидания, где установлены мониторы с трансляцией из ремзоны. Проход в саму ремонтную зону возможен только в сопровождении мастера.</p>\n                    </div>\n                </div>\n                <div class=\"faq-item\">\n                    <div class=\"faq-question\">Сколько времени занимает локальный ремонт?</div>\n                    <div class=\"faq-answer\">\n                        <p>В зависимости от сложности повреждения локальный ремонт и покраска одного элемента обычно занимает от 1 до 3 дней.</p>\n                    </div>\n                </div>\n                <div class=\"faq-item\">\n                    <div class=\"faq-question\">Какие запчасти вы используете?</div>\n                    <div class=\"faq-answer\">\n                        <p>Мы предлагаем как оригинальные запчасти, так и качественные сертифицированные аналоги. Выбор всегда согласовывается с клиентом до начала работ.</p>\n                    </div>\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"booking\" class=\"section contact-section\">\n        <div class=\"container contact-wrap\">\n            <div class=\"contact-info observe-animate\">\n                <h3>Ждем вас в МоторХаус</h3>\n                <div class=\"info-line\">\n                    <span>Адрес:</span>\n                    г. Москва, Каширское шоссе, д. 45\n                </div>\n                <div class=\"info-line\">\n                    <span>Режим работы:</span>\n                    Ежедневно с 9:00 до 21:00\n                </div>\n                <div class=\"info-line\">\n                    <span>Телефон:</span>\n                    <a href=\"tel:+74951234567\">+7 (495) 123-45-67</a>\n                </div>\n            </div>\n\n            <div class=\"booking-form-wrap observe-animate\">\n                <form id=\"bookingForm\" class=\"booking-form\">\n                    <h3 style=\"font-family: var(--font-headings); font-size: 24px; margin-bottom: 20px; text-transform: uppercase;\">Запись на сервис</h3>\n                    <div class=\"form-grid\">\n                        <div class=\"form-group\">\n                            <label for=\"name\">Ваше имя</label>\n                            <input type=\"text\" id=\"name\" required placeholder=\"Иван\">\n                        </div>\n                        <div class=\"form-group\">\n                            <label for=\"phone\">Телефон</label>\n                            <input type=\"tel\" id=\"phone\" required placeholder=\"+7 (___) ___-__-__\">\n                        </div>\n                        <div class=\"form-group full\">\n                            <label for=\"auto\">Марка и модель авто</label>\n                            <input type=\"text\" id=\"auto\" required placeholder=\"Например, Kia Rio\">\n                        </div>\n                        <div class=\"form-group\">\n                            <label for=\"service\">Услуга</label>\n                            <select id=\"service\" required>\n                                <option value=\"\" disabled selected>Выберите услугу</option>\n                                <option value=\"ТО\">Слесарные работы / ТО</option>\n                                <option value=\"Малярка\">Малярные работы</option>\n                                <option value=\"Кузовной\">Кузовной ремонт</option>\n                                <option value=\"Диагностика\">Диагностика</option>\n                                <option value=\"Детейлинг\">Полировка / Детейлинг</option>\n                            </select>\n                        </div>\n                        <div class=\"form-group\">\n                            <label for=\"date\">Желаемая дата и время</label>\n                            <input type=\"datetime-local\" id=\"date\" required>\n                        </div>\n                    </div>\n                    <button type=\"submit\" class=\"btn btn-full\">Отправить заявку</button>\n                </form>\n                \n                <div id=\"formSuccess\" class=\"form-success\">\n                    <h4>Заявка отправлена!</h4>\n                    <p>Спасибо за доверие. Наш мастер-приемщик свяжется с вами в течение 10 минут для подтверждения записи.</p>\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <footer>\n        <div class=\"container\">\n            <p>&copy; 2024 Автосервис «МоторХаус». Все права защищены.</p>\n        </div>\n    </footer>\n\n    <!-- Mobile Sticky CTA -->\n    <a href=\"#booking\" id=\"mobileCta\" class=\"mobile-cta\">Записаться онлайн</a>\n\n    <script>\n        // Hamburger Menu\n        const hamburger = document.getElementById('hamburger');\n        const navLinks = document.getElementById('navLinks');\n        const navItems = document.querySelectorAll('.nav-item');\n\n        hamburger.addEventListener('click', () => {\n            navLinks.classList.toggle('active');\n            hamburger.textContent = navLinks.classList.contains('active') ? '✕' : '☰';\n        });\n\n        navItems.forEach(item => {\n            item.addEventListener('click', () => {\n                if (window.innerWidth <= 768) {\n                    navLinks.classList.remove('active');\n                    hamburger.textContent = '☰';\n                }\n            });\n        });\n\n        // FAQ Accordion\n        const faqQuestions = document.querySelectorAll('.faq-question');\n        faqQuestions.forEach(question => {\n            question.addEventListener('click', () => {\n                const item = question.parentElement;\n                // Close others\n                document.querySelectorAll('.faq-item').forEach(faq => {\n                    if (faq !== item) faq.classList.remove('active');\n                });\n                item.classList.toggle('active');\n            });\n        });\n\n        // Form Submission\n        const form = document.getElementById('bookingForm');\n        const formSuccess = document.getElementById('formSuccess');\n\n        form.addEventListener('submit', (e) => {\n            e.preventDefault();\n            form.style.display = 'none';\n            formSuccess.style.display = 'block';\n        });\n\n        // Intersection Observer for scroll animations\n        const observerOptions = {\n            threshold: 0.1,\n            rootMargin: '0px 0px -50px 0px'\n        };\n\n        const observer = new IntersectionObserver((entries) => {\n            entries.forEach(entry => {\n                if (entry.isIntersecting) {\n                    entry.target.classList.add('visible');\n                    observer.unobserve(entry.target);\n                }\n            });\n        }, observerOptions);\n\n        document.querySelectorAll('.observe-animate').forEach(el => {\n            observer.observe(el);\n        });\n\n        // Hide Mobile CTA when reaching the booking section\n        const mobileCta = document.getElementById('mobileCta');\n        const bookingSection = document.getElementById('booking');\n\n        const ctaObserver = new IntersectionObserver((entries) => {\n            entries.forEach(entry => {\n                if (entry.isIntersecting) {\n                    mobileCta.classList.add('hidden');\n                } else {\n                    mobileCta.classList.remove('hidden');\n                }\n            });\n        }, { threshold: 0.1 });\n\n        ctaObserver.observe(bookingSection);\n    </script>\n<a class=\"zeus-badge\" href=\"https://zeuscode.ru\" target=\"_blank\" rel=\"noopener noreferrer\">Сделано на ZeusCode</a>\n<style id=\"zeus-badge-css\">\n.zeus-badge{\n  position:fixed;right:14px;bottom:12px;z-index:2147483646;\n  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;\n  letter-spacing:.02em;text-decoration:none;\n  color:rgba(120,120,120,.42);pointer-events:auto;\n  transition:color .2s ease,opacity .2s ease;\n}\n.zeus-badge:hover{color:rgba(120,120,120,.78)}\n</style>\n</body>\n</html>\n\n---\n🔗 Живая ссылка: https://zeuscode.ru/go/site-1ff5/\n",
+    "thinking_visible": true,
+    "epic3": {
+      "crew": "ui_author_critics",
+      "author": "gemini-3-pro",
+      "critics": [
+        "deepseek-v4-flash",
+        "claude-haiku-4-5"
+      ],
+      "power_scores": {
+        "gemini-3-pro": 935,
+        "deepseek-v4-flash": 800,
+        "claude-haiku-4-5": 700
+      },
+      "author_attempts": [
+        {
+          "model": "gemini-3-pro",
+          "attempt": 1,
+          "ok": true,
+          "error": null,
+          "preferred": true
+        }
+      ],
+      "author_preferred": "gemini-3-pro",
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://www.avtomato.ru/",
+          "https://checkinauto.com/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://www.avtomato.ru/",
+          "https://checkinauto.com/"
+        ]
+      },
+      "mobile_gaps": [],
+      "critique_merged": {
+        "upgrades": [
+          "Добавить адаптивные медиа-запросы для ≤768px и ≤480px: услуги в одну колонку, увеличенные отступы, шрифты не менее 16px на мобильных, кнопки и кликабельные элементы ≥44px.",
+          "Реализовать работающее гамбургер-меню с плавным выездом списка навигации (сейчас скрыто, но нет JS для переключения).",
+          "Добавить прилипающую кнопку «Записаться» на мобильной версии (внизу), которая не перекрывает форму — отображать только на небольших экранах и прятать при скролле к форме.",
+          "Заполнить фоновые изображения в блоке «Малярный цех» реальными ссылками на фото (например, из Unsplash) для плейсхолдеров «До/После».",
+          "В блоке «Почему мы» добавить иконки (можно Unicode-символы или простые SVG) для наглядности вместо просто текста.",
+          "Обработать отправку формы без alert: показывать inline-сообщение об успехе (например, замена формы на благодарность).",
+          "Настроить аккордеон FAQ с помощью JS: клик на вопрос должен раскрывать/скрывать ответ, добавить анимацию.",
+          "Сделать мобильный контактный телефон кликабельным (tel:+7...).",
+          "Добавить пару статистических значений (например, «100+ окрашенных авто») для усиления доверия в блоке «Почему мы».",
+          "Оптимизировать производительность: добавить lazy loading для изображений и отложить загрузку AOS до скролла."
+        ],
+        "must_fix": [
+          "Отсутствуют медиа-запросы для мобильных устройств — сайт не адаптирован под экраны ≤768px (стили обрываются, нет одноколоночной сетки).",
+          "Гамбургер-меню не работает: кнопка есть, но нет JavaScript для переключения навигации, меню остаётся скрытым.",
+          "Отсутствует прилипающая CTA-кнопка «Записаться» на мобильной версии (требование из брифа).",
+          "Изображения в блоке «Малярный цех» не имеют URL — отображаются только серые прямоугольники.",
+          "Форма, вероятно, использует alert (по умолчанию), а не inline-уведомление об успешной записи.",
+          "Блок «Почему мы» не содержит иконок (только текст), что снижает визуальный акцент."
+        ],
+        "praise": [
+          "Цветовая палитра точно следует брифу (асфальт + янтарь/охра) и создаёт атмосферу.",
+          "Бренд «МоторХаус» является главным героем первого экрана — крупный заголовок в hero.",
+          "Все шесть требуемых услуг перечислены карточками с адекватным описанием.",
+          "Блок «Малярный цех» выделен отдельно и содержит гарантии, сроки, фото-плейсхолдеры (нужно только заполнить).",
+          "Использованы шрифты Oswald и Montserrat вместо запрещённых — уникально и стильно.",
+          "Добавлена анимация появления через AOS (2-3 осознанных движения).",
+          "Форма содержит все обязательные поля: имя, телефон, авто, услуга с выбором малярки, дата/время."
+        ],
+        "mobile_gaps": []
+      },
+      "mobile_final_gaps": [],
+      "mobile_critical_holes": 0
+    },
+    "ui_crew": {
+      "author": "gemini-3-pro",
+      "critics": [
+        "deepseek-v4-flash",
+        "claude-haiku-4-5"
+      ],
+      "power_scores": {
+        "gemini-3-pro": 935,
+        "deepseek-v4-flash": 800,
+        "claude-haiku-4-5": 700
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://www.avtomato.ru/",
+          "https://checkinauto.com/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://www.avtomato.ru/",
+          "https://checkinauto.com/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Добавить адаптивные медиа-запросы для ≤768px и ≤480px: услуги в одну колонку, увеличенные отступы, шрифты не менее 16px на мобильных, кнопки и кликабельные элементы ≥44px.",
+          "Реализовать работающее гамбургер-меню с плавным выездом списка навигации (сейчас скрыто, но нет JS для переключения).",
+          "Добавить прилипающую кнопку «Записаться» на мобильной версии (внизу), которая не перекрывает форму — отображать только на небольших экранах и прятать при скролле к форме.",
+          "Заполнить фоновые изображения в блоке «Малярный цех» реальными ссылками на фото (например, из Unsplash) для плейсхолдеров «До/После».",
+          "В блоке «Почему мы» добавить иконки (можно Unicode-символы или простые SVG) для наглядности вместо просто текста.",
+          "Обработать отправку формы без alert: показывать inline-сообщение об успехе (например, замена формы на благодарность).",
+          "Настроить аккордеон FAQ с помощью JS: клик на вопрос должен раскрывать/скрывать ответ, добавить анимацию.",
+          "Сделать мобильный контактный телефон кликабельным (tel:+7...).",
+          "Добавить пару статистических значений (например, «100+ окрашенных авто») для усиления доверия в блоке «Почему мы».",
+          "Оптимизировать производительность: добавить lazy loading для изображений и отложить загрузку AOS до скролла."
+        ],
+        "must_fix": [
+          "Отсутствуют медиа-запросы для мобильных устройств — сайт не адаптирован под экраны ≤768px (стили обрываются, нет одноколоночной сетки).",
+          "Гамбургер-меню не работает: кнопка есть, но нет JavaScript для переключения навигации, меню остаётся скрытым.",
+          "Отсутствует прилипающая CTA-кнопка «Записаться» на мобильной версии (требование из брифа).",
+          "Изображения в блоке «Малярный цех» не имеют URL — отображаются только серые прямоугольники.",
+          "Форма, вероятно, использует alert (по умолчанию), а не inline-уведомление об успешной записи.",
+          "Блок «Почему мы» не содержит иконок (только текст), что снижает визуальный акцент."
+        ],
+        "praise": [
+          "Цветовая палитра точно следует брифу (асфальт + янтарь/охра) и создаёт атмосферу.",
+          "Бренд «МоторХаус» является главным героем первого экрана — крупный заголовок в hero.",
+          "Все шесть требуемых услуг перечислены карточками с адекватным описанием.",
+          "Блок «Малярный цех» выделен отдельно и содержит гарантии, сроки, фото-плейсхолдеры (нужно только заполнить).",
+          "Использованы шрифты Oswald и Montserrat вместо запрещённых — уникально и стильно.",
+          "Добавлена анимация появления через AOS (2-3 осознанных движения).",
+          "Форма содержит все обязательные поля: имя, телефон, авто, услуга с выбором малярки, дата/время."
+        ],
+        "mobile_gaps": []
+      }
+    },
+    "classifier": {
+      "stack": "full",
+      "task": "ui",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.402,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  }
+}

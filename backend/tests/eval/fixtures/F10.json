@@ -1,0 +1,7 @@
+{
+  "id": "F10",
+  "bucket": "migrate",
+  "prompt": "спроектируй миграцию БД на postgres",
+  "expected_path": "FULL",
+  "expect_code_fence": true
+}

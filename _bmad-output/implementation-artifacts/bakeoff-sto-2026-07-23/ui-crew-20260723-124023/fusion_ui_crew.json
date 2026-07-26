@@ -1,0 +1,309 @@
+{
+  "label": "fusion_ui_crew",
+  "ok": true,
+  "status": 200,
+  "latency_s": 333.4,
+  "routed_by": "ui_author_critics_web",
+  "ui_crew": {
+    "author": "gemini-3.1-pro",
+    "critics": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro"
+    ],
+    "power_scores": {
+      "claude-opus-4-8": 980,
+      "deepseek-v4-pro": 850,
+      "gemini-3.1-pro": 880
+    },
+    "web": {
+      "ok": true,
+      "degraded": false,
+      "backend": "duckduckgo_html,jina",
+      "queries": [
+        "best auto repair shop website design examples",
+        "best car service landing page UX 2025 2026",
+        "автосервис сайт дизайн примеры лучшие"
+      ],
+      "refs_used": [
+        "https://colorlib.com/wp/auto-repair-website-examples/",
+        "https://www.webcitz.com/blog/best-auto-repair-websites/",
+        "https://www.repairshopwebsites.com/portfolio/"
+      ]
+    },
+    "critique_merged": {
+      "upgrades": [
+        "Add a trust bar under the hero (WebCitz emphasizes trust signals): years on Каширское шоссе, кол-во отремонтированных авто, гарантия 2 года, ASE/дилер-аналог сертификаты — реальные цифры снимают 'mechanic anxiety'.",
+        "Replace emoji service icons (⚡⚙️🔧) with inline SVG line-icons in amber — emoji render inconsistently across OS and cheapen a 'premium box' brand.",
+        "Show transparent pricing 'от N ₽' + примерное время on each of the 6 service cards; refs stress 'Digital Transparency' and clear cost expectations before booking.",
+        "Make the booking form actually submit: preventDefault + fetch/mailto fallback + inline success state ('Заявка принята, перезвоним за 15 мин'), not an alert — brief asks for a working form.",
+        "Add form fields the shop needs: марка/модель авто, дата+время (date/time inputs) and a required consent checkbox (152-ФЗ) — matches real appointment scheduling UX.",
+        "Add a sticky mobile call/booking bar (fixed bottom CTA with phone) — mobile-first booking is the #1 point in both refs.",
+        "Deepen hero atmosphere: layer a subtle radial amber glow + faint diagonal asphalt texture/noise over the photo, and add a soft parallax or scan-line to avoid a flat overlay.",
+        "Add a photo strip / 'до-после' gallery of the box and real work (Digital Vehicle Inspection showcase from ref) — currently no real shop imagery beyond hero.",
+        "Add scroll-reveal animation for service/review cards (IntersectionObserver) to hit the '2-3 motions' brief cleanly instead of relying only on hover.",
+        "Add star ratings + review source (Яндекс/2ГИС) and avatar initials to reviews for credibility; italic quote alone reads generic.",
+        "Добавить шестую услугу (например, «Кузовной ремонт и покраска») в сетку услуг, чтобы строго соответствовать брифингу по количеству — сейчас видно только 5.",
+        "Реализовать работающую отправку формы записи: интегрировать сервис типа Formspree или добавить JavaScript для валидации и асинхронной отправки с подтверждением, имитируя полноценную систему бронирования (аналогично примерам с онлайн-записью на WebCitz)."
+      ],
+      "must_fix": [
+        "HTML is truncated — services grid, reviews, FAQ, booking form and footer must be completed and all tags closed, or the page won't render.",
+        "The header nav has no anchor to #booking and the mobile header stacks logo+nav+phone eating vertical space — add a hamburger or compact mobile header so the hero is visible on phones.",
+        "Booking form currently has no JS handler shown; ensure it does not just alert() and includes required-field validation.",
+        "FAQ-аккордеон полностью статичен: нет JavaScript для переключения ответов, клик по вопросу не приводит к раскрытию — нарушает интерактивность.",
+        "Не хватает шестой услуги: бриф требует 6 услуг с нормальным описанием, в коде представлено только 5 карточек в сетке.",
+        "Форма записи не работает: отсутствует обработчик отправки и валидация — только визуальный скелет, нет реального действия при нажатии кнопки.",
+        "На мобильных устройствах телефонный номер скрыт (header-contacts display:none), что критично для автосервиса — оставьте хотя бы кнопку с номером для звонка.",
+        "Hero-изображение может не передавать атмосферу именно рабочего бокса МоторХаус: желательно использовать локальную фотографию или более детализированный гаражный фон с инструментами."
+      ],
+      "praise": [
+        "Strong asphalt+amber palette with Oswald/Montserrat — correctly avoids indigo/Inter clichés.",
+        "Brand-first hero with large МоторХаус wordmark and amber accent, smooth slideUpFade intro.",
+        "Solid interaction details: scrolled header blur, card lift on hover, animated FAQ accordion, amber sweep on buttons.",
+        "Брутальная асфальтово-янтарная цветовая гамма и отказ от Indigo/Inter — айдентика выдержана, шрифты Oswald и Montserrat создают мужской, технический характер.",
+        "Полноэкранный hero с наложением градиента и анимацией подъёма текста сразу задаёт кинематографичное настроение гаражного бокса.",
+        "Карточки услуг с hover-эффектом подъёма и акцентной янтарной полосой выглядят современно и тактильно.",
+        "Чёткая одностраничная структура из логичных блоков: услуги → отзывы → FAQ → запись, что хорошо для конверсии.",
+        "Наличие адаптивного кода через медиа-запросы и базовое сжатие элементов на мобильных — забота о пользователе с телефона."
+      ]
+    }
+  },
+  "leader": "gemini-3.1-pro",
+  "task_kind": "ui",
+  "path": "FULL",
+  "metrics": {
+    "bytes": 33660,
+    "has_html_close": true,
+    "has_media": true,
+    "has_form": true,
+    "has_nav": true,
+    "sections": 6,
+    "live_link": null
+  },
+  "error": null,
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "power",
+    "path": "FULL",
+    "policy_path": "FULL",
+    "escalate_from": null,
+    "routed_by": "ui_author_critics_web",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "ui",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "35c93473e27642e7",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "cancelled_no_tokens",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "agent"
+      },
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 112,
+        "completion_tokens": 5646,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "completed",
+        "prompt_tokens": 7286,
+        "completion_tokens": 1061,
+        "role": "agent"
+      },
+      {
+        "model": "deepseek-v4-pro",
+        "model_id": "deepseek-v4-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 5018,
+        "completion_tokens": 3478,
+        "role": "agent"
+      },
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 6919,
+        "completion_tokens": 9516,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>МоторХаус | Автосервис на Каширском шоссе</title>\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Oswald:wght@400;600;700&display=swap\" rel=\"stylesheet\">\n    \n    <style>\n        :root {\n            --asphalt-100: #2c2d31;\n            --asphalt-500: #1a1a1d;\n            --asphalt-900: #101012;\n            --amber-main: #ff9f1c;\n            --amber-hover: #ffb752;\n            --amber-dark: #cc7d14;\n            --text-light: #f5f5f5;\n            --text-muted: #a1a1aa;\n            --font-head: 'Oswald', sans-serif;\n            --font-body: 'Montserrat', sans-serif;\n        }\n\n        * {\n            margin: 0;\n            padding: 0;\n            box-sizing: border-box;\n        }\n\n        html {\n            scroll-behavior: smooth;\n        }\n\n        body {\n            font-family: var(--font-body);\n            background-color: var(--asphalt-900);\n            color: var(--text-light);\n            line-height: 1.6;\n            overflow-x: hidden;\n            padding-bottom: env(safe-area-inset-bottom);\n        }\n\n        h1, h2, h3, h4 {\n            font-family: var(--font-head);\n            text-transform: uppercase;\n        }\n\n        a {\n            text-decoration: none;\n            color: inherit;\n        }\n\n        .btn {\n            display: inline-flex;\n            align-items: center;\n            justify-content: center;\n            background: var(--amber-main);\n            color: var(--asphalt-900);\n            font-family: var(--font-head);\n            font-weight: 700;\n            font-size: 1.1rem;\n            padding: 15px 30px;\n            text-transform: uppercase;\n            border: none;\n            cursor: pointer;\n            transition: all 0.3s ease;\n            position: relative;\n            overflow: hidden;\n            z-index: 1;\n        }\n\n        .btn::before {\n            content: '';\n            position: absolute;\n            top: 0; left: -100%;\n            width: 100%; height: 100%;\n            background: var(--amber-hover);\n            transition: all 0.3s ease;\n            z-index: -1;\n        }\n\n        .btn:hover::before { left: 0; }\n        .btn:disabled { opacity: 0.7; cursor: not-allowed; }\n\n        /* Scroll Reveal */\n        .reveal {\n            opacity: 0;\n            transform: translateY(30px);\n            transition: opacity 0.6s ease, transform 0.6s ease;\n        }\n        .reveal.visible {\n            opacity: 1;\n            transform: translateY(0);\n        }\n\n        /* Header */\n        header {\n            position: fixed;\n            top: 0; left: 0; width: 100%;\n            padding: 20px 50px;\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n            z-index: 1000;\n            transition: background 0.3s ease, padding 0.3s ease;\n            background: linear-gradient(to bottom, rgba(16,16,18,0.9), transparent);\n        }\n\n        header.scrolled {\n            background: rgba(16, 16, 18, 0.95);\n            backdrop-filter: blur(10px);\n            padding: 15px 50px;\n            box-shadow: 0 5px 20px rgba(0,0,0,0.5);\n        }\n\n        .logo {\n            font-family: var(--font-head);\n            font-size: 2rem;\n            font-weight: 700;\n            letter-spacing: 2px;\n            color: var(--text-light);\n            z-index: 1001;\n        }\n\n        .logo span { color: var(--amber-main); }\n\n        nav ul {\n            display: flex;\n            list-style: none;\n            gap: 30px;\n        }\n\n        nav a {\n            font-family: var(--font-head);\n            font-weight: 600;\n            font-size: 1.1rem;\n            letter-spacing: 1px;\n            transition: color 0.3s ease;\n        }\n        nav a:hover { color: var(--amber-main); }\n\n        .header-contacts { text-align: right; z-index: 1001; }\n        .header-contacts .phone { font-weight: 600; font-size: 1.2rem; color: var(--amber-main); }\n        .header-contacts .address { font-size: 0.8rem; color: var(--text-muted); }\n\n        .mobile-toggle {\n            display: none;\n            font-size: 1.8rem;\n            background: none;\n            border: none;\n            color: var(--amber-main);\n            cursor: pointer;\n            z-index: 1001;\n        }\n\n        /* Hero Section */\n        .hero {\n            height: 100vh;\n            background-color: var(--asphalt-900);\n            display: flex;\n            flex-direction: column;\n            justify-content: center;\n            padding: 0 10%;\n            position: relative;\n            overflow: hidden;\n        }\n\n        .hero::before {\n            content: '';\n            position: absolute;\n            top: 0; left: 0; width: 100%; height: 100%;\n            background: url('https://images.unsplash.com/photo-1613214149922-f1809c99b414?q=80&w=1920&auto=format&fit=crop') center/cover no-repeat;\n            opacity: 0.4;\n            z-index: 0;\n        }\n        \n        .hero::after {\n            content: '';\n            position: absolute;\n            top: 0; left: 0; width: 100%; height: 100%;\n            background: radial-gradient(circle at 70% 50%, rgba(255, 159, 28, 0.15) 0%, transparent 60%),\n                        repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 2px, transparent 2px, transparent 4px);\n            z-index: 1;\n        }\n\n        .hero-content {\n            position: relative;\n            z-index: 2;\n            max-width: 800px;\n            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;\n            opacity: 0;\n            transform: translateY(40px);\n        }\n\n        @keyframes slideUpFade {\n            to { opacity: 1; transform: translateY(0); }\n        }\n\n        .hero h1 {\n            font-size: 5.5rem;\n            line-height: 1.1;\n            margin-bottom: 20px;\n            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);\n        }\n\n        .hero h1 span { color: var(--amber-main); }\n\n        .hero p {\n            font-size: 1.2rem;\n            margin-bottom: 40px;\n            color: var(--text-light);\n            max-width: 600px;\n            text-shadow: 1px 1px 5px rgba(0,0,0,0.8);\n        }\n\n        /* Trust Bar */\n        .trust-bar {\n            position: absolute;\n            bottom: 0; left: 0; width: 100%;\n            background: rgba(26, 26, 29, 0.9);\n            backdrop-filter: blur(10px);\n            border-top: 1px solid var(--asphalt-100);\n            z-index: 2;\n            display: flex;\n            justify-content: space-around;\n            padding: 20px 10%;\n        }\n\n        .trust-item { text-align: center; }\n        .trust-item strong { display: block; font-family: var(--font-head); font-size: 2rem; color: var(--amber-main); }\n        .trust-item span { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }\n\n        /* Sections General */\n        section { padding: 100px 10%; }\n        .section-title { font-size: 3rem; margin-bottom: 50px; text-align: center; }\n        .section-title span { color: var(--amber-main); }\n\n        /* Services Grid */\n        .services-grid {\n            display: grid;\n            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));\n            gap: 30px;\n        }\n\n        .service-card {\n            background: var(--asphalt-500);\n            padding: 40px 30px;\n            border-bottom: 4px solid transparent;\n            transition: all 0.4s ease;\n            cursor: pointer;\n            position: relative;\n            display: flex;\n            flex-direction: column;\n        }\n\n        .service-card:hover {\n            transform: translateY(-10px);\n            border-bottom: 4px solid var(--amber-main);\n            background: var(--asphalt-100);\n            box-shadow: 0 10px 30px rgba(0,0,0,0.5);\n        }\n\n        .service-icon {\n            width: 50px; height: 50px;\n            color: var(--amber-main);\n            margin-bottom: 20px;\n            transition: transform 0.4s ease;\n        }\n        \n        .service-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }\n\n        .service-card:hover .service-icon { transform: scale(1.1) rotate(5deg); }\n\n        .service-card h3 { font-size: 1.5rem; margin-bottom: 15px; }\n        .service-card p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; flex-grow: 1; }\n        \n        .service-meta {\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n            border-top: 1px solid var(--asphalt-100);\n            padding-top: 15px;\n            font-size: 0.9rem;\n            font-family: var(--font-head);\n        }\n        .service-price { color: var(--amber-main); font-weight: 600; font-size: 1.1rem; }\n        .service-time { color: var(--text-muted); }\n\n        /* Gallery */\n        .gallery { padding: 0; display: flex; overflow: hidden; background: var(--asphalt-900); }\n        .gallery-img { \n            flex: 1; height: 300px; \n            background-size: cover; background-position: center;\n            filter: grayscale(80%); transition: filter 0.4s ease, flex 0.4s ease;\n        }\n        .gallery-img:hover { filter: grayscale(0%); flex: 1.2; }\n\n        /* Reviews Section */\n        .reviews { background: var(--asphalt-500); }\n        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }\n        .review-card {\n            background: var(--asphalt-900);\n            padding: 30px;\n            border-left: 3px solid var(--amber-main);\n            display: flex;\n            flex-direction: column;\n        }\n        \n        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }\n        .stars { color: #f5b301; font-size: 1.2rem; }\n        .review-source { font-size: 0.8rem; color: var(--text-muted); background: var(--asphalt-500); padding: 3px 8px; border-radius: 4px; }\n        .review-text { font-style: italic; margin-bottom: 20px; color: var(--text-light); flex-grow: 1; }\n        .review-footer { display: flex; align-items: center; gap: 15px; }\n        .avatar { width: 40px; height: 40px; background: var(--asphalt-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--amber-main); font-family: var(--font-head); font-weight: 700; }\n        .review-author { font-weight: 600; font-family: var(--font-head); letter-spacing: 1px; }\n\n        /* FAQ Section */\n        .faq-list { max-width: 800px; margin: 0 auto; }\n        .faq-item { background: var(--asphalt-500); margin-bottom: 15px; border-radius: 4px; overflow: hidden; }\n        .faq-question {\n            padding: 20px; font-family: var(--font-head); font-size: 1.2rem; cursor: pointer;\n            display: flex; justify-content: space-between; align-items: center; transition: background 0.3s ease;\n        }\n        .faq-question:hover { background: var(--asphalt-100); }\n        .faq-question::after { content: '+'; color: var(--amber-main); font-size: 1.5rem; transition: transform 0.3s ease; }\n        .faq-item.active .faq-question::after { transform: rotate(45deg); }\n        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; background: var(--asphalt-100); color: var(--text-muted); padding: 0 20px; }\n        .faq-item.active .faq-answer { max-height: 500px; padding: 20px; }\n\n        /* Booking Section */\n        .booking { background: linear-gradient(135deg, var(--asphalt-900) 0%, var(--asphalt-500) 100%); display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center; }\n        .booking-info h2 { font-size: 3rem; margin-bottom: 20px; }\n        .booking-info p { color: var(--text-muted); margin-bottom: 20px; font-size: 1.1rem; }\n        \n        .booking-form { background: var(--asphalt-900); padding: 40px; border: 1px solid var(--asphalt-100); box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative; }\n        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }\n        .form-group { margin-bottom: 20px; }\n        .form-group input, .form-group select {\n            width: 100%; padding: 15px; background: var(--asphalt-500); border: 1px solid var(--asphalt-100); color: var(--text-light); font-family: var(--font-body); font-size: 1rem; outline: none; transition: border-color 0.3s ease;\n            color-scheme: dark;\n        }\n        .form-group input:focus, .form-group select:focus { border-color: var(--amber-main); }\n        .checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; font-size: 0.8rem; color: var(--text-muted); }\n        .checkbox-group input { width: auto; margin-top: 4px; accent-color: var(--amber-main); }\n        .booking-form .btn { width: 100%; }\n\n        #formSuccess {\n            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--asphalt-900);\n            flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;\n        }\n        #formSuccess h3 { color: var(--amber-main); font-size: 2rem; margin-bottom: 10px; }\n\n        /* Footer */\n        footer { background: #0a0a0c; padding: 30px 10%; text-align: center; color: var(--text-muted); border-top: 1px solid var(--asphalt-500); padding-bottom: 80px; }\n\n        /* Mobile Sticky CTA */\n        .mobile-cta {\n            display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--amber-main); z-index: 1000;\n            padding: 15px; text-align: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.3);\n        }\n        .mobile-cta a { color: var(--asphalt-900); font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; text-transform: uppercase; display: block; }\n\n        /* Mobile Responsive */\n        @media (max-width: 992px) {\n            .booking { grid-template-columns: 1fr; }\n            .hero h1 { font-size: 4rem; }\n            .trust-bar { flex-wrap: wrap; gap: 15px; padding: 15px 5%; }\n            .trust-item { width: 45%; }\n            .gallery { flex-direction: column; }\n            .gallery-img { height: 150px; }\n        }\n\n        @media (max-width: 768px) {\n            header { padding: 15px 20px; background: rgba(16, 16, 18, 0.98); }\n            header.scrolled { padding: 15px 20px; }\n            .header-contacts { display: none; }\n            .mobile-toggle { display: block; }\n            nav {\n                position: absolute; top: 100%; left: 0; width: 100%; background: var(--asphalt-900);\n                padding: 20px; border-top: 1px solid var(--asphalt-100); display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.5);\n            }\n            nav.active { display: block; }\n            nav ul { flex-direction: column; text-align: center; gap: 20px; }\n            \n            .hero h1 { font-size: 2.8rem; margin-top: 40px; }\n            section { padding: 70px 5%; }\n            .section-title { font-size: 2.2rem; }\n            .form-row { grid-template-columns: 1fr; }\n            footer { padding-bottom: 80px; }\n            .mobile-cta { display: block; }\n        }\n    </style>\n</head>\n<body>\n\n    <header id=\"header\">\n        <div class=\"logo\">Мотор<span>Хаус</span></div>\n        <button class=\"mobile-toggle\" id=\"mobileToggle\">☰</button>\n        <nav id=\"nav\">\n            <ul>\n                <li><a href=\"#services\">Услуги</a></li>\n                <li><a href=\"#reviews\">Отзывы</a></li>\n                <li><a href=\"#faq\">FAQ</a></li>\n                <li><a href=\"#booking\">Запись</a></li>\n            </ul>\n        </nav>\n        <div class=\"header-contacts\">\n            <div class=\"phone\">+7 (495) 123-45-67</div>\n            <div class=\"address\">Каширское шоссе, 12А</div>\n        </div>\n    </header>\n\n    <section class=\"hero\">\n        <div class=\"hero-content\">\n            <h1>Честный ремонт <br><span>без компромиссов</span></h1>\n            <p>Премиальное обслуживание вашего автомобиля на Каширском шоссе. Современное оборудование, прозрачные цены и атмосфера настоящего гоночного бокса.</p>\n            <a href=\"#booking\" class=\"btn\">Записаться в бокс</a>\n        </div>\n        <div class=\"trust-bar\">\n            <div class=\"trust-item\">\n                <strong>10+</strong>\n                <span>Лет на Каширке</span>\n            </div>\n            <div class=\"trust-item\">\n                <strong>12к+</strong>\n                <span>Отремонтировано авто</span>\n            </div>\n            <div class=\"trust-item\">\n                <strong>2 года</strong>\n                <span>Честная гарантия</span>\n            </div>\n            <div class=\"trust-item\">\n                <strong>ASE</strong>\n                <span>Сертификация мастеров</span>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"services\">\n        <h2 class=\"section-title reveal\">Наши <span>Услуги</span></h2>\n        <div class=\"services-grid\">\n            <div class=\"service-card reveal\">\n                <div class=\"service-icon\"><svg viewBox=\"0 0 24 24\"><path d=\"M4 10v6M4 16l4-4M4 16l-2-2M20 10v6M20 16l-4-4M20 16l2-2M12 4v16M8 8l4-4 4 4\"/></svg></div>\n                <h3>Компьютерная диагностика</h3>\n                <p>Точное выявление неисправностей с помощью дилерских сканеров. Чтение ошибок, проверка датчиков, сброс сервисных интервалов.</p>\n                <div class=\"service-meta\"><span class=\"service-price\">от 1 500 ₽</span><span class=\"service-time\">~30 мин</span></div>\n            </div>\n            <div class=\"service-card reveal\">\n                <div class=\"service-icon\"><svg viewBox=\"0 0 24 24\"><path d=\"M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z\"/><path d=\"m16.24 7.76 2.12-2.12M7.76 16.24l-2.12 2.12M12 4V1M12 23v-3M20 12h3M1 12h3M16.24 16.24l2.12 2.12M7.76 7.76 5.64 5.64\"/></svg></div>\n                <h3>Ремонт двигателей</h3>\n                <p>От замены ремня ГРМ до капитального ремонта ДВС. Устраняем масложор, восстанавливаем компрессию, даем гарантию на работы.</p>\n                <div class=\"service-meta\"><span class=\"service-price\">от 4 000 ₽</span><span class=\"service-time\">от 2 часов</span></div>\n            </div>\n            <div class=\"service-card reveal\">\n                <div class=\"service-icon\"><svg viewBox=\"0 0 24 24\"><path d=\"M5 22h14M12 2v20M8 6h8M8 10h8M8 14h8M8 18h8\"/></svg></div>\n                <h3>Обслуживание ходовой</h3>\n                <p>Замена амортизаторов, рычагов, сайлентблоков. Обеспечим идеальную управляемость и безопасность вашего авто на любой дороге.</p>\n                <div class=\"service-meta\"><span class=\"service-price\">от 1 200 ₽</span><span class=\"service-time\">~1 час</span></div>\n            </div>\n            <div class=\"service-card reveal\">\n                <div class=\"service-icon\"><svg viewBox=\"0 0 24 24\"><path d=\"M12 2v20M12 22a4 4 0 0 0 4-4H8a4 4 0 0 0 4 4ZM7 12c-1.5 0-3-1.5-3-3s1.5-3 3-3 3 1.5 3 3-1.5 3-3 3Z\"/></svg></div>\n                <h3>Замена техжидкостей</h3>\n                <p>Аппаратная замена масла в АКПП, двигателе, замена антифриза и тормозной жидкости с использованием сертифицированных масел.</p>\n                <div class=\"service-meta\"><span class=\"service-price\">от 900 ₽</span><span class=\"service-time\">~40 мин</span></div>\n            </div>\n            <div class=\"service-card reveal\">\n                <div class=\"service-icon\"><svg viewBox=\"0 0 24 24\"><path d=\"M13 2L3 14h9l-1 8 10-12h-9l1-8z\"/></svg></div>\n                <h3>Автоэлектрика</h3>\n                <p>Восстановление проводки, установка сигнализаций, парктроников, автозвука и решение сложных проблем с бортовой сетью.</p>\n                <div class=\"service-meta\"><span class=\"service-price\">от 2 000 ₽</span><span class=\"service-time\">индивидуально</span></div>\n            </div>\n            <div class=\"service-card reveal\">\n                <div class=\"service-icon\"><svg viewBox=\"0 0 24 24\"><path d=\"M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16a4 4 0 100-8 4 4 0 000 8zM12 13a1 1 0 100-2 1 1 0 000 2z\"/></svg></div>\n                <h3>Шиномонтаж и сход-развал</h3>\n                <p>Быстро, без очередей. Балансировка на высокоточных станках и 3D сход-развал для идеального контакта с асфальтом.</p>\n                <div class=\"service-meta\"><span class=\"service-price\">от 2 500 ₽</span><span class=\"service-time\">~45 мин</span></div>\n            </div>\n        </div>\n    </section>\n\n    <section class=\"gallery\">\n        <div class=\"gallery-img\" style=\"background-image: url('https://images.unsplash.com/photo-1632823471565-3cefc4d360f0?q=80&w=800&auto=format&fit=crop');\"></div>\n        <div class=\"gallery-img\" style=\"background-image: url('https://images.unsplash.com/photo-1625047509168-a7006f8233f4?q=80&w=800&auto=format&fit=crop');\"></div>\n        <div class=\"gallery-img\" style=\"background-image: url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=800&auto=format&fit=crop');\"></div>\n        <div class=\"gallery-img\" style=\"background-image: url('https://images.unsplash.com/photo-1605634676159-289b4e723594?q=80&w=800&auto=format&fit=crop');\"></div>\n    </section>\n\n    <section id=\"reviews\" class=\"reviews\">\n        <h2 class=\"section-title reveal\">Что говорят <span>клиенты</span></h2>\n        <div class=\"reviews-grid\">\n            <div class=\"review-card reveal\">\n                <div class=\"review-header\">\n                    <div class=\"stars\">★★★★★</div>\n                    <div class=\"review-source\">Яндекс.Карты</div>\n                </div>\n                <p class=\"review-text\">\"Заехал по пути на Каширке с чеком двигателя. Парни быстро подключились, нашли обрыв провода на датчике, сделали за 20 минут и не содрали три шкуры. Респект!\"</p>\n                <div class=\"review-footer\">\n                    <div class=\"avatar\">АС</div>\n                    <div class=\"review-author\">Алексей С.</div>\n                </div>\n            </div>\n            <div class=\"review-card reveal\">\n                <div class=\"review-header\">\n                    <div class=\"stars\">★★★★★</div>\n                    <div class=\"review-source\">2ГИС</div>\n                </div>\n                <p class=\"review-text\">\"Атмосфера внутри — огонь, чистота как в операционной, хотя это автосервис. Перебирали подвеску на BMW, все запчасти заказали сами, сделали в срок.\"</p>\n                <div class=\"review-footer\">\n                    <div class=\"avatar\">МД</div>\n                    <div class=\"review-author\">Михаил Д.</div>\n                </div>\n            </div>\n            <div class=\"review-card reveal\">\n                <div class=\"review-header\">\n                    <div class=\"stars\">★★★★★</div>\n                    <div class=\"review-source\">Яндекс.Карты</div>\n                </div>\n                <p class=\"review-text\">\"Наконец-то нормальный сервис на юге Москвы. Сделали аппаратную замену масла в коробке. Коробка перестала пинаться, едет плавно. Спасибо мастеру Ивану.\"</p>\n                <div class=\"review-footer\">\n                    <div class=\"avatar\">ЕВ</div>\n                    <div class=\"review-author\">Елена В.</div>\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"faq\">\n        <h2 class=\"section-title reveal\">Частые <span>Вопросы</span></h2>\n        <div class=\"faq-list reveal\">\n            <div class=\"faq-item\">\n                <div class=\"faq-question\">Вы даете гарантию на работы?</div>\n                <div class=\"faq-answer\">\n                    <p>Да, мы предоставляем документальную гарантию до 2 лет или 40 000 км пробега на большинство видов работ и приобретенные у нас оригинальные запчасти.</p>\n                </div>\n            </div>\n            <div class=\"faq-item\">\n                <div class=\"faq-question\">Можно ли присутствовать в ремзоне?</div>\n                <div class=\"faq-answer\">\n                    <p>Конечно. Наш принцип — полная прозрачность. Вы можете наблюдать за процессом ремонта в безопасной зоне рядом с подъемником вместе с мастером.</p>\n                </div>\n            </div>\n            <div class=\"faq-item\">\n                <div class=\"faq-question\">Нужно ли покупать запчасти самому?</div>\n                <div class=\"faq-answer\">\n                    <p>Не обязательно. У нас собственный склад запчастей на 5000+ позиций. Подберем оригиналы или проверенные аналоги дешевле, чем в розничных магазинах.</p>\n                </div>\n            </div>\n        </div>\n    </section>\n\n    <section id=\"booking\" class=\"booking\">\n        <div class=\"booking-info reveal\">\n            <h2>Ждем вас в <br><span>МоторХаус</span></h2>\n            <p>Оставьте заявку, и наш мастер-приемщик свяжется с вами в течение 10 минут для согласования времени и предварительного расчета стоимости.</p>\n            <p><strong>Адрес:</strong> Москва, Каширское шоссе, д. 12А<br>\n            <strong>Режим работы:</strong> Ежедневно, с 09:00 до 21:00</p>\n        </div>\n        <div class=\"booking-form reveal\">\n            <form id=\"contactForm\">\n                <div class=\"form-row\">\n                    <div class=\"form-group\">\n                        <input type=\"text\" name=\"name\" placeholder=\"Ваше имя\" required>\n                    </div>\n                    <div class=\"form-group\">\n                        <input type=\"tel\" name=\"phone\" placeholder=\"Телефон (+7...)\" required pattern=\"[\\+]\\d{1}\\s?[\\(]?\\d{3}[\\)]?\\s?\\d{3}[\\-]?\\d{2}[\\-]?\\d{2}\">\n                    </div>\n                </div>\n                <div class=\"form-row\">\n                    <div class=\"form-group\">\n                        <input type=\"text\" name=\"car\" placeholder=\"Марка и модель авто\" required>\n                    </div>\n                    <div class=\"form-group\">\n                        <select name=\"service\" required>\n                            <option value=\"\" disabled selected>Выберите услугу</option>\n                            <option value=\"diag\">Компьютерная диагностика</option>\n                            <option value=\"engine\">Ремонт двигателя</option>\n                            <option value=\"suspension\">Обслуживание ходовой</option>\n                            <option value=\"oil\">Замена жидкостей</option>\n                            <option value=\"electro\">Автоэлектрика</option>\n                            <option value=\"tires\">Шиномонтаж / Сход-развал</option>\n                        </select>\n                    </div>\n                </div>\n                <div class=\"form-row\">\n                    <div class=\"form-group\">\n                        <input type=\"date\" name=\"date\" required title=\"Желаемая дата\">\n                    </div>\n                    <div class=\"form-group\">\n                        <input type=\"time\" name=\"time\" required title=\"Желаемое время\">\n                    </div>\n                </div>\n                <div class=\"checkbox-group\">\n                    <input type=\"checkbox\" id=\"consent\" required checked>\n                    <label for=\"consent\">Я согласен с условиями обработки персональных данных согласно 152-ФЗ</label>\n                </div>\n                <button type=\"submit\" class=\"btn\" id=\"submitBtn\">Забронировать подъемник</button>\n            </form>\n            <div id=\"formSuccess\">\n                <h3>Заявка принята!</h3>\n                <p>Мастер перезвонит вам в течение 15 минут для подтверждения записи.</p>\n            </div>\n        </div>\n    </section>\n\n    <footer>\n        <p>&copy; 2023 МоторХаус. Все права защищены. Автосервис на Каширском шоссе.</p>\n    </footer>\n\n    <div class=\"mobile-cta\">\n        <a href=\"tel:+74951234567\">Позвонить: +7 (495) 123-45-67</a>\n    </div>\n\n    <script>\n        // Header Scroll\n        const header = document.getElementById('header');\n        window.addEventListener('scroll', () => {\n            if (window.scrollY > 50) header.classList.add('scrolled');\n            else header.classList.remove('scrolled');\n        });\n\n        // Mobile Menu Toggle\n        const mobileToggle = document.getElementById('mobileToggle');\n        const nav = document.getElementById('nav');\n        mobileToggle.addEventListener('click', () => {\n            nav.classList.toggle('active');\n        });\n        nav.querySelectorAll('a').forEach(link => {\n            link.addEventListener('click', () => nav.classList.remove('active'));\n        });\n\n        // FAQ Accordion\n        const faqItems = document.querySelectorAll('.faq-item');\n        faqItems.forEach(item => {\n            const question = item.querySelector('.faq-question');\n            question.addEventListener('click', () => {\n                const isActive = item.classList.contains('active');\n                faqItems.forEach(i => i.classList.remove('active'));\n                if (!isActive) item.classList.add('active');\n            });\n        });\n\n        // Scroll Reveal Animation (Intersection Observer)\n        const observerOptions = { threshold: 0.1, rootMargin: \"0px 0px -50px 0px\" };\n        const observer = new IntersectionObserver((entries) => {\n            entries.forEach(entry => {\n                if (entry.isIntersecting) {\n                    entry.target.classList.add('visible');\n                    observer.unobserve(entry.target);\n                }\n            });\n        }, observerOptions);\n        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));\n\n        // Form Submit Handler (Simulation)\n        const form = document.getElementById('contactForm');\n        const successMsg = document.getElementById('formSuccess');\n        const submitBtn = document.getElementById('submitBtn');\n\n        form.addEventListener('submit', (e) => {\n            e.preventDefault();\n            submitBtn.textContent = 'Отправка...';\n            submitBtn.disabled = true;\n            \n            // Simulate API request delay\n            setTimeout(() => {\n                form.style.display = 'none';\n                successMsg.style.display = 'flex';\n            }, 1000);\n        });\n\n        // Set min date for date input to today\n        const dateInput = document.querySelector('input[type=\"date\"]');\n        if(dateInput) {\n            dateInput.min = new Date().toISOString().split('T')[0];\n        }\n    </script>\n<a class=\"zeus-badge\" href=\"https://zeuscode.ru\" target=\"_blank\" rel=\"noopener noreferrer\">Сделано на ZeusCode</a>\n<style id=\"zeus-badge-css\">\n.zeus-badge{\n  position:fixed;right:14px;bottom:12px;z-index:2147483646;\n  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;\n  letter-spacing:.02em;text-decoration:none;\n  color:rgba(120,120,120,.42);pointer-events:auto;\n  transition:color .2s ease,opacity .2s ease;\n}\n.zeus-badge:hover{color:rgba(120,120,120,.78)}\n</style>\n</body>\n</html>\n\n---\n🔗 Живая ссылка: https://zeuscode.ru/go/site-06ac/\n",
+    "thinking_visible": true,
+    "epic3": {
+      "crew": "ui_author_critics",
+      "author": "gemini-3.1-pro",
+      "critics": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 980,
+        "deepseek-v4-pro": 850,
+        "gemini-3.1-pro": 880
+      },
+      "author_attempts": [
+        {
+          "model": "claude-opus-4-8",
+          "ok": false,
+          "error": "Upstream error 500: {\"type\": \"error\", \"error\": {\"type\": \"api_error\", \"message\": \"Server exception, please try again later\"}}"
+        },
+        {
+          "model": "gemini-3.1-pro",
+          "ok": true,
+          "error": null
+        }
+      ],
+      "author_preferred": "claude-opus-4-8",
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "duckduckgo_html,jina",
+        "queries": [
+          "best auto repair shop website design examples",
+          "best car service landing page UX 2025 2026",
+          "автосервис сайт дизайн примеры лучшие"
+        ],
+        "refs_used": [
+          "https://colorlib.com/wp/auto-repair-website-examples/",
+          "https://www.webcitz.com/blog/best-auto-repair-websites/",
+          "https://www.repairshopwebsites.com/portfolio/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Add a trust bar under the hero (WebCitz emphasizes trust signals): years on Каширское шоссе, кол-во отремонтированных авто, гарантия 2 года, ASE/дилер-аналог сертификаты — реальные цифры снимают 'mechanic anxiety'.",
+          "Replace emoji service icons (⚡⚙️🔧) with inline SVG line-icons in amber — emoji render inconsistently across OS and cheapen a 'premium box' brand.",
+          "Show transparent pricing 'от N ₽' + примерное время on each of the 6 service cards; refs stress 'Digital Transparency' and clear cost expectations before booking.",
+          "Make the booking form actually submit: preventDefault + fetch/mailto fallback + inline success state ('Заявка принята, перезвоним за 15 мин'), not an alert — brief asks for a working form.",
+          "Add form fields the shop needs: марка/модель авто, дата+время (date/time inputs) and a required consent checkbox (152-ФЗ) — matches real appointment scheduling UX.",
+          "Add a sticky mobile call/booking bar (fixed bottom CTA with phone) — mobile-first booking is the #1 point in both refs.",
+          "Deepen hero atmosphere: layer a subtle radial amber glow + faint diagonal asphalt texture/noise over the photo, and add a soft parallax or scan-line to avoid a flat overlay.",
+          "Add a photo strip / 'до-после' gallery of the box and real work (Digital Vehicle Inspection showcase from ref) — currently no real shop imagery beyond hero.",
+          "Add scroll-reveal animation for service/review cards (IntersectionObserver) to hit the '2-3 motions' brief cleanly instead of relying only on hover.",
+          "Add star ratings + review source (Яндекс/2ГИС) and avatar initials to reviews for credibility; italic quote alone reads generic.",
+          "Добавить шестую услугу (например, «Кузовной ремонт и покраска») в сетку услуг, чтобы строго соответствовать брифингу по количеству — сейчас видно только 5.",
+          "Реализовать работающую отправку формы записи: интегрировать сервис типа Formspree или добавить JavaScript для валидации и асинхронной отправки с подтверждением, имитируя полноценную систему бронирования (аналогично примерам с онлайн-записью на WebCitz)."
+        ],
+        "must_fix": [
+          "HTML is truncated — services grid, reviews, FAQ, booking form and footer must be completed and all tags closed, or the page won't render.",
+          "The header nav has no anchor to #booking and the mobile header stacks logo+nav+phone eating vertical space — add a hamburger or compact mobile header so the hero is visible on phones.",
+          "Booking form currently has no JS handler shown; ensure it does not just alert() and includes required-field validation.",
+          "FAQ-аккордеон полностью статичен: нет JavaScript для переключения ответов, клик по вопросу не приводит к раскрытию — нарушает интерактивность.",
+          "Не хватает шестой услуги: бриф требует 6 услуг с нормальным описанием, в коде представлено только 5 карточек в сетке.",
+          "Форма записи не работает: отсутствует обработчик отправки и валидация — только визуальный скелет, нет реального действия при нажатии кнопки.",
+          "На мобильных устройствах телефонный номер скрыт (header-contacts display:none), что критично для автосервиса — оставьте хотя бы кнопку с номером для звонка.",
+          "Hero-изображение может не передавать атмосферу именно рабочего бокса МоторХаус: желательно использовать локальную фотографию или более детализированный гаражный фон с инструментами."
+        ],
+        "praise": [
+          "Strong asphalt+amber palette with Oswald/Montserrat — correctly avoids indigo/Inter clichés.",
+          "Brand-first hero with large МоторХаус wordmark and amber accent, smooth slideUpFade intro.",
+          "Solid interaction details: scrolled header blur, card lift on hover, animated FAQ accordion, amber sweep on buttons.",
+          "Брутальная асфальтово-янтарная цветовая гамма и отказ от Indigo/Inter — айдентика выдержана, шрифты Oswald и Montserrat создают мужской, технический характер.",
+          "Полноэкранный hero с наложением градиента и анимацией подъёма текста сразу задаёт кинематографичное настроение гаражного бокса.",
+          "Карточки услуг с hover-эффектом подъёма и акцентной янтарной полосой выглядят современно и тактильно.",
+          "Чёткая одностраничная структура из логичных блоков: услуги → отзывы → FAQ → запись, что хорошо для конверсии.",
+          "Наличие адаптивного кода через медиа-запросы и базовое сжатие элементов на мобильных — забота о пользователе с телефона."
+        ]
+      }
+    },
+    "ui_crew": {
+      "author": "gemini-3.1-pro",
+      "critics": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 980,
+        "deepseek-v4-pro": 850,
+        "gemini-3.1-pro": 880
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "duckduckgo_html,jina",
+        "queries": [
+          "best auto repair shop website design examples",
+          "best car service landing page UX 2025 2026",
+          "автосервис сайт дизайн примеры лучшие"
+        ],
+        "refs_used": [
+          "https://colorlib.com/wp/auto-repair-website-examples/",
+          "https://www.webcitz.com/blog/best-auto-repair-websites/",
+          "https://www.repairshopwebsites.com/portfolio/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Add a trust bar under the hero (WebCitz emphasizes trust signals): years on Каширское шоссе, кол-во отремонтированных авто, гарантия 2 года, ASE/дилер-аналог сертификаты — реальные цифры снимают 'mechanic anxiety'.",
+          "Replace emoji service icons (⚡⚙️🔧) with inline SVG line-icons in amber — emoji render inconsistently across OS and cheapen a 'premium box' brand.",
+          "Show transparent pricing 'от N ₽' + примерное время on each of the 6 service cards; refs stress 'Digital Transparency' and clear cost expectations before booking.",
+          "Make the booking form actually submit: preventDefault + fetch/mailto fallback + inline success state ('Заявка принята, перезвоним за 15 мин'), not an alert — brief asks for a working form.",
+          "Add form fields the shop needs: марка/модель авто, дата+время (date/time inputs) and a required consent checkbox (152-ФЗ) — matches real appointment scheduling UX.",
+          "Add a sticky mobile call/booking bar (fixed bottom CTA with phone) — mobile-first booking is the #1 point in both refs.",
+          "Deepen hero atmosphere: layer a subtle radial amber glow + faint diagonal asphalt texture/noise over the photo, and add a soft parallax or scan-line to avoid a flat overlay.",
+          "Add a photo strip / 'до-после' gallery of the box and real work (Digital Vehicle Inspection showcase from ref) — currently no real shop imagery beyond hero.",
+          "Add scroll-reveal animation for service/review cards (IntersectionObserver) to hit the '2-3 motions' brief cleanly instead of relying only on hover.",
+          "Add star ratings + review source (Яндекс/2ГИС) and avatar initials to reviews for credibility; italic quote alone reads generic.",
+          "Добавить шестую услугу (например, «Кузовной ремонт и покраска») в сетку услуг, чтобы строго соответствовать брифингу по количеству — сейчас видно только 5.",
+          "Реализовать работающую отправку формы записи: интегрировать сервис типа Formspree или добавить JavaScript для валидации и асинхронной отправки с подтверждением, имитируя полноценную систему бронирования (аналогично примерам с онлайн-записью на WebCitz)."
+        ],
+        "must_fix": [
+          "HTML is truncated — services grid, reviews, FAQ, booking form and footer must be completed and all tags closed, or the page won't render.",
+          "The header nav has no anchor to #booking and the mobile header stacks logo+nav+phone eating vertical space — add a hamburger or compact mobile header so the hero is visible on phones.",
+          "Booking form currently has no JS handler shown; ensure it does not just alert() and includes required-field validation.",
+          "FAQ-аккордеон полностью статичен: нет JavaScript для переключения ответов, клик по вопросу не приводит к раскрытию — нарушает интерактивность.",
+          "Не хватает шестой услуги: бриф требует 6 услуг с нормальным описанием, в коде представлено только 5 карточек в сетке.",
+          "Форма записи не работает: отсутствует обработчик отправки и валидация — только визуальный скелет, нет реального действия при нажатии кнопки.",
+          "На мобильных устройствах телефонный номер скрыт (header-contacts display:none), что критично для автосервиса — оставьте хотя бы кнопку с номером для звонка.",
+          "Hero-изображение может не передавать атмосферу именно рабочего бокса МоторХаус: желательно использовать локальную фотографию или более детализированный гаражный фон с инструментами."
+        ],
+        "praise": [
+          "Strong asphalt+amber palette with Oswald/Montserrat — correctly avoids indigo/Inter clichés.",
+          "Brand-first hero with large МоторХаус wordmark and amber accent, smooth slideUpFade intro.",
+          "Solid interaction details: scrolled header blur, card lift on hover, animated FAQ accordion, amber sweep on buttons.",
+          "Брутальная асфальтово-янтарная цветовая гамма и отказ от Indigo/Inter — айдентика выдержана, шрифты Oswald и Montserrat создают мужской, технический характер.",
+          "Полноэкранный hero с наложением градиента и анимацией подъёма текста сразу задаёт кинематографичное настроение гаражного бокса.",
+          "Карточки услуг с hover-эффектом подъёма и акцентной янтарной полосой выглядят современно и тактильно.",
+          "Чёткая одностраничная структура из логичных блоков: услуги → отзывы → FAQ → запись, что хорошо для конверсии.",
+          "Наличие адаптивного кода через медиа-запросы и базовое сжатие элементов на мобильных — забота о пользователе с телефона."
+        ]
+      }
+    },
+    "classifier": {
+      "stack": "full",
+      "task": "ui",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.402,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  }
+}

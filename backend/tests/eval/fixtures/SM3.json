@@ -1,0 +1,12 @@
+{
+  "id": "SM3",
+  "metric": "SM-3",
+  "title": "no infinite escalate",
+  "intent": "escalate_count <= 2 always; Soft-Stop after budget",
+  "binds": ["FR-7", "AD-25"],
+  "fr16_deferred": true,
+  "expect": {
+    "max_escalate": 2,
+    "soft_stop_after_budget": true
+  }
+}

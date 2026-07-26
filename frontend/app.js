@@ -19,6 +19,8 @@ const state = {
   })(),
   judgeModel: localStorage.getItem("os_judge_model") || "",
   rawApiKey: sessionStorage.getItem("os_raw_key") || "",
+  clientGuideId: localStorage.getItem("zeus_client_guide") || "cursor",
+  fusionPref: localStorage.getItem("zeus_fusion_pref") || "power",
   balanceRub: 0,
   modelFamily: "",
   keysCount: 0,
@@ -274,7 +276,7 @@ function renderMySetup() {
   const keyCount = Number(state.keysCount || 0);
   let status = "";
   if (!hasRaw && keyCount > 0) status = "Ключ скрыт — нажми «создать ключ», чтобы показать новый.";
-  else if (!hasRaw) status = "Создай ключ, чтобы подключить Cursor.";
+  else if (!hasRaw) status = "Создай ключ — потом вставь Base URL + ключ в любой OpenAI-compatible клиент.";
 
   document.querySelectorAll('[data-setup="status"]').forEach((el) => {
     el.textContent = status;
@@ -306,17 +308,38 @@ function renderMySetup() {
   document.querySelectorAll('[data-setup="balance"]').forEach((el) => {
     el.textContent = `Баланс: ${fmtRub(bal)} · платишь только за токены выбранной модели`;
   });
+  renderClientGuides();
 }
 
 function persistSelectedModels() {
   localStorage.setItem("os_pick_models", JSON.stringify([...state.selectedModels]));
   renderMySetup();
+  // One key → server remembers panel when mode is «свой набор»
+  if (state.token && (state.fusionPref || "") === "custom") {
+    void syncFusionModelsToServer();
+  }
+}
+
+async function syncFusionModelsToServer() {
+  try {
+    const models = selectedModelIds().slice(0, 3);
+    if (!models.length) return;
+    await api("/me/fusion", { method: "PUT", body: { mode: "custom", models } });
+  } catch {
+    /* non-blocking */
+  }
 }
 
 function toggleModelPick(id) {
   if (!id) return;
   if (state.selectedModels.has(id)) state.selectedModels.delete(id);
-  else state.selectedModels.add(id);
+  else {
+    if (state.selectedModels.size >= 3) {
+      flashSetup("Максимум 3 модели в наборе", true);
+      return;
+    }
+    state.selectedModels.add(id);
+  }
   persistSelectedModels();
   document.querySelectorAll(`.model-card[data-mid="${CSS.escape(id)}"]`).forEach((el) => {
     el.classList.toggle("picked", state.selectedModels.has(id));
@@ -344,25 +367,830 @@ function defaultPickModels() {
   persistSelectedModels();
 }
 
-function buildConnectionPack() {
-  const base = publicBaseUrl();
-  const key = state.rawApiKey || "<сначала создай ключ кнопкой>";
+const CLIENT_GUIDES = [
+  {
+    id: "fusion",
+    title: "Fusion",
+    steps: [
+      "model = zeuscode — режим из Mini App / выбора ниже",
+      "Простой: flash+gemini-3-pro+haiku · Мощный: opus-4-8+v4-pro+3.1-pro (умный 1↔3)",
+      "Свой набор: отметь до 3 моделей во вкладке «модели»",
+      "Cursor: только zeuscode — режим с аккаунта",
+    ],
+    configKind: "fusion",
+  },
+  {
+    id: "cursor",
+    title: "Cursor",
+    steps: [
+      "Settings → Models → OpenAI API Key — ключ ZeusCode",
+      "Override OpenAI Base URL → …/v1",
+      "Add model → zeuscode + нужные id из каталога",
+      "В чате выбери модель ZeusCode",
+    ],
+    configKind: "cursor",
+  },
+  {
+    id: "opencode",
+    title: "OpenCode",
+    steps: [
+      "Windows: C:\\Users\\<имя ПК>\\.config\\opencode\\opencode.json",
+      "Mac/Linux: ~/.config/opencode/opencode.json — вставь весь JSON",
+      "В пикере только ZeusCode (zeuscode) — один id",
+      "Режим Пользовательский / Продвинутый / Набор — только в Telegram «Модели»",
+    ],
+    configKind: "opencode",
+  },
+  {
+    id: "kilo",
+    title: "Kilo Code",
+    steps: [
+      "VS Code / JetBrains → Extensions → Kilo Code",
+      "Settings → Providers → Custom → OpenAI Compatible",
+      "Base URL = Zeus …/v1 · API Key = zeus_…",
+      "Модели подтянутся сами с /v1/models",
+    ],
+    configKind: "kilo",
+  },
+  {
+    id: "continue",
+    title: "Continue",
+    steps: [
+      "Открой ~/.continue/config.yaml (или config.json)",
+      "Добавь provider openai с apiBase и apiKey",
+      "model: zeuscode (режим) или любой id — весь каталог в yaml",
+      "Перезапусти Continue",
+    ],
+    configKind: "continue",
+  },
+  {
+    id: "cline",
+    title: "Cline",
+    steps: [
+      "Панель Cline → ⚙️ → API Provider = OpenAI Compatible",
+      "Base URL = Zeus …/v1 (без /chat/completions)",
+      "API Key = zeus_… · Model ID = zeuscode (весь каталог на ключе)",
+      "Verify / Save → задача в панели Cline",
+    ],
+    configKind: "cline",
+  },
+  {
+    id: "goose",
+    title: "Goose",
+    steps: [
+      "Установи Goose (block.github.io/goose)",
+      "OPENAI_HOST=https://zeuscode.ru (без /v1) · OPENAI_BASE_PATH=v1/chat/completions",
+      "OPENAI_API_KEY + GOOSE_PROVIDER=openai + GOOSE_MODEL=zeuscode",
+      "goose info -v · goose session · сменить модель: GOOSE_MODEL=<id>",
+    ],
+    configKind: "goose",
+  },
+  {
+    id: "crush",
+    title: "Crush",
+    steps: [
+      "Установи Crush (charmbracelet/crush)",
+      "~/.config/crush/crush.json — type openai-compat",
+      "export ZEUSCODE_API_KEY=…",
+      "crush → выбери модель Zeus",
+    ],
+    configKind: "crush",
+  },
+  {
+    id: "openhands",
+    title: "OpenHands",
+    steps: [
+      "Settings → LLM → Advanced",
+      "Custom Model = openai/<id> (префикс openai/ обязателен)",
+      "Base URL = Zeus …/v1 · API Key = zeus_…",
+      "Issue→PR / задача в UI или CLI",
+    ],
+    configKind: "openhands",
+  },
+  {
+    id: "windsurf",
+    title: "Windsurf",
+    steps: [
+      "Скачай Windsurf IDE",
+      "Marketplace → Cline или Kilo Code (нативный BYOK слабый)",
+      "В расширении: OpenAI Compatible → Base URL + ключ Zeus",
+      "Агент Zeus — в панели Cline/Kilo, не в Cascade",
+    ],
+    configKind: "kilo",
+  },
+  {
+    id: "zed",
+    title: "Zed",
+    steps: [
+      "settings.json → language_models.openai_compatible.ZeusCode",
+      "api_url = Zeus …/v1 · available_models с capabilities",
+      "Ключ: ZEUSCODE_API_KEY в env или agent: open settings (не в JSON)",
+      "Agent panel → модель Zeus",
+    ],
+    configKind: "zed",
+  },
+  {
+    id: "librechat",
+    title: "LibreChat",
+    steps: [
+      "librechat.yaml → endpoints.custom ZeusCode",
+      ".env → ZEUSCODE_API_KEY=…",
+      "models.fetch: true тянет /v1/models",
+      "Restart → выбери ZeusCode в чате",
+    ],
+    configKind: "librechat",
+  },
+  {
+    id: "openwebui",
+    title: "Open WebUI",
+    steps: [
+      "Admin → Connections → OpenAI",
+      "Base URL = Zeus …/v1 · API Key = zeus_…",
+      "Или env OPENAI_API_BASE_URL + OPENAI_API_KEY",
+      "Модели с /v1/models",
+    ],
+    configKind: "openwebui",
+  },
+  {
+    id: "omniroute",
+    title: "OmniRoute",
+    steps: [
+      "Providers → OpenAI Compatible · Chat Completions (не Responses)",
+      "Base URL …/v1 · API Key zeus_… · model zeuscode",
+      "502 UND_ERR_SOCKET → OmniRoute ≥3.8.36 + FETCH_KEEPALIVE_TIMEOUT_MS=1",
+      "Тест: gemini-2.5-flash → потом fusion · omniroute setup-codex",
+    ],
+    configKind: "omniroute",
+  },
+  {
+    id: "codex",
+    title: "Codex",
+    steps: [
+      "~/.codex/config.toml → model_providers.zeuscode",
+      "wire_api = responses · requires_openai_auth = false",
+      "export ZEUSCODE_API_KEY=zeus_… (не в toml)",
+      "model = zeuscode · или любой id · через OmniRoute localhost:20128/v1",
+    ],
+    configKind: "codex",
+  },
+  {
+    id: "claude",
+    title: "Claude Code",
+    steps: [
+      "~/.claude/settings.json → env блок (Claude Code ≥ 2.1.129)",
+      "ANTHROPIC_BASE_URL = https://zeuscode.ru (без /v1) · AUTH_TOKEN = zeus_…",
+      "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1 → /model = весь каталог ZeusCode",
+      "Дефолт zeuscode · не-Claude в пикере: anthropic.zeuscode/<id>",
+    ],
+    configKind: "claude",
+  },
+  {
+    id: "aider",
+    title: "Aider",
+    steps: [
+      "export OPENAI_API_BASE=…/v1 · OPENAI_API_KEY=zeus_…",
+      "aider --model openai/zeuscode",
+      "Другая модель: openai/<id> из каталога ZeusCode",
+    ],
+    configKind: "aider",
+  },
+  {
+    id: "python",
+    title: "Python SDK",
+    steps: [
+      "pip install openai",
+      "OpenAI(base_url=…, api_key=…)",
+      "model = \"zeuscode\" или id нейросети",
+    ],
+    configKind: "python",
+  },
+  {
+    id: "js",
+    title: "JS / Node",
+    steps: [
+      "npm i openai",
+      "new OpenAI({ baseURL, apiKey })",
+      "model: \"zeuscode\" или id нейросети",
+    ],
+    configKind: "js",
+  },
+  {
+    id: "curl",
+    title: "curl / HTTP",
+    steps: [
+      "POST {Base URL}/chat/completions",
+      "Header: Authorization: Bearer {API Key}",
+      "Body: model zeuscode + messages (+ опционально models)",
+    ],
+    configKind: "curl",
+  },
+  {
+    id: "any",
+    title: "Любой OpenAI-compatible",
+    steps: [
+      "Найди «OpenAI Compatible» / «Custom provider» / «Base URL»",
+      "Вставь Base URL (…/v1) и API Key",
+      "Одна нейронка: её id · кооператив: zeuscode",
+      "Проверка: GET /v1/models · POST /v1/chat/completions",
+    ],
+    configKind: "openai_any",
+  },
+];
+
+function selectedModelIds() {
   let models = [...state.selectedModels];
   if (!models.length) {
     defaultPickModels();
     models = [...state.selectedModels];
   }
   if (!models.length) models = ["gemini-2.5-flash"];
+  return models;
+}
+
+function primaryModelId() {
+  return selectedModelIds()[0] || "gemini-2.5-flash";
+}
+
+/** One key unlocks the full ready chat catalog; default client model is zeuscode. */
+function readyChatModelIds() {
+  const fusion = "zeuscode";
+  const fromCat = (state.models || state.catalog || [])
+    .filter((m) => m && m.id && m.ready !== false && (m.modality || "chat") === "chat")
+    .map((m) => String(m.id));
+  const ids = [fusion, ...fromCat.filter((id) => id !== fusion)];
+  if (ids.length <= 1) {
+    for (const id of [
+      "gemini-3.1-pro",
+      "gemini-3-pro",
+      "gemini-3-flash",
+      "gemini-2.5-pro",
+      "gemini-2.5-flash",
+      "deepseek-v4-pro",
+      "deepseek-v4-flash",
+      "claude-opus-4-8",
+      "claude-sonnet-4-6",
+      "claude-haiku-4-5",
+      "gpt-5.4",
+      "gpt-5.6-sol",
+      "gpt-5.6-terra",
+      "grok-4-5",
+    ]) {
+      if (!ids.includes(id)) ids.push(id);
+    }
+  }
+  return ids;
+}
+
+function catalogCommentLines(ids, limit = 80) {
+  const slice = ids.slice(0, limit);
+  const more = ids.length > limit ? ` … +${ids.length - limit}` : "";
+  return [
+    `# ZeusCode · весь каталог (${ids.length}) на этом ключе — GET …/models`,
+    `# ${slice.join(" · ")}${more}`,
+  ];
+}
+
+function catalogDisplayName(id) {
+  const row = (state.models || state.catalog || []).find((m) => m && String(m.id) === String(id));
+  const title = (row && (row.title || row.name)) || id;
+  if (id === "zeuscode") return "ZeusCode";
+  return String(title).startsWith("ZeusCode") ? String(title) : `ZeusCode · ${title}`;
+}
+
+function buildClientConfig(kind) {
+  const base = publicBaseUrl();
+  const key = state.rawApiKey || "<создай ключ>";
+  const fusion = "zeuscode";
+  const model = fusion; // дефолт везде: режим из Mini App / кабинета
+  const catalogIds = readyChatModelIds();
+  const catNote = catalogCommentLines(catalogIds);
+  const panel = selectedModelIds().slice(0, 3);
+  const pref = state.fusionPref || "power";
+  if (kind === "fusion") {
+    const modelsJson = JSON.stringify(panel);
+    const zeusBody =
+      pref === "custom"
+        ? `"zeus":{"mode":"custom"},"models":${modelsJson}`
+        : `"zeus":{"mode":"${pref}"}`;
+    return [
+      `# Режим: ${pref} (сохрани в кабинете / TG /mode)`,
+      `curl ${base}/chat/completions \\`,
+      '  -H "Content-Type: application/json" \\',
+      `  -H "Authorization: Bearer ${key}" \\`,
+      `  -d '{"model":"zeuscode",${zeusBody},"messages":[{"role":"user","content":"Сравни плюсы и минусы"}]}'`,
+      "",
+      "# Python:",
+      "from openai import OpenAI",
+      `c = OpenAI(base_url="${base}", api_key="${key}")`,
+      "r = c.chat.completions.create(",
+      '  model="zeuscode",',
+      pref === "custom"
+        ? `  extra_body={"zeus": {"mode": "custom"}, "models": ${modelsJson}},`
+        : `  extra_body={"zeus": {"mode": "${pref}"}},`,
+      '  messages=[{"role":"user","content":"Сравни плюсы и минусы"}],',
+      ")",
+      "print(r.choices[0].message.content)",
+    ].join("\n");
+  }
+  if (kind === "continue") {
+    const extra = catalogIds
+      .filter((id) => id !== fusion)
+      .map(
+        (id) =>
+          `  - name: ${catalogDisplayName(id)}\n    provider: openai\n    model: ${id}\n` +
+          `    apiBase: ${base}\n    apiKey: ${key}\n` +
+          `    useResponsesApi: false\n` +
+          `    roles:\n      - chat\n      - edit\n      - apply`
+      )
+      .join("\n");
+    return [
+      "# ~/.continue/config.yaml · zeuscode = режим Mini App",
+      "name: ZeusCode",
+      "version: 1.0.0",
+      "schema: v1",
+      "models:",
+      `  - name: ZeusCode`,
+      "    provider: openai",
+      `    model: ${fusion}`,
+      `    apiBase: ${base}`,
+      `    apiKey: ${key}`,
+      "    useResponsesApi: false",
+      "    capabilities:",
+      "      - tool_use",
+      "    roles:",
+      "      - chat",
+      "      - edit",
+      "      - apply",
+      extra,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "opencode") {
+    const simple = ["deepseek-v4-flash", "gemini-3-pro", "claude-haiku-4-5"];
+    const power = ["claude-opus-4-8", "deepseek-v4-pro", "gemini-3.1-pro"];
+    const pref = state.fusionPref || "power";
+    const custom = selectedModelIds().slice(0, 3);
+    const titles = {
+      simple: "Пользовательский",
+      power: "Продвинутый",
+      custom: "Набор",
+    };
+    const hints = {
+      simple: "Три лёгкие нейронки · сами переключаются",
+      power: "Три сильные нейронки · сами переключаются",
+      custom: "Собери до трёх нейронок сам",
+    };
+    const curTitle = titles[pref] || "Продвинутый";
+    // Один id в пикере. Режим — только TG / кабинет, не отдельные Zeus Simple/Power/Custom.
+    const models = {
+      zeuscode: {
+        name: `ZeusCode · режим «${curTitle}» из Telegram`,
+        tools: true,
+      },
+    };
+    const rows = (state.models || state.catalog || []).filter(
+      (m) => m && m.id && m.ready !== false && (m.modality || "chat") === "chat"
+    );
+    for (const m of rows) {
+      const id = String(m.id);
+      if (id === "zeuscode" || id.startsWith("zeuscode")) continue;
+      if (id.startsWith("studio-") || id === "ultra-mode") continue;
+      const title = String(m.title || id).replace(/^ZeusCode( ·)?\s*/i, "");
+      models[id] = {
+        name: title,
+        tools: id !== "claude-fable-5" && m.adapter !== "pending",
+      };
+    }
+    return JSON.stringify(
+      {
+        $schema: "https://opencode.ai/config.json",
+        model: "zeuscode/zeuscode",
+        provider: {
+          zeuscode: {
+            npm: "@ai-sdk/openai-compatible",
+            name: "ZeusCode",
+            options: {
+              baseURL: String(base || "").replace(/\/+$/, ""),
+              apiKey: key,
+            },
+            models,
+          },
+        },
+      },
+      null,
+      2
+    );
+  }
+  const root = String(base || "").replace(/\/+$/, "");
+  const host = root.replace(/\/v1$/, "");
+  if (kind === "cline") {
+    return [
+      `# Cline → панель слева → ⚙️ Settings`,
+      `# Один ключ = весь каталог. Дефолт zeuscode = режим из Mini App.`,
+      `API Provider: OpenAI Compatible`,
+      `Base URL:     ${root}`,
+      `API Key:      ${key}`,
+      `Model ID:     ${fusion}`,
+      ``,
+      ...catNote,
+      `# В клиенте можно выбрать любой id из /v1/models`,
+      `# Base URL только до /v1 — без /chat/completions`,
+    ].join("\n");
+  }
+  if (kind === "kilo") {
+    return [
+      `# Kilo Code → Settings → Providers → Custom`,
+      `# Один ключ = весь каталог (Kilo тянет /models сам)`,
+      `# Provider API: OpenAI Compatible`,
+      `Base URL: ${root}`,
+      `API Key: ${key}`,
+      `Model: ${fusion}`,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "goose") {
+    return [
+      `# Goose — путь A (built-in openai)`,
+      `export GOOSE_PROVIDER=openai`,
+      `export OPENAI_API_KEY="${key}"`,
+      `export OPENAI_HOST="${root}"`,
+      `export GOOSE_MODEL="${fusion}"`,
+      ``,
+      `# Путь B: ~/.config/goose/custom_providers/zeuscode.json`,
+      `# base_url=${root}/chat/completions · api_key_env=ZEUSCODE_API_KEY`,
+      ``,
+      ...catNote,
+      `# goose info -v && goose session`,
+    ].join("\n");
+  }
+  if (kind === "crush") {
+    const models = catalogIds.map((id) => ({
+      id,
+      name: catalogDisplayName(id),
+      context_window: 200000,
+      default_max_tokens: 8192,
+    }));
+    return (
+      JSON.stringify(
+        {
+          $schema: "https://charm.land/crush.json",
+          providers: {
+            zeuscode: {
+              name: "ZeusCode",
+              type: "openai-compat",
+              base_url: root,
+              api_key: "$ZEUSCODE_API_KEY",
+              discover_models: true,
+              models,
+            },
+          },
+        },
+        null,
+        2
+      ) +
+      `\n\n# export ZEUSCODE_API_KEY="${key}"\n# ~/.config/crush/crush.json\n` +
+      catNote.join("\n")
+    );
+  }
+  if (kind === "openhands") {
+    return [
+      `# Один ключ = все модели. Дефолт = режим Mini App.`,
+      `LLM_MODEL=openai/${fusion}`,
+      `LLM_BASE_URL=${root}`,
+      `LLM_API_KEY=${key}`,
+      ``,
+      `# Любая другая: openai/<id>  (префикс openai/ обязателен)`,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "zed") {
+    const zedCaps = {
+      tools: true,
+      images: false,
+      parallel_tool_calls: false,
+      prompt_cache_key: false,
+    };
+    const available_models = catalogIds.map((id) => ({
+      name: id,
+      display_name: catalogDisplayName(id),
+      max_tokens: 200000,
+      capabilities: zedCaps,
+    }));
+    return (
+      JSON.stringify(
+        {
+          language_models: {
+            openai_compatible: {
+              zeuscode: {
+                api_url: root,
+                available_models,
+              },
+            },
+          },
+        },
+        null,
+        2
+      ) +
+      `\n\n# export ZEUSCODE_API_KEY="${key}"\n` +
+      catNote.join("\n")
+    );
+  }
+  if (kind === "librechat") {
+    const defaults = catalogIds.slice(0, 12);
+    return [
+      `# Один ключ · fetch: true тянет ВЕСЬ каталог`,
+      `endpoints:`,
+      `  custom:`,
+      `    - name: "ZeusCode"`,
+      `      apiKey: "\${ZEUSCODE_API_KEY}"`,
+      `      baseURL: "${root}"`,
+      `      models:`,
+      `        default: ${JSON.stringify(defaults)}`,
+      `        fetch: true`,
+      `      titleConvo: true`,
+      `      titleModel: "${fusion}"`,
+      `      modelDisplayLabel: "ZeusCode"`,
+      ``,
+      `ZEUSCODE_API_KEY=${key}`,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "openwebui") {
+    return [
+      `# Один ключ Zeus — модели подтянутся все с /v1/models`,
+      `OPENAI_API_BASE_URL=${root}`,
+      `OPENAI_API_KEY=${key}`,
+      `# Admin → Connections → OpenAI — те же значения`,
+      `# В чате: любая модель · zeuscode = режим Mini App`,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "openai_any") {
+    return [
+      `# Любой OpenAI-compatible · один ключ = весь каталог`,
+      `Base URL: ${root}`,
+      `API Key:  ${key}`,
+      `Model:    ${fusion}   # режим Mini App · или любой id`,
+      ``,
+      `curl ${root}/models -H "Authorization: Bearer ${key}"`,
+      ``,
+      `curl ${root}/chat/completions \\`,
+      `  -H "Content-Type: application/json" \\`,
+      `  -H "Authorization: Bearer ${key}" \\`,
+      `  -d '{"model":"${fusion}","messages":[{"role":"user","content":"ping"}]}'`,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "omniroute") {
+    return [
+      `# OmniRoute → Providers → OpenAI Compatible`,
+      `# Протокол: Chat Completions (НЕ Responses)`,
+      `Base URL: ${root}`,
+      `API Key:  ${key}`,
+      `Model:    ${fusion}   # со слэшем · тест: gemini-2.5-flash`,
+      ``,
+      `# 502 UND_ERR_SOCKET → OmniRoute ≥3.8.36 + FETCH_KEEPALIVE_TIMEOUT_MS=1`,
+      `# omniroute setup-codex  → профили на все модели`,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "codex") {
+    return [
+      `# ~/.codex/config.toml`,
+      `# Один ключ = все модели. Дефолт zeuscode = режим Mini App.`,
+      `model = "${fusion}"`,
+      `model_provider = "zeuscode"`,
+      ``,
+      `[model_providers.zeuscode]`,
+      `name = "ZeusCode"`,
+      `base_url = "${root}"`,
+      `env_key = "ZEUSCODE_API_KEY"`,
+      `requires_openai_auth = false`,
+      `wire_api = "responses"`,
+      ``,
+      `# export ZEUSCODE_API_KEY="${key}"`,
+      `# Сменить модель: codex -m <id>  или /model в сессии`,
+      `# Через OmniRoute: base_url = "http://localhost:20128/v1"`,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "claude") {
+    const hostOnly = root.replace(/\/v1$/, "");
+    return (
+      JSON.stringify(
+        {
+          env: {
+            ANTHROPIC_BASE_URL: hostOnly,
+            ANTHROPIC_AUTH_TOKEN: key,
+            ANTHROPIC_MODEL: fusion,
+            CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY: "1",
+            ANTHROPIC_CUSTOM_MODEL_OPTION: fusion,
+            ANTHROPIC_CUSTOM_MODEL_OPTION_NAME: "ZeusCode",
+            ANTHROPIC_CUSTOM_MODEL_OPTION_DESCRIPTION:
+              "Режим из Mini App «Модели» · весь каталог ZeusCode на ключе",
+            ANTHROPIC_DEFAULT_SONNET_MODEL: "claude-sonnet-4-6",
+            ANTHROPIC_DEFAULT_OPUS_MODEL: "claude-opus-4-8",
+            ANTHROPIC_DEFAULT_HAIKU_MODEL: "claude-haiku-4-5",
+          },
+        },
+        null,
+        2
+      ) +
+      `\n\n# ~/.claude/settings.json · Claude Code ≥ 2.1.129\n` +
+      `# без /v1 в BASE_URL · unset ANTHROPIC_API_KEY\n` +
+      `# /model → весь каталог ZeusCode (gateway discovery)\n` +
+      `# Не-Claude: anthropic.zeuscode/<id> · или claude --model <id>\n` +
+      catNote.join("\n")
+    );
+  }
+  if (kind === "aider") {
+    const menu = catalogIds.map((id) => `#   aider --model openai/${id}`).join("\n");
+    return [
+      `# Aider · ZeusCode · один ключ = весь каталог`,
+      `export OPENAI_API_BASE="${root}"`,
+      `export OPENAI_API_KEY="${key}"`,
+      `aider --model openai/${fusion}`,
+      ``,
+      `# Другая модель:`,
+      menu,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "cursor") {
+    return [
+      `# Cursor Override часто ломает Agent (Responses → /chat/completions).`,
+      `# Надёжнее: Cline/Kilo → OpenAI Compatible.`,
+      ``,
+      `# Нативно (на свой риск):`,
+      `# Settings → Models → OpenAI API Key + Override Base URL = ${root}`,
+      `# Add model → ${fusion}  (не gpt-*, не zeuscode-simple)`,
+      ``,
+      `# Cline/Kilo:`,
+      `# Base URL: ${root}`,
+      `# API Key:  ${key}`,
+      `# Model:    ${fusion}`,
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "python") {
+    return [
+      "from openai import OpenAI",
+      "",
+      "client = OpenAI(",
+      `    base_url="${base}",`,
+      `    api_key="${key}",`,
+      ")",
+      "",
+      "r = client.chat.completions.create(",
+      `    model="${fusion}",  # или любой id из /v1/models`,
+      '    messages=[{"role": "user", "content": "ping"}],',
+      ")",
+      "print(r.choices[0].message.content)",
+      "",
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "js") {
+    return [
+      'import OpenAI from "openai";',
+      "",
+      "const client = new OpenAI({",
+      `  baseURL: "${base}",`,
+      `  apiKey: "${key}",`,
+      "});",
+      "",
+      "const r = await client.chat.completions.create({",
+      `  model: "${fusion}", // или любой id из /v1/models`,
+      '  messages: [{ role: "user", content: "ping" }],',
+      "});",
+      "console.log(r.choices[0].message.content);",
+      "",
+      ...catNote,
+    ].join("\n");
+  }
+  if (kind === "curl") {
+    return [
+      `curl ${base}/chat/completions \\`,
+      '  -H "Content-Type: application/json" \\',
+      `  -H "Authorization: Bearer ${key}" \\`,
+      `  -d '{"model":"${fusion}","messages":[{"role":"user","content":"ping"}]}'`,
+      "",
+      ...catNote,
+    ].join("\n");
+  }
+  return buildConnectionPack();
+}
+
+function buildConnectionPack() {
+  const base = publicBaseUrl();
+  const key = state.rawApiKey || "<сначала создай ключ кнопкой>";
+  const models = readyChatModelIds();
   const lines = [
-    "ZeusCode",
+    "ZeusCode · OpenAI-compatible API",
     "",
     `Base URL: ${base}`,
     `API Key:  ${key}`,
     "",
-    "Models:",
-    ...models.map((id, i) => `  ${i + 1}. ${id}`),
-  ];
+    "Один ключ = весь каталог. Дефолт в клиенте: zeuscode",
+    "(режим из Mini App «Модели» / кабинета).",
+    "",
+    "Models (GET /v1/models):",
+    ...models.slice(0, 24).map((id, i) => `  ${i + 1}. ${id}`),
+    models.length > 24 ? `  … +${models.length - 24}` : "",
+    "",
+    "Клиенты: OpenCode, Kilo, Goose, Crush, OpenHands, Windsurf, Zed,",
+    "LibreChat, Open WebUI, Cursor, Continue, Cline, Codex, Claude, SDK.",
+    "Кооператив / режим: model=zeuscode.",
+  ].filter((x) => x !== "");
   return lines.join("\n");
+}
+
+function renderClientGuides() {
+  const tabsNodes = document.querySelectorAll('[data-setup="client-tabs"]');
+  const panelNodes = document.querySelectorAll('[data-setup="client-panel"]');
+  if (!tabsNodes.length) return;
+
+  const active = state.clientGuideId || CLIENT_GUIDES[0].id;
+  state.clientGuideId = active;
+  const guide = CLIENT_GUIDES.find((g) => g.id === active) || CLIENT_GUIDES[0];
+
+  const tabsHtml = CLIENT_GUIDES.map(
+    (g) =>
+      `<button type="button" class="client-tab${g.id === guide.id ? " on" : ""}" data-client="${g.id}" role="tab" aria-selected="${g.id === guide.id}">${g.title}</button>`
+  ).join("");
+
+  const steps = guide.steps.map((s) => `<li>${s}</li>`).join("");
+  const config = guide.configKind ? buildClientConfig(guide.configKind) : null;
+  const fusionModes =
+    guide.id === "fusion"
+      ? `<div class="fusion-mode-pick" role="group" aria-label="Режим Fusion">
+          ${["simple", "power", "custom"]
+            .map((m) => {
+              const titles = { simple: "Простой", power: "Мощный", custom: "Свой набор" };
+              const hints = {
+                simple: "всегда 1 модель",
+                power: "умный 1↔3",
+                custom: "модели ниже + 1↔3",
+              };
+              const on = (state.fusionPref || "power") === m ? " on" : "";
+              return `<button type="button" class="client-tab fusion-mode-btn${on}" data-fusion-mode="${m}" title="${hints[m]}">${titles[m]}</button>`;
+            })
+            .join("")}
+         </div>
+         <p class="muted sm" style="margin:.4rem 0 .8rem">TG: /mode · Cursor подхватит pref с аккаунта</p>`
+      : "";
+  const panelHtml = [
+    fusionModes,
+    `<ol class="client-steps">${steps}</ol>`,
+    config
+      ? `<pre class="polza-code client-config">${escapeHtml(config)}</pre>
+         <button type="button" class="btn btn-s sm" data-action="copy-client-config">скопировать конфиг</button>`
+      : `<button type="button" class="btn btn-s sm" data-action="copy-pack">скопировать Base URL + ключ</button>`,
+  ].join("");
+
+  tabsNodes.forEach((el) => {
+    el.innerHTML = tabsHtml;
+  });
+  panelNodes.forEach((el) => {
+    el.innerHTML = panelHtml;
+  });
+
+  document.querySelectorAll("[data-client]").forEach((btn) => {
+    btn.onclick = () => {
+      state.clientGuideId = btn.dataset.client;
+      localStorage.setItem("zeus_client_guide", state.clientGuideId);
+      renderClientGuides();
+    };
+  });
+  document.querySelectorAll("[data-fusion-mode]").forEach((btn) => {
+    btn.onclick = () => {
+      void setFusionPref(btn.dataset.fusionMode);
+    };
+  });
+}
+
+async function setFusionPref(mode) {
+  if (!mode || !["simple", "power", "custom"].includes(mode)) return;
+  state.fusionPref = mode;
+  localStorage.setItem("zeus_fusion_pref", mode);
+  if (state.token) {
+    try {
+      const body = { mode };
+      if (mode === "custom") body.models = selectedModelIds().slice(0, 3);
+      await api("/me/fusion", { method: "PUT", body });
+      flashSetup(
+        mode === "simple"
+          ? "Режим: простой (1 модель)"
+          : mode === "power"
+            ? "Режим: мощный (умный 1↔3)"
+            : "Режим: свой набор"
+      );
+    } catch (e) {
+      flashSetup(e.message || "Не удалось сохранить режим", true);
+    }
+  }
+  renderClientGuides();
+  renderMySetup();
 }
 
 async function generateConnectionPack(targetId) {
@@ -471,8 +1299,19 @@ function bindCopyButtons(root = document) {
 
 function updatePolzaSteps(s) {
   state.balanceRub = Number(s.balance_rub || 0);
+  state.kieCredits =
+    s.credits != null
+      ? Number(s.credits)
+      : s.kie_credits != null
+        ? Number(s.kie_credits)
+        : state.balanceRub;
   state.keysCount = Number(s.api_keys || 0);
-  if ($("polza-bal")) $("polza-bal").textContent = fmtRub(state.balanceRub);
+  const balTxt = fmtRub(state.balanceRub);
+  if ($("polza-bal")) {
+    const kie = s.credits != null ? Number(s.credits) : (s.kie_credits != null ? Number(s.kie_credits) : null);
+    $("polza-bal").textContent =
+      kie != null ? fmtRub(kie) : balTxt;
+  }
   if ($("keys-n-vis")) $("keys-n-vis").textContent = String(s.api_keys ?? 0);
   if ($("models-total-vis")) $("models-total-vis").textContent = String(s.models_total ?? state.models.length ?? 0);
   renderMySetup();
@@ -648,10 +1487,19 @@ function buildFrontendSrcdoc() {
   if (!html) {
     return `<p style="font:14px system-ui;padding:16px;color:#444">Нет HTML артефакта для preview</p>`;
   }
-  const css = Object.values(arts)
-    .filter((a) => (a.path || "").endsWith(".css") || a.language === "css")
+  let css = Object.values(arts)
+    .filter(
+      (a) =>
+        ((a.path || "").startsWith("/src/frontend/") &&
+          ((a.path || "").endsWith(".css") || a.language === "css")) ||
+        ((a.path || "").endsWith(".css") && a.role === "frontend")
+    )
     .map((a) => a.content || "")
     .join("\n");
+  // Flatten @import of workspace CSS (design tokens) — mirrors evidence.flatten_css_for_preview
+  css = flattenCssImports(css, arts);
+  const tok = arts["/src/design/tokens.css"]?.content || "";
+  if (!css.trim() && tok) css = tok;
   const js = Object.values(arts)
     .filter((a) => (a.path || "").endsWith(".js") || a.language === "js" || a.language === "javascript")
     .map((a) => a.content || "")
@@ -674,6 +1522,56 @@ function buildFrontendSrcdoc() {
     }
   }
   return html;
+}
+
+function resolveFeRel(ref, fromPath) {
+  const r = String(ref || "").trim();
+  if (!r || /^(data:|https?:|blob:|#|mailto:|tel:|\/\/)/i.test(r)) return null;
+  if (r.startsWith("/src/")) return r.split(/[?#]/)[0];
+  if (r.startsWith("/") && !r.startsWith("/src/")) {
+    return `/src/frontend/${r.replace(/^\//, "")}`.split(/[?#]/)[0];
+  }
+  const baseDir = (fromPath || "/src/frontend/styles.css").replace(/\/[^/]*$/, "");
+  const parts = [...baseDir.replace(/^\//, "").split("/"), ...r.split("/")];
+  const out = [];
+  for (const p of parts) {
+    if (!p || p === ".") continue;
+    if (p === "..") {
+      out.pop();
+      continue;
+    }
+    out.push(p);
+  }
+  return ("/" + out.join("/")).split(/[?#]/)[0];
+}
+
+function flattenCssImports(cssText, arts, fromPath, depth) {
+  const seen = flattenCssImports._seen || (flattenCssImports._seen = new Set());
+  if (depth === 0) seen.clear();
+  depth = depth || 0;
+  fromPath = fromPath || "/src/frontend/styles.css";
+  if (depth > 6) return cssText || "";
+  return String(cssText || "").replace(
+    /@import\s+(?:url\(\s*['"]?([^'")\s]+)['"]?\s*\)|['"]([^'"]+)['"])\s*;?/gi,
+    (full, g1, g2) => {
+      const ref = (g1 || g2 || "").trim();
+      if (!ref || /^(https?:|data:)/i.test(ref)) return full;
+      let resolved = resolveFeRel(ref, fromPath);
+      if (!resolved || seen.has(resolved)) return "/* skipped import */\n";
+      let body = arts[resolved]?.content;
+      if (!body) {
+        const base = resolved.split("/").pop();
+        const hit = Object.keys(arts).find((p) => p.endsWith("/" + base) && p.startsWith("/src/"));
+        if (hit) {
+          resolved = hit;
+          body = arts[hit]?.content;
+        }
+      }
+      if (!body) return full;
+      seen.add(resolved);
+      return `/* inlined ${resolved} */\n` + flattenCssImports(body, arts, resolved, depth + 1) + "\n";
+    }
+  );
 }
 
 function maybeUpdatePreview() {
@@ -2444,7 +3342,10 @@ function renderModels() {
 
 async function refreshSummary() {
   const s = await api("/billing/dashboard");
-  const bal = fmtRub(s.balance_rub);
+  const balNum = Number(s.balance_rub || 0);
+  const kieNum = s.credits != null ? Number(s.credits) : (s.kie_credits != null ? Number(s.kie_credits) : balNum);
+  // Live balance (₽)
+  const bal = fmtRub(kieNum);
   $("bal").textContent = bal;
   if ($("side-bal")) $("side-bal").textContent = bal;
   if ($("nav-bal")) $("nav-bal").textContent = bal;
@@ -2597,6 +3498,14 @@ function renderDashBoard(s) {
 async function refreshMe() {
   const me = await api("/auth/me");
   state.modelFamily = me.model_family || "";
+  if (me.fusion_pref) {
+    state.fusionPref = me.fusion_pref;
+    localStorage.setItem("zeus_fusion_pref", me.fusion_pref);
+  }
+  if (Array.isArray(me.fusion_models) && me.fusion_models.length) {
+    state.selectedModels = new Set(me.fusion_models);
+    persistSelectedModels();
+  }
   await loadModelsCatalog();
   await refreshSummary();
   await ensureApiKey().catch(() => {});
@@ -3162,7 +4071,7 @@ $("btn-register").onclick = async () => {
     await loadModelsCatalog().catch(() => {});
     defaultPickModels();
     setTab("dash");
-    flashSetup("Аккаунт готов: ключ создан, модели в наборе — можно копировать");
+    flashSetup("Аккаунт готов: ключ создан — можно копировать Base URL + ключ");
     await generateConnectionPack("dash-pack-out");
   } catch (e) {
     $("auth-err").textContent = e.message;
@@ -3213,6 +4122,16 @@ document.addEventListener("click", async (e) => {
     }
     if (a === "copy-pack") {
       generateConnectionPack("dash-pack-out").catch((err) => alert(err.message || String(err)));
+      return;
+    }
+    if (a === "copy-client-config") {
+      (async () => {
+        if (!state.rawApiKey) await createVisibleKey();
+        const guide = CLIENT_GUIDES.find((g) => g.id === state.clientGuideId) || CLIENT_GUIDES[0];
+        const text = guide.configKind ? buildClientConfig(guide.configKind) : buildConnectionPack();
+        await copyText(text);
+        flashSetup("Конфиг для клиента скопирован");
+      })().catch((err) => alert(err.message || String(err)));
       return;
     }
     if (a === "launch-studio") {

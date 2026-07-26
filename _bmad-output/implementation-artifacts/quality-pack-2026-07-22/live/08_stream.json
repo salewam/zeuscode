@@ -1,0 +1,17 @@
+{
+  "cid": "08_stream",
+  "prompt": "Скажи одним словом: работает",
+  "stream": true,
+  "onestack": {},
+  "answer_excerpt": "╭ path CASCADE…\n│ ✓ cascade_escalate_stronger\n╰\n\nРаботает.",
+  "http_status": 200,
+  "latency_s": 15.066,
+  "path": null,
+  "policy_path": null,
+  "leader": null,
+  "routed_by": null,
+  "trace_id": null,
+  "escalate_from": null,
+  "human_stub": "ok",
+  "why": "http200 non-empty or cancel sim"
+}

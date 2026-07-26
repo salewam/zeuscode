@@ -362,7 +362,1413 @@ def scan_artifacts(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     findings.extend(_contract_drift_findings(artifacts))
     findings.extend(_token_ssot_findings(artifacts))
     findings.extend(_contract_lock_findings(artifacts))
+    findings.extend(_landing_quality_findings(artifacts))
+    findings.extend(_app_quality_findings(artifacts))
     return findings
+
+
+_PLACEHOLDER_CONTACT = re.compile(
+    r"("
+    r"\+7\s*\(\s*495\s*\)\s*000[-\s]?00[-\s]?00|"
+    r"8\s*\(\s*495\s*\)\s*000[-\s]?00[-\s]?00|"
+    r"\+7\s*\(\s*000\s*\)|"
+    r"555[-\s]?01[-\s]?01|"
+    r"your@email\.com|"
+    r"example\.com|"
+    r"xxx[-\s]?xx[-\s]?xx"
+    r")",
+    re.I,
+)
+_FAKE_SUCCESS_COPY = re.compile(
+    r"(заявк\w*\s+(принят|отправлен)|успешн\w*\s+отправлен|мы\s+свяжемся)",
+    re.I,
+)
+_CSS_IMPORT_RE = re.compile(
+    r"""@import\s+(?:url\(\s*['"]?([^'")\s]+)['"]?\s*\)|['"]([^'"]+)['"])\s*;?""",
+    re.I,
+)
+_ASSET_URL_RE = re.compile(
+    r"""(?:url\(\s*['"]?([^'")]+)['"]?\s*\)|(?:src|href)\s*=\s*['"]([^'"]+)['"])""",
+    re.I,
+)
+_FETCH_API_RE = re.compile(
+    r"""fetch\s*\(\s*['"`](/api/[a-zA-Z0-9_/{}\-]+)['"`]""",
+    re.I,
+)
+
+
+def _artifact_paths(artifacts: list[dict[str, Any]]) -> set[str]:
+    return {(a.get("path") or "").strip() for a in artifacts if (a.get("path") or "").strip()}
+
+
+def _resolve_fe_rel(ref: str, from_path: str = "/src/frontend/styles.css") -> str | None:
+    """Resolve relative asset/import path to absolute /src/... workspace path."""
+    ref = (ref or "").strip()
+    if not ref or ref.startswith(("data:", "http://", "https://", "blob:", "#", "mailto:", "tel:")):
+        return None
+    if ref.startswith("//"):
+        return None
+    if ref.startswith("/src/"):
+        return ref.split("?", 1)[0].split("#", 1)[0]
+    if ref.startswith("/api/"):
+        return None
+    # root-absolute under frontend mount (e.g. /assets/x.jpg served from FE)
+    if ref.startswith("/") and not ref.startswith("/src/"):
+        rel = ref.lstrip("/")
+        return f"/src/frontend/{rel}".split("?", 1)[0]
+    base_dir = from_path.rsplit("/", 1)[0]  # /src/frontend or /src/design
+    parts = base_dir.strip("/").split("/") + ref.split("/")
+    out: list[str] = []
+    for p in parts:
+        if p in ("", "."):
+            continue
+        if p == "..":
+            if out:
+                out.pop()
+            continue
+        out.append(p)
+    return ("/" + "/".join(out)).split("?", 1)[0].split("#", 1)[0]
+
+
+def _backend_api_paths(artifacts: list[dict[str, Any]]) -> set[str]:
+    """Collect absolute /api/... paths from FastAPI routers (incl. prefix + relative)."""
+    be_blob = "\n".join(
+        a.get("content") or ""
+        for a in artifacts
+        if (a.get("path") or "").startswith("/src/backend") or a.get("role") == "backend"
+    )
+    paths: set[str] = set()
+    if not be_blob.strip():
+        return paths
+
+    # prefix="/api" or prefix='/api/shop' (slash after api optional)
+    prefixes: list[str] = []
+    for m in re.finditer(
+        r"""(?:APIRouter\s*\([^)]*)?prefix\s*=\s*['"](/api(?:/[^'"]*)?)['"]""",
+        be_blob,
+        re.I,
+    ):
+        prefixes.append(m.group(1).rstrip("/"))
+    if not prefixes:
+        prefixes = [""]
+
+    def _abs(route: str) -> str:
+        route = (route or "").strip()
+        if not route:
+            return ""
+        if route.startswith("/api"):
+            return route.rstrip("/") or "/api"
+        for pref in prefixes:
+            if not pref:
+                continue
+            if route == "/":
+                return pref
+            return (pref + (route if route.startswith("/") else f"/{route}")).rstrip(
+                "/"
+            ) or pref
+        return route if route.startswith("/") else f"/{route}"
+
+    for m in re.finditer(
+        r"""@router\.(?:get|post|put|patch|delete)\(\s*['"]([^'"]+)['"]""",
+        be_blob,
+        re.I,
+    ):
+        abs_p = _abs(m.group(1))
+        if abs_p:
+            paths.add(abs_p)
+    for m in re.finditer(r"""['"](/api/[a-zA-Z0-9_/{}\-]+)['"]""", be_blob):
+        paths.add(m.group(1).rstrip("/"))
+    for pref in prefixes:
+        if pref:
+            paths.add(pref)
+    return paths
+
+
+def _path_covered(used: str, known: set[str]) -> bool:
+    ub = re.sub(r"\{[^}]+\}", "", used).rstrip("/")
+    for k in known:
+        kb = re.sub(r"\{[^}]+\}", "", k).rstrip("/")
+        if ub == kb or ub.startswith(kb + "/") or kb.startswith(ub + "/"):
+            return True
+    return False
+
+
+def _is_app_shell_blob(fe_blob: str) -> bool:
+    """True when FE is a multi-screen app (not a marketing landing)."""
+    if not fe_blob:
+        return False
+    multi = len(re.findall(r"data-screen\s*=", fe_blob, re.I)) >= 2
+    nav = bool(
+        re.search(
+            r"data-view\s*=|data-nav\s*=|class=[\"'][^\"']*app-nav|class=[\"'][^\"']*\btabs\b",
+            fe_blob,
+            re.I,
+        )
+    )
+    catalog_api = bool(
+        re.search(
+            r"/api/(bouquets|products|items|catalog|orders)|addToCart|data-pick|order-preview",
+            fe_blob,
+            re.I,
+        )
+    )
+    return (multi and nav) or (multi and catalog_api) or (nav and catalog_api)
+
+
+def _landing_quality_findings(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Hard gates for shippable landings: assets, contacts, API, fake success, CSS imports."""
+    findings: list[dict[str, Any]] = []
+    paths = _artifact_paths(artifacts)
+    fe_arts = [
+        a
+        for a in artifacts
+        if (a.get("path") or "").startswith("/src/frontend") or a.get("role") == "frontend"
+    ]
+    if not fe_arts:
+        return findings
+
+    fe_blob = "\n".join(a.get("content") or "" for a in fe_arts)
+    fe_code = _strip_comments(fe_blob)
+
+    # --- placeholder contacts ---
+    copy_blob = re.sub(r"<[^>]+>", " ", fe_code)
+    if _PLACEHOLDER_CONTACT.search(copy_blob) or _PLACEHOLDER_CONTACT.search(fe_code):
+        findings.append(
+            _finding(
+                "major",
+                "placeholder_contact",
+                "Плейсхолдер-контакт (000-00-00 / example.com) — нужны реалистичные данные",
+            )
+        )
+
+    # --- missing local assets ---
+    missing: list[str] = []
+    for a in fe_arts:
+        apath = (a.get("path") or "").strip()
+        body = a.get("content") or ""
+        if not (apath.endswith((".html", ".css")) or "<style" in body.lower()):
+            continue
+        for m in _ASSET_URL_RE.finditer(body):
+            ref = (m.group(1) or m.group(2) or "").strip()
+            # skip stylesheet/script self-links and pure anchors
+            if not ref or ref.startswith(("#", "data:", "http://", "https://", "mailto:", "tel:")):
+                continue
+            if re.search(r"\.(css|js)(\?|$)", ref, re.I) and not re.search(
+                r"\.(png|jpe?g|webp|gif|svg|avif|ico|woff2?|ttf|mp4|webm)(\?|$)",
+                ref,
+                re.I,
+            ):
+                # css/js handled by broken_css_import / bundling; skip non-media
+                if "assets/" not in ref and not re.search(
+                    r"\.(png|jpe?g|webp|gif|svg|avif)(\?|$)", ref, re.I
+                ):
+                    continue
+            resolved = _resolve_fe_rel(ref, apath if apath.endswith(".css") else "/src/frontend/index.html")
+            if not resolved:
+                continue
+            # only flag media-like or explicit assets/ paths
+            if not (
+                "/assets/" in resolved
+                or re.search(r"\.(png|jpe?g|webp|gif|svg|avif|ico|woff2?|ttf)(\?|$)", resolved, re.I)
+            ):
+                continue
+            if resolved not in paths and not any(
+                p == resolved or p.endswith("/" + resolved.rsplit("/", 1)[-1]) for p in paths
+            ):
+                missing.append(f"{ref} → {resolved}")
+    if missing:
+        uniq = sorted(set(missing))[:4]
+        findings.append(
+            _finding(
+                "major",
+                "missing_asset",
+                "Локальный media-ассет в CSS/HTML отсутствует в артефактах: "
+                + "; ".join(uniq),
+            )
+        )
+
+    # --- broken @import (path not in artifacts) ---
+    broken_imports: list[str] = []
+    for a in fe_arts:
+        apath = (a.get("path") or "").strip()
+        if not apath.endswith(".css"):
+            continue
+        body = a.get("content") or ""
+        for m in _CSS_IMPORT_RE.finditer(body):
+            ref = (m.group(1) or m.group(2) or "").strip()
+            if not ref or ref.startswith(("http://", "https://", "data:")):
+                continue
+            resolved = _resolve_fe_rel(ref, apath)
+            if not resolved:
+                continue
+            if resolved not in paths:
+                broken_imports.append(f"{ref} → {resolved}")
+    if broken_imports:
+        findings.append(
+            _finding(
+                "major",
+                "broken_css_import",
+                "@import указывает на файл вне артефактов (preview/srcdoc сломается): "
+                + "; ".join(sorted(set(broken_imports))[:3]),
+            )
+        )
+
+    # --- API orphan: FE fetch('/api/...') without matching backend route ---
+    used_apis = set(_FETCH_API_RE.findall(fe_blob))
+    # also catch template literals lightly already in regex; add quoted paths in fetch alternatives
+    used_apis |= set(
+        re.findall(
+            r"""(?:fetch|axios\.(?:post|get|put|patch|delete))\(\s*['"`](/api/[^'"`]+)['"`]""",
+            fe_blob,
+            re.I,
+        )
+    )
+    if used_apis:
+        be_paths = _backend_api_paths(artifacts)
+        has_backend = any(
+            (a.get("path") or "").startswith("/src/backend") or a.get("role") == "backend"
+            for a in artifacts
+        )
+        orphans = [u for u in used_apis if not _path_covered(u, be_paths)]
+        if orphans and (not has_backend or not be_paths or len(orphans) == len(used_apis)):
+            findings.append(
+                _finding(
+                    "major",
+                    "api_orphan",
+                    "Frontend вызывает "
+                    + ", ".join(sorted(orphans)[:4])
+                    + " без backend route в артефактах — форма мёртвая",
+                )
+            )
+
+    # --- fake form success: catch shows success, or success copy without fetch ---
+    js_blobs = [
+        a.get("content") or ""
+        for a in fe_arts
+        if (a.get("path") or "").endswith(".js")
+        or (a.get("language") or "") in ("js", "javascript")
+    ]
+    js_all = "\n".join(js_blobs)
+    if js_all.strip():
+        has_fetch = bool(re.search(r"\bfetch\s*\(", js_all))
+        # catch block containing success copy
+        for m in re.finditer(r"catch\s*\([^)]*\)\s*\{(.{0,400})\}", js_all, re.S):
+            block = m.group(1)
+            if _FAKE_SUCCESS_COPY.search(block) and not re.search(
+                r"(error|ошибк|не\s+удалось|позвоните)", block, re.I
+            ):
+                findings.append(
+                    _finding(
+                        "major",
+                        "fake_form_success",
+                        "В catch формы показывается успех — враньё пользователю при ошибке API",
+                    )
+                )
+                break
+        # success UI text but no fetch at all + preventDefault form handler
+        if (
+            not has_fetch
+            and _FAKE_SUCCESS_COPY.search(js_all)
+            and re.search(r"preventDefault|booking-form|submit", js_all, re.I)
+        ):
+            findings.append(
+                _finding(
+                    "major",
+                    "fake_form_success",
+                    "Форма показывает «заявка принята/отправлена» без fetch — фейковый success",
+                )
+            )
+
+    # --- skeleton / empty media (cheap-model traps) ---
+    # App-shell ≠ landing: never fail shop apps on hero/vitrine/FAQ/services
+    if not _is_app_shell_blob(fe_blob):
+        findings.extend(_landing_skeleton_findings(fe_arts, fe_blob, fe_code))
+        findings.extend(_deck_content_findings(artifacts))
+    elif re.search(r"\bdeck\b|слайд|pitch", fe_blob, re.I):
+        findings.extend(_deck_content_findings(artifacts))
+
+    return findings
+
+
+def _app_quality_findings(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Gates for web apps: shell nav, multi-screen, states — not marketing landing."""
+    findings: list[dict[str, Any]] = []
+    fe_arts = [
+        a
+        for a in artifacts
+        if (a.get("path") or "").startswith("/src/frontend") or a.get("role") == "frontend"
+    ]
+    if not fe_arts:
+        return findings
+
+    fe_blob = "\n".join(a.get("content") or "" for a in fe_arts)
+    fe_low = fe_blob.lower()
+
+    # Activate only when task looks like an app (signals in FE or brief notes in html/js)
+    app_signal = bool(
+        re.search(
+            r"data-nav|data-screen|app-nav|app-shell|app-bar|"
+            r"product_id[\"']?\s*:\s*[\"']app|"
+            r"интент:\s*приложен",
+            fe_blob,
+            re.I,
+        )
+    )
+    # Or: has SPA-ish multi main/section + fetch list/create, and NOT classic landing
+    multi_screen = len(re.findall(r"data-screen\s*=", fe_blob, re.I)) >= 2
+    has_nav = bool(
+        re.search(
+            r"class=[\"'][^\"']*app-nav|data-nav\s*=|data-view\s*=",
+            fe_blob,
+            re.I,
+        )
+    )
+    landing_heavy = _looks_like_landing(fe_blob) and bool(
+        re.search(r"\bhero\b|#services|отзыв", fe_low)
+    )
+    catalogish = bool(
+        re.search(
+            r"/api/(bouquets|products|items|catalog)|каталог|букет|товар",
+            fe_low,
+        )
+    )
+
+    if not (app_signal or multi_screen or has_nav):
+        # Heuristic: brief-like comments asking for app without shell → still skip
+        # unless landing-shaped with zero app chrome while mentioning «приложение» in title
+        if re.search(r"<title>[^<]*(приложен|app|задач|кабинет)", fe_low) and landing_heavy:
+            findings.append(
+                _finding(
+                    "critical",
+                    "wrong_product_shape",
+                    "Похоже на приложение по title, но сдан лендинг (hero/услуги) без app-nav",
+                )
+            )
+        return findings
+
+    if landing_heavy and not (has_nav or multi_screen):
+        findings.append(
+            _finding(
+                "critical",
+                "wrong_product_shape",
+                "App-задача сдана как лендинг: hero/услуги без app-shell (nav + экраны)",
+            )
+        )
+
+    if not has_nav and not multi_screen:
+        findings.append(
+            _finding(
+                "major",
+                "wrong_product_shape",
+                "Нет app-nav / data-nav и нет ≥2 data-screen — это не app-shell",
+            )
+        )
+
+    # States: empty or error marker somewhere in JS/HTML
+    has_state = bool(
+        re.search(
+            r"(empty|пуст[оа]|ошибк|error|loading|загрузк|role=[\"']status|role=[\"']alert)",
+            fe_low,
+        )
+    )
+    if (has_nav or multi_screen) and not has_state:
+        findings.append(
+            _finding(
+                "major",
+                "missing_state",
+                "App-shell без empty/error/loading status на главном потоке",
+            )
+        )
+
+    # Flash traps: alert success / inline onclick / fetch without !ok
+    if re.search(
+        r"""alert\s*\(\s*['\"`][^'\"`]*(?:заказ|сохран|принят|успех|оформлен|отправлен)""",
+        fe_blob,
+        re.I,
+    ):
+        findings.append(
+            _finding(
+                "major",
+                "fake_alert_success",
+                "alert() с текстом успеха — вместо role=status/alert и проверки res.ok",
+            )
+        )
+
+    if re.search(r"""\sonclick\s*=\s*['\"]""", fe_blob):
+        findings.append(
+            _finding(
+                "major",
+                "inline_onclick",
+                "inline onclick=\"…\" — используй button + addEventListener",
+            )
+        )
+
+    # React/SPA stack without brief ask (default for app is vanilla)
+    if re.search(
+        r"from ['\"]react['\"]|react-dom|createRoot\s*\(|@tanstack/react-query",
+        fe_blob,
+    ) and not re.search(r"(?i)react|jsx|next\.js", "\n".join(
+        a.get("content") or "" for a in artifacts if "brief" in (a.get("path") or "").lower()
+    )):
+        # brief is not an artifact — check HTML/JS comments / title only weak; always flag for app shell
+        if has_nav or multi_screen or app_signal:
+            findings.append(
+                _finding(
+                    "major",
+                    "react_without_ask",
+                    "React/Query без просьбы в brief — для app default HTML+CSS+JS",
+                )
+            )
+
+    # fetch POST/GET then success without res.ok / !r.ok nearby (heuristic)
+    if re.search(r"fetch\s*\(", fe_blob) and re.search(
+        r"""alert\s*\(|['\"]заявка принят|['\"]заказ оформлен|['\"]сохранено""",
+        fe_blob,
+        re.I,
+    ):
+        if not re.search(r"\.ok\b|!res\.ok|!r\.ok|status\s*===?\s*20", fe_blob):
+            findings.append(
+                _finding(
+                    "major",
+                    "fake_form_success",
+                    "Есть fetch и success-копирайт, но нет проверки res.ok",
+                )
+            )
+
+    # --- density traps (Flash ships 2KB shells that "pass" nav checks) ---
+    css_len = sum(
+        len(a.get("content") or "")
+        for a in fe_arts
+        if (a.get("path") or "").endswith(".css")
+    )
+    if (has_nav or multi_screen or app_signal) and css_len and css_len < 3500:
+        findings.append(
+            _finding(
+                "critical" if catalogish else "major",
+                "thin_styles",
+                f"styles.css слишком тонкий ({css_len}B < 3500) — скелет, не продукт",
+            )
+        )
+
+    if catalogish and (has_nav or multi_screen or app_signal):
+        # Brand/header chrome — any brand mark, not etalon class names
+        if not re.search(
+            r"class=[\"'][^\"']*\bbrand\b|<header\b|app-nav|data-view\s*=",
+            fe_blob,
+            re.I,
+        ):
+            findings.append(
+                _finding(
+                    "critical",
+                    "thin_app_chrome",
+                    "Нет header/brand/nav chrome — app-shell пустой",
+                )
+            )
+        if not re.search(r"data-filter|class=[\"'][^\"']*\bfilters\b|chip", fe_blob, re.I):
+            findings.append(
+                _finding(
+                    "critical",
+                    "missing_filters",
+                    "Каталог без фильтров — chips должны совпадать с seed",
+                )
+            )
+        if not re.search(
+            r"order-preview|cart-badge|class=[\"'][^\"']*\bpreview\b|order-layout|cart-lines",
+            fe_blob,
+            re.I,
+        ):
+            findings.append(
+                _finding(
+                    "critical",
+                    "missing_order_preview",
+                    "Нет экрана заказа/корзины (preview или cart lines)",
+                )
+            )
+        js_len = sum(
+            len(a.get("content") or "")
+            for a in fe_arts
+            if (a.get("path") or "").endswith(".js")
+        )
+        if js_len and js_len < 3200:
+            findings.append(
+                _finding(
+                    "critical",
+                    "thin_app_js",
+                    f"app.js слишком тонкий ({js_len}B < 3200) — нет рабочих потоков",
+                )
+            )
+        html_len = sum(
+            len(a.get("content") or "")
+            for a in fe_arts
+            if (a.get("path") or "").endswith((".html", ".htm"))
+        )
+        if html_len and html_len < 2800:
+            findings.append(
+                _finding(
+                    "critical",
+                    "thin_app_html",
+                    f"index.html слишком тонкий ({html_len}B < 2800) — скелет",
+                )
+            )
+        # Behavioral JS DoD (function names are free)
+        has_fetch = bool(re.search(r"\bfetch\s*\(", fe_blob))
+        has_orders = bool(re.search(r"loadOrders|/api/orders", fe_blob, re.I))
+        has_cta = bool(
+            re.search(r"addToCart|data-pick|dataset\.pick|В корзину|В заказ", fe_blob, re.I)
+        )
+        has_ok = bool(re.search(r"\.ok\b|!res\.ok|!r\.ok", fe_blob))
+        if js_len >= 3200 and not (has_fetch and has_orders and has_cta and has_ok):
+            findings.append(
+                _finding(
+                    "critical",
+                    "thin_app_js",
+                    "app.js без рабочего контракта: fetch + CTA/корзина + orders + res.ok",
+                )
+            )
+        # Cards built in JS without <img and without pick/order CTA
+        builds_list = bool(
+            re.search(
+                r"innerHTML\s*=|\.map\s*\(|createElement\s*\(\s*['\"]div",
+                fe_blob,
+            )
+        )
+        has_img_in_card = bool(
+            re.search(
+                r"""<img\b|innerHTML[^;]*img|\.image\b|image_url|b\.image|item\.image""",
+                fe_blob,
+            )
+        )
+        has_pick_cta = bool(
+            re.search(
+                r"data-pick|в заказ|в корзину|выбрать|data-id\s*=",
+                fe_low,
+            )
+        )
+        if builds_list and (not has_img_in_card or not has_pick_cta):
+            findings.append(
+                _finding(
+                    "major",
+                    "thin_catalog",
+                    "Каталог без img из API и/или без CTA «В заказ» — thin_catalog",
+                )
+            )
+        # CTA rendered but never wired
+        if re.search(r"data-id\s*=", fe_blob) and not re.search(
+            r"dataset\.id|getAttribute\(\s*['\"]data-id['\"]|\[data-id\]|data-pick",
+            fe_blob,
+        ):
+            findings.append(
+                _finding(
+                    "major",
+                    "dead_pick_cta",
+                    "Кнопка data-id в каталоге без обработчика click — CTA мёртвая",
+                )
+            )
+
+        has_select = bool(re.search(r"<select\b", fe_blob, re.I))
+        fills_select = bool(
+            re.search(
+                r"""(?:bouquet_id|item_id|product_id|productSelect|bouquetSelect)"""
+                r"""[^;]{0,120}innerHTML|"""
+                r"""select[^;]{0,40}innerHTML|innerHTML\s*=\s*[^;]*<option|"""
+                r"""syncHiddenSelect|fillSelect""",
+                fe_blob,
+                re.I,
+            )
+        )
+        # Cart apps may hide select and drive orders from cart[] — OK
+        cart_ok = bool(re.search(r"addToCart|cart-badge", fe_blob))
+        if has_select and not fills_select and not cart_ok:
+            findings.append(
+                _finding(
+                    "major",
+                    "dead_select",
+                    "Есть <select>, но options не наполняются из API — форма мертва",
+                )
+            )
+
+        # Delivery shop without address field
+        if re.search(r"доставк|delivery|адрес", fe_low) and not re.search(
+            r"name=[\"']address[\"']|id=[\"']address[\"']|\baddress\b",
+            fe_blob,
+            re.I,
+        ):
+            findings.append(
+                _finding(
+                    "major",
+                    "missing_address_field",
+                    "Доставка в задаче, но в форме нет поля address",
+                )
+            )
+
+        # GET /api/orders used or promised → need orders screen
+        be_blob = "\n".join(
+            a.get("content") or ""
+            for a in artifacts
+            if (a.get("path") or "").startswith("/src/backend")
+        )
+        if re.search(r"""@router\.get\(\s*['\"]/?orders['\"]""", be_blob) or re.search(
+            r"""fetch\s*\(\s*['\"]/api/orders['\"]""", fe_blob
+        ):
+            if not re.search(
+                r"""data-screen\s*=\s*['\"]orders['\"]|data-nav\s*=\s*['\"]orders['\"]|"""
+                r"""id=['\"]view-orders['\"]|id=['\"]screen-orders['\"]""",
+                fe_blob,
+                re.I,
+            ):
+                findings.append(
+                    _finding(
+                        "major",
+                        "missing_orders_screen",
+                        "Есть GET /api/orders, но нет экрана orders в app-shell",
+                    )
+                )
+
+    # Required mystery headers on public shop API
+    be_all = "\n".join(
+        a.get("content") or ""
+        for a in artifacts
+        if (a.get("path") or "").startswith("/src/backend")
+    )
+    if be_all and re.search(r"Header\s*\(\s*\.\.\.\s*\)", be_all):
+        findings.append(
+            _finding(
+                "major",
+                "mystery_auth_header",
+                "Backend требует Header(...) без brief auth — публичная форма сломается",
+            )
+        )
+
+    # POST fetch without JSON content-type
+    if re.search(r"""fetch\s*\([^)]*method\s*:\s*['\"]POST['\"]""", fe_blob, re.I):
+        post_blocks = re.findall(
+            r"fetch\s*\(\s*[^)]+?\{.{0,280}?method\s*:\s*['\"]POST['\"].{0,280}?\}",
+            fe_blob,
+            re.I | re.S,
+        )
+        for block in post_blocks[:4]:
+            if "JSON.stringify" in block and not re.search(
+                r"Content-Type|application/json", block, re.I
+            ):
+                findings.append(
+                    _finding(
+                        "major",
+                        "missing_json_headers",
+                        "POST + JSON.stringify без Content-Type: application/json",
+                    )
+                )
+                break
+
+    # Backend catalog seed too thin / no images / contract drift
+    be_arts = [
+        a
+        for a in artifacts
+        if (a.get("path") or "").startswith("/src/backend") or a.get("role") == "backend"
+    ]
+    if be_arts and catalogish:
+        be_all = "\n".join(a.get("content") or "" for a in be_arts)
+        unsplash_n = len(
+            re.findall(r"https://images\.unsplash\.com/|\"image(?:_url)?\"\s*:\s*\"https://", be_all)
+        )
+        seed_objs = len(re.findall(r"""['\"]id['\"]\s*:""", be_all))
+        if unsplash_n < 4 and seed_objs >= 1:
+            findings.append(
+                _finding(
+                    "critical",
+                    "thin_catalog_seed",
+                    f"Backend seed: мало remote image URL ({unsplash_n} < 4) для каталога",
+                )
+            )
+        has_name = bool(re.search(r"""['\"]name['\"]\s*:""", be_all))
+        has_title_only = bool(re.search(r"""['\"]title['\"]\s*:""", be_all)) and not has_name
+        if has_title_only:
+            findings.append(
+                _finding(
+                    "critical",
+                    "seed_title_not_name",
+                    "Seed с title без name — FE/orders ждут name → null в карточках и заказах",
+                )
+            )
+        has_desc = bool(
+            re.search(r"""['\"](?:desc|description|composition)['\"]\s*:""", be_all)
+        )
+        if seed_objs >= 2 and not has_desc:
+            findings.append(
+                _finding(
+                    "critical",
+                    "thin_catalog_fields",
+                    "Seed без desc/description/composition — карточки тощие (только title+цена)",
+                )
+            )
+        # Filters in FE must match seed tag OR category values
+        chips = {
+            c
+            for c in re.findall(r"""data-filter=["']([^"']+)["']""", fe_blob, re.I)
+            if c.lower() not in ("all", "все", "*")
+        }
+        seed_facets = {
+            v
+            for v in re.findall(
+                r"""['\"](?:category|tag|tags)['\"]\s*:\s*['\"]([^'\"]+)['\"]""",
+                be_all,
+            )
+            if v.strip()
+        }
+        if chips and seed_facets and not chips.issubset(seed_facets):
+            missing = sorted(chips - seed_facets)
+            findings.append(
+                _finding(
+                    "critical",
+                    "filter_seed_mismatch",
+                    "Фильтры FE не совпадают с seed category/tag: "
+                    f"chips={sorted(chips)} seed={sorted(seed_facets)} "
+                    f"лишние={missing} — клик даёт пустой каталог",
+                )
+            )
+        elif chips and not seed_facets and seed_objs >= 2:
+            findings.append(
+                _finding(
+                    "critical",
+                    "filter_seed_mismatch",
+                    f"FE filters {sorted(chips)} есть, но в seed нет category/tag полей",
+                )
+            )
+        # Dead / unverified Unsplash IDs → blank cards (Flash invents photo-IDs)
+        try:
+            from app.media_packs import allowlisted_image_ids
+
+            grocery = bool(
+                re.search(r"PRODUCTS\s*=|/api/products|Овощи", be_all)
+            )
+            allowed = allowlisted_image_ids("grocery" if grocery else "flowers")
+            seed_ids = set(
+                re.findall(r"images\.unsplash\.com/photo-([0-9a-zA-Z_-]+)", be_all, re.I)
+            )
+            bad = seed_ids - allowed
+            if seed_ids and bad and len(bad) >= max(1, len(seed_ids) // 2):
+                findings.append(
+                    _finding(
+                        "critical",
+                        "dead_catalog_images",
+                        f"Seed image IDs не из media pack grocery/flowers ({sorted(bad)[:4]}) — "
+                        "часто 404 → серые карточки без фото",
+                    )
+                )
+        except Exception:  # noqa: BLE001
+            pass
+
+    # Products shop must have cart UX (not only one-shot order)
+    if catalogish and re.search(r"/api/products|магазин продукт|Свежая Полка", fe_blob, re.I):
+        if not re.search(r"addToCart|cart-badge|В корзину", fe_blob):
+            findings.append(
+                _finding(
+                    "critical",
+                    "missing_cart",
+                    "Продуктовый магазин без корзины (addToCart / cart-badge / «В корзину»)",
+                )
+            )
+        if re.search(
+            r"\$\{[^}]*\.composition\}[^$]*\$\{[^}]*\.size\}[^$]*\$\{[^}]*\.stems\}",
+            fe_blob,
+        ):
+            findings.append(
+                _finding(
+                    "major",
+                    "flower_meta_on_products",
+                    "Карточки рендерят composition/size/stems → undefined на продуктах",
+                )
+            )
+
+    # Inline JS in HTML breaks app.js (second loadOrders / «История недоступна»)
+    html_only = "\n".join(
+        a.get("content") or ""
+        for a in fe_arts
+        if (a.get("path") or "").endswith((".html", ".htm"))
+    )
+    if re.search(
+        r"<script\b(?![^>]*\bsrc=)[^>]*>[\s\S]{80,}?</script>",
+        html_only,
+        re.I,
+    ):
+        findings.append(
+            _finding(
+                "critical",
+                "inline_script_in_html",
+                "Логика в <script> внутри index.html — дублирует/ломает app.js. "
+                "Только <script src=\"app.js\">",
+            )
+        )
+
+    return findings
+
+
+def _looks_like_landing(fe_blob: str) -> bool:
+    return bool(
+        re.search(
+            r"booking|запис|услуг|#services|hero|/api/booking|/api/lead|"
+            r"прайс|автосервис|шиномонтаж|лендинг",
+            fe_blob,
+            re.I,
+        )
+    )
+
+
+def _landing_skeleton_findings(
+    fe_arts: list[dict[str, Any]], fe_blob: str, fe_code: str
+) -> list[dict[str, Any]]:
+    """Fail navy-void / 2KB shells that previously scored PASS@100."""
+    findings: list[dict[str, Any]] = []
+    if not _looks_like_landing(fe_blob):
+        return findings
+
+    has_hero = bool(
+        re.search(
+            r"""class=["'][^"']*\bhero\b|\.hero\b|<section[^>]*\bhero\b""",
+            fe_blob,
+            re.I,
+        )
+    )
+    has_http_media = bool(
+        re.search(
+            r"""(?:src\s*=\s*['"]https?://)|(?:url\s*\(\s*['"]?https?://)""",
+            fe_blob,
+            re.I,
+        )
+    )
+    has_img = bool(re.search(r"<img\b", fe_blob, re.I))
+    if has_hero and not has_http_media and not has_img:
+        findings.append(
+            _finding(
+                "major",
+                "no_hero_media",
+                "Hero без remote https фото и без <img> — solid/gradient void "
+                "(нужен url(https://…) из брифа/media.md)",
+            )
+        )
+
+    html_len = sum(
+        len(a.get("content") or "")
+        for a in fe_arts
+        if (a.get("path") or "").endswith((".html", ".htm"))
+    )
+    sections = len(re.findall(r"<section\b", fe_blob, re.I))
+    service_cards = len(
+        re.findall(r"""<article\b|class=["'][^"']*\bcard\b""", fe_blob, re.I)
+    )
+    price_hits = len(re.findall(r"от\s*[\d\s]{2,}|\d[\d\s]{2,}\s*₽", fe_blob, re.I))
+
+    thin_reasons: list[str] = []
+    if html_len and html_len < 6000:
+        thin_reasons.append(f"HTML {html_len}B < 6000")
+    if sections < 7:
+        thin_reasons.append(f"section={sections} < 7")
+    if service_cards < 5 and price_hits < 5:
+        thin_reasons.append(
+            f"услуг/карточек мало (cards={service_cards}, prices={price_hits})"
+        )
+    if thin_reasons:
+        findings.append(
+            _finding(
+                "major",
+                "thin_landing",
+                "Скелет лендинга: "
+                + "; ".join(thin_reasons)
+                + " — добери плотность и факты из брифа "
+                "(эталон good_* = планка качества, не клон бренда/layout)",
+            )
+        )
+
+    if not re.search(r"zeus-badge|сделано на zeuscode|made with zeuscode", fe_blob, re.I):
+        findings.append(
+            _finding(
+                "major",
+                "missing_zeus_badge",
+                "Нет бейджа «Сделано на ZeusCode» (zeus-badge) — см. frontend/references/publish.md",
+            )
+        )
+
+    # Real photos somewhere (not CSS-only void) — any gallery, not forced #vitrine
+    img_https = len(
+        re.findall(r"""<img\b[^>]*\bsrc\s*=\s*['"]https?://""", fe_blob, re.I)
+    )
+    if img_https < 2 and not has_http_media:
+        findings.append(
+            _finding(
+                "major",
+                "weak_media",
+                f"Мало живого media: {img_https}× <img https> — нужен предметный якорь "
+                "(hero/галерея/витрина под нишу, не пустой градиент)",
+            )
+        )
+    elif img_https < 2 and has_http_media:
+        # CSS backgrounds count as media; only warn softly if zero imgs
+        pass
+
+    # Fat service cards: paragraph + includes list
+    articles = re.findall(r"<article\b[\s\S]*?</article>", fe_blob, re.I)
+    fat_services = 0
+    for art in articles:
+        plain = re.sub(r"<[^>]+>", " ", art)
+        plain = re.sub(r"\s+", " ", plain).strip()
+        has_list = bool(re.search(r"<ul\b", art, re.I))
+        if len(plain) >= 140 and has_list:
+            fat_services += 1
+        elif len(plain) >= 180:
+            fat_services += 1
+    # Only when there are many empty articles (template-y) — don't force «exactly 5 fat»
+    if len(articles) >= 4 and fat_services < 2:
+        findings.append(
+            _finding(
+                "major",
+                "thin_services",
+                f"Карточки пустые: {fat_services}/{len(articles)} с нормальным текстом — "
+                "факты/цена из brief, не egg-copy",
+            )
+        )
+
+    # Same Unsplash photo-ID used 2+ times → no variety
+    ids = re.findall(
+        r"images\.unsplash\.com/photo-([0-9a-zA-Z_-]+)",
+        fe_blob,
+        re.I,
+    )
+    unique_ids = set(ids)
+    if has_http_media or has_img:
+        if len(unique_ids) < 3:
+            findings.append(
+                _finding(
+                    "major",
+                    "duplicate_media",
+                    "Нужно ≥3 разных Unsplash photo-ID (hero + витрина). "
+                    "Сейчас: "
+                    + (", ".join(sorted(x[:24] for x in unique_ids)[:4]) or "нет ID"),
+                )
+            )
+        else:
+            from collections import Counter
+
+            dup = [i for i, n in Counter(ids).items() if n >= 3]
+            if dup:
+                findings.append(
+                    _finding(
+                        "minor",
+                        "duplicate_media",
+                        "Частый повтор photo-ID: " + ", ".join(x[:20] for x in dup[:2]),
+                    )
+                )
+
+    has_btn = bool(
+        re.search(r"""class=["'][^"']*\bbtn\b|\.btn\s*\{""", fe_blob, re.I)
+    )
+    if not has_btn:
+        findings.append(
+            _finding(
+                "major",
+                "weak_cta",
+                "Нет CTA-кнопки class=btn — главный CTA не должен быть голой ссылкой",
+            )
+        )
+
+    has_reviews = bool(re.search(r"<blockquote\b", fe_blob, re.I))
+    has_faq = bool(
+        re.search(r"<details\b|id=[\"']faq[\"']|часто задаваем", fe_blob, re.I)
+    )
+    if not has_reviews or not has_faq:
+        missing = []
+        if not has_reviews:
+            missing.append("отзывы <blockquote>")
+        if not has_faq:
+            missing.append("FAQ <details>")
+        findings.append(
+            _finding(
+                "major",
+                "thin_copy",
+                "Неполное наполнение: нет "
+                + " и ".join(missing)
+                + " — вставь тексты из brief (content-fill)",
+            )
+        )
+
+    has_brand = bool(
+        re.search(
+            r"""class=["'][^"']*\bbrand\b|<header\b[\s\S]{0,400}<strong""",
+            fe_blob,
+            re.I,
+        )
+    )
+    if not has_brand:
+        findings.append(
+            _finding(
+                "minor",
+                "weak_brand",
+                "В шапке слабо виден бренд (class=brand) — добавь имя из brief",
+            )
+        )
+
+    # --- visual polish (quality, not one typeface/chrome stamp) ---
+    css_blob = "\n".join(
+        a.get("content") or ""
+        for a in fe_arts
+        if (a.get("path") or "").endswith(".css")
+    )
+    if not re.search(r"position\s*:\s*sticky", css_blob, re.I):
+        findings.append(
+            _finding(
+                "minor",
+                "no_sticky",
+                "Нет sticky header — ок, если chrome читаемый; иначе visual-polish",
+            )
+        )
+    if not re.search(
+        r"Georgia|Times New Roman|ui-serif|serif|Playfair|Fraunces|Cormorant|"
+        r"Manrope|Syne|Outfit|DM Sans|Space Grotesk",
+        css_blob,
+        re.I,
+    ):
+        findings.append(
+            _finding(
+                "minor",
+                "weak_type",
+                "Слабо задан display-type — выбери выразительный стек под нишу (не Inter)",
+            )
+        )
+    if not re.search(r"\btransition\s*:", css_blob, re.I) or not re.search(
+        r":hover", css_blob, re.I
+    ):
+        findings.append(
+            _finding(
+                "major",
+                "no_motion",
+                "Нет transition + :hover на интерактиве — минимум 2 motion (visual-polish)",
+            )
+        )
+    if not re.search(r"@media\s*\([^)]*max-width", css_blob, re.I):
+        findings.append(
+            _finding(
+                "major",
+                "no_mobile",
+                "Нет @media (max-width: …) — мобильный блок обязателен (visual-polish)",
+            )
+        )
+    # SaaS slate palette on STO/landing (do NOT match translateY via bare "slate")
+    if re.search(
+        r"(автосервис|моторхаус|сто|шиномонтаж|booking|/api/booking)",
+        fe_blob,
+        re.I,
+    ) and re.search(
+        r"#f8fafc|#f1f5f9|#e2e8f0|#64748b|#f8f9fb|#f8f9fa|--color-bg\s*:\s*#f8fafc|\bslate-\d+\b",
+        css_blob,
+        re.I,
+    ):
+        findings.append(
+            _finding(
+                "major",
+                "saas_palette",
+                "SaaS-slate палитра (#f8fafc) на авто-нише — возьми палитру отрасли из brief "
+                "(для СТО часто тёмный бокс/янтарь, но не догма)",
+            )
+        )
+    # Hero veil: any readable overlay OK — don't force 90deg stamp
+    if re.search(
+        r"(автосервис|моторхаус|сто|шиномонтаж|booking|/api/booking)",
+        fe_blob,
+        re.I,
+    ):
+        has_hero = bool(re.search(r"\.hero\b|#hero\b", css_blob, re.I))
+        has_veil = bool(re.search(r"linear-gradient\s*\(", css_blob, re.I))
+        if has_hero and not has_veil and not re.search(r"<img\b", fe_blob, re.I):
+            findings.append(
+                _finding(
+                    "minor",
+                    "flat_hero_veil",
+                    "Hero слабо читается — добавь veil/градиент или img с контрастом",
+                )
+            )
+
+        # --- taste: anti-bland ---
+        # Browser-default blue nav / phone
+        if re.search(r"""class=["'][^"']*\btop__nav\b|class=["'][^"']*\btop\b""", fe_blob, re.I):
+            has_tel_color = bool(
+                re.search(
+                    r"\.tel\b[^{]*\{[^}]{0,200}color\s*:|\.top__nav\s+a\.tel\s*\{[^}]{0,200}color\s*:",
+                    css_blob,
+                    re.I | re.S,
+                )
+            )
+            has_nav_color = bool(
+                re.search(
+                    r"\.top__nav\s+a\s*\{[^}]{0,180}color\s*:|\.top\s+a\s*\{[^}]{0,180}color\s*:",
+                    css_blob,
+                    re.I | re.S,
+                )
+            )
+            if not has_tel_color or not has_nav_color:
+                findings.append(
+                    _finding(
+                        "major",
+                        "browser_blue_nav",
+                        "Шапка: нет color у .top__nav a и/или .tel — будут синие ссылки браузера (taste.md)",
+                    )
+                )
+
+        # Tiny vitrine thumbs
+        if re.search(r"""id=["']vitrine["']|\.vitrine\b""", fe_blob + css_blob, re.I):
+            m_h = re.search(
+                r"\.vitrine(?:\s+img|)\s+img\s*\{[^}]*\bheight\s*:\s*(\d+)px",
+                css_blob,
+                re.I | re.S,
+            )
+            if not m_h:
+                m_h = re.search(
+                    r"\.vitrine\s+img\s*\{[^}]*\bheight\s*:\s*(\d+)px",
+                    css_blob,
+                    re.I | re.S,
+                )
+            h_px = int(m_h.group(1)) if m_h else 0
+            if h_px and h_px < 260:
+                findings.append(
+                    _finding(
+                        "major",
+                        "tiny_vitrine",
+                        f"Витрина слишком мелкая (height:{h_px}px < 280) — taste.md: ударные фото",
+                    )
+                )
+            elif not h_px and re.search(r"\.vitrine\s+img\s*\{", css_blob, re.I):
+                findings.append(
+                    _finding(
+                        "major",
+                        "tiny_vitrine",
+                        "Витрина img без явной высоты — сделай кадры крупнее (не postage-stamp)",
+                    )
+                )
+
+        # Reviews exist but no layout CSS
+        if re.search(r"<blockquote\b", fe_blob, re.I) and not re.search(
+            r"\.reviews\s*\{|blockquote\s*\{[^}]*border-left",
+            css_blob,
+            re.I | re.S,
+        ):
+            findings.append(
+                _finding(
+                    "major",
+                    "no_reviews_css",
+                    "Есть blockquote, но нет .reviews grid / border-left — голый HTML (taste.md)",
+                )
+            )
+
+        # Egg corporate H1
+        h1_m = re.search(r"<h1\b[^>]*>([\s\S]*?)</h1>", fe_blob, re.I)
+        if h1_m:
+            h1 = re.sub(r"<[^>]+>", " ", h1_m.group(1))
+            h1 = re.sub(r"\s+", " ", h1).strip()
+            if re.search(
+                r"(?i)профессиональн|качественн|комплексн\w*\s+сервис|лучший\s+сервис|вашего\s+авто",
+                h1,
+            ):
+                findings.append(
+                    _finding(
+                        "major",
+                        "egg_headline",
+                        f"H1 яйцевой («{h1[:48]}…») — бан Профессиональный/Качественный (taste.md)",
+                    )
+                )
+
+        # Per-user uniqueness: visible brand + no MotоrХаус stamp when brand differs
+        has_uniq = bool(
+            re.search(r"""<html\b[^>]*\bdata-uniq\s*=\s*['"][a-f0-9]{6,}""", fe_blob, re.I)
+        )
+        if not has_uniq:
+            findings.append(
+                _finding(
+                    "minor",
+                    "missing_uniq",
+                    "Нет data-uniq — желательно, но важнее UNIQUE бренд/контент из брифа",
+                )
+            )
+        brand_m = re.search(
+            r"""class=["'][^"']*\bbrand\b[^"']*["'][^>]*>\s*([^<]{2,40})\s*<""",
+            fe_blob,
+            re.I,
+        )
+        brand_txt = (brand_m.group(1).strip() if brand_m else "") or ""
+        has_motorhaus = bool(re.search(r"МоторХаус", fe_blob))
+        has_kashir = bool(re.search(r"Каширск", fe_blob, re.I))
+        has_stamp_phone = bool(re.search(r"120-45-67", fe_blob))
+        if brand_txt and "МоторХаус" not in brand_txt and has_motorhaus:
+            findings.append(
+                _finding(
+                    "major",
+                    "clone_motorhaus",
+                    f"Бренд «{brand_txt}», но на странице торчит чужой «МоторХаус» — stamp clone",
+                )
+            )
+        if (
+            brand_txt
+            and "МоторХаус" not in brand_txt
+            and has_kashir
+            and has_stamp_phone
+        ):
+            findings.append(
+                _finding(
+                    "major",
+                    "clone_motorhaus",
+                    f"Бренд «{brand_txt}», но контакты штампа Каширское/120-45-67 — не UNIQUE",
+                )
+            )
+
+        # Footer must have tel:
+        if re.search(r"<footer\b", fe_blob, re.I) and not re.search(
+            r"<footer\b[\s\S]{0,1200}href\s*=\s*[\"']tel:",
+            fe_blob,
+            re.I,
+        ):
+            findings.append(
+                _finding(
+                    "major",
+                    "weak_footer",
+                    "Footer без tel: ссылки — taste.md",
+                )
+            )
+
+        # Why photo must differ from hero
+        hero_ids = set(
+            re.findall(
+                r"""\.hero\b[\s\S]{0,500}photo-([0-9a-zA-Z_-]+)""",
+                css_blob,
+                re.I,
+            )
+        )
+        why_ids = set(
+            re.findall(
+                r"""(?:why__media|#why)[\s\S]{0,400}photo-([0-9a-zA-Z_-]+)""",
+                fe_blob + css_blob,
+                re.I,
+            )
+        )
+        if hero_ids and why_ids and hero_ids == why_ids:
+            findings.append(
+                _finding(
+                    "major",
+                    "dup_why_hero",
+                    "Why использует тот же photo-ID что hero — нужен другой кадр (taste.md)",
+                )
+            )
+
+        # Why section needs a CTA button (not just facts)
+        if re.search(r"""id=["']why["']|class=["'][^"']*\bwhy\b""", fe_blob, re.I):
+            why_chunk = re.search(
+                r"""(?:id=["']why["']|class=["'][^"']*\bwhy\b)[\s\S]{0,1800}""",
+                fe_blob,
+                re.I,
+            )
+            chunk = why_chunk.group(0) if why_chunk else ""
+            if chunk and not re.search(
+                r"""class=["'][^"']*\bbtn\b|<a\b[^>]*\bhref|<button\b""", chunk, re.I
+            ):
+                findings.append(
+                    _finding(
+                        "minor",
+                        "why_no_cta",
+                        "Блок «почему мы» без CTA — добавь кнопку/ссылку если секция есть",
+                    )
+                )
+
+        # If model used STO chrome classes, check nav/tel colors aren't browser-default
+        if re.search(r"""class=["'][^"']*\btel\b""", fe_blob, re.I) and re.search(
+            r"\.top__nav\s+a\s*\{", css_blob, re.I
+        ):
+            if not re.search(
+                r"\.top__nav\s+a\.tel\b|\.tel\s*,\s*\.top__nav|\.tel\s*\{[^}]*color\s*:",
+                css_blob,
+                re.I,
+            ):
+                findings.append(
+                    _finding(
+                        "minor",
+                        "tel_specificity",
+                        "Nav/tel: задай явный color (не browser-blue)",
+                    )
+                )
+
+    return findings
+
+
+def _deck_content_findings(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """HTML decks under /src/deck or .slide sections."""
+    findings: list[dict[str, Any]] = []
+    deck_arts = [
+        a
+        for a in artifacts
+        if (a.get("path") or "").startswith("/src/deck")
+        or "slide" in ((a.get("content") or "")[:2000]).lower()
+        and (a.get("path") or "").endswith(".html")
+    ]
+    if not deck_arts:
+        # also detect many .slide in frontend
+        for a in artifacts:
+            body = a.get("content") or ""
+            if (a.get("path") or "").endswith(".html") and body.count("slide") >= 3:
+                deck_arts.append(a)
+    if not deck_arts:
+        return findings
+    blob = "\n".join(a.get("content") or "" for a in deck_arts)
+    slides = len(
+        re.findall(r"""class=["'][^"']*\bslide\b|<section[^>]*slide""", blob, re.I)
+    )
+    if slides and slides < 6:
+        findings.append(
+            _finding(
+                "major",
+                "thin_deck",
+                f"Презентация: slide={slides} < 6 — нужно ≥8 с текстом (content-fill)",
+            )
+        )
+    ids = re.findall(r"images\.unsplash\.com/photo-([0-9a-zA-Z_-]+)", blob, re.I)
+    if ids and len(set(ids)) < 2 and len(ids) >= 2:
+        findings.append(
+            _finding(
+                "major",
+                "duplicate_media",
+                "В колоде один photo-ID на все слайды — нужны разные кадры из media pack",
+            )
+        )
+    return findings
+
+
+def flatten_css_for_preview(artifacts: list[dict[str, Any]], css_text: str) -> str:
+    """Resolve @import of workspace CSS (esp. design tokens) into a single stylesheet."""
+    by_path = {(a.get("path") or "").strip(): a for a in artifacts}
+    seen: set[str] = set()
+
+    def expand(text: str, from_path: str, depth: int = 0) -> str:
+        if depth > 6:
+            return text
+
+        def repl(m: re.Match[str]) -> str:
+            ref = (m.group(1) or m.group(2) or "").strip()
+            if not ref or ref.startswith(("http://", "https://", "data:")):
+                return m.group(0)
+            resolved = _resolve_fe_rel(ref, from_path)
+            if not resolved or resolved in seen:
+                return "/* skipped import */\n"
+            target = by_path.get(resolved)
+            if not target:
+                # try basename match under design/
+                base = resolved.rsplit("/", 1)[-1]
+                for p, a in by_path.items():
+                    if p.endswith("/" + base) and p.startswith("/src/"):
+                        target = a
+                        resolved = p
+                        break
+            if not target:
+                return m.group(0)
+            seen.add(resolved)
+            body = target.get("content") or ""
+            return f"/* inlined {resolved} */\n" + expand(body, resolved, depth + 1) + "\n"
+
+        return _CSS_IMPORT_RE.sub(repl, text)
+
+    return expand(css_text or "", "/src/frontend/styles.css")
 
 
 def extract_prelock_from_task(task: str) -> dict[str, Any] | None:
@@ -663,9 +2069,15 @@ def _token_ssot_findings(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]
         return []
     if re.search(r"@import[^;]*tokens\.css", fe_blob, re.I):
         return []
+    if "/* inlined design tokens" in fe_blob:
+        return []
     used = set(re.findall(r"var\(\s*--([a-zA-Z][\w-]*)", fe_blob))
     shared = design_vars & used
     fe_defines = set(re.findall(r"--([a-zA-Z][\w-]*)\s*:", fe_blob))
+    # Landing industry pack inlined in styles.css is intentional (static demos break on @import)
+    industry = {"asphalt", "shop", "band", "amber", "amber-hover", "metal"}
+    if industry & fe_defines and len(fe_defines) >= 4:
+        return []
     # Parallel :root palette with almost no shared vars → drift
     if ":root" in fe_blob and len(shared) < 2 and len(fe_defines) >= 3:
         return [
@@ -954,7 +2366,11 @@ def run_design_verify(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def _frontend_srcdoc(arts: list[dict[str, Any]]) -> str | None:
-    """Inline HTML+CSS+JS for Playwright set_content (no network)."""
+    """Inline HTML+CSS+JS for Playwright set_content (no network).
+
+    Resolves @import (design tokens) via flatten_css_for_preview so gate/preview
+    match what a workspace http.server would serve after token inline.
+    """
     by_path = {(a.get("path") or ""): a for a in arts}
     html = (by_path.get("/src/frontend/index.html") or {}).get("content") or ""
     if not html:
@@ -964,11 +2380,21 @@ def _frontend_srcdoc(arts: list[dict[str, Any]]) -> str | None:
                 break
     if not html.strip():
         return None
-    css = "\n".join(
-        a.get("content") or ""
-        for a in arts
-        if (a.get("path") or "").endswith(".css") or a.get("language") == "css"
-    )
+    # Prefer frontend styles; flatten @import against full artifact set (incl. design)
+    css_parts: list[str] = []
+    for a in arts:
+        path = a.get("path") or ""
+        if path.startswith("/src/frontend/") and (
+            path.endswith(".css") or a.get("language") == "css"
+        ):
+            css_parts.append(a.get("content") or "")
+        elif path.endswith(".css") and a.get("role") == "frontend":
+            css_parts.append(a.get("content") or "")
+    css = flatten_css_for_preview(arts, "\n".join(css_parts))
+    # If FE styles empty but design tokens exist, still inject tokens
+    if not css.strip():
+        tok = (by_path.get("/src/design/tokens.css") or {}).get("content") or ""
+        css = tok
     js = "\n".join(
         a.get("content") or ""
         for a in arts
@@ -983,18 +2409,20 @@ def _frontend_srcdoc(arts: list[dict[str, Any]]) -> str | None:
         flags=re.I,
     )
     if css:
-        if re.search(r"</head>", html, re.I):
-            html = re.sub(r"</head>", f"<style>\n{css}\n</style></head>", html, count=1, flags=re.I)
+        low = html.lower()
+        idx = low.find("</head>")
+        if idx >= 0:
+            html = html[:idx] + f"<style>\n{css}\n</style>" + html[idx:]
         else:
             html = f"<style>{css}</style>" + html
     if js:
-        if re.search(r"</body>", html, re.I):
-            html = re.sub(
-                r"</body>",
-                f"<script type=\"module\">\n{js}\n</script></body>",
-                html,
-                count=1,
-                flags=re.I,
+        low = html.lower()
+        idx = low.find("</body>")
+        if idx >= 0:
+            html = (
+                html[:idx]
+                + f'<script type="module">\n{js}\n</script>'
+                + html[idx:]
             )
         else:
             html += f'<script type="module">\n{js}\n</script>'
@@ -1087,9 +2515,20 @@ def _browser_smoke_sync(fe: list[dict[str, Any]], srcdoc: str) -> list[dict[str,
                     )
             browser.close()
     except Exception as e:  # noqa: BLE001
-        findings.append(
-            _finding("major", "browser_smoke_error", f"browser smoke упал: {e}")
-        )
+        msg = str(e)
+        # VPS without Playwright browsers — don't tank app score
+        if "Executable doesn't exist" in msg or "playwright" in msg.lower():
+            findings.append(
+                _finding(
+                    "info",
+                    "browser_smoke_skipped",
+                    "Playwright browser не установлен — smoke пропущен",
+                )
+            )
+        else:
+            findings.append(
+                _finding("major", "browser_smoke_error", f"browser smoke упал: {e}")
+            )
     if not findings:
         findings.append(
             _finding(
@@ -1113,7 +2552,8 @@ def run_frontend_browser_smoke(artifacts: list[dict[str, Any]]) -> list[dict[str
     ]
     if not fe:
         return []
-    srcdoc = _frontend_srcdoc(fe)
+    # Pass full artifact set so flatten can pull /src/design/tokens.css
+    srcdoc = _frontend_srcdoc(artifacts)
     if not srcdoc:
         return [
             _finding(

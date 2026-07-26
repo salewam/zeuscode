@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>МоторХаус | Автосервис на Каширском шоссе</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --asphalt: #141415;
+            --asphalt-light: #242426;
+            --asphalt-lighter: #343438;
+            --amber: #FF9F00;
+            --amber-hover: #E08900;
+            --text-main: #EAEAEA;
+            --text-muted: #A0A0A0;
+            --font-headings: 'Montserrat', sans-serif;
+            --font-text: 'Open Sans', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-text);
+            background-color: var(--asphalt);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-headings);
+            text-transform: uppercase;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(255, 159, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 159, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 159, 0, 0); }
+        }
+
+        @keyframes noise {
+            0%, 100% { background-position: 0 0; }
+            10% { background-position: -5% -10%; }
+            50% { background-position: -15% 5%; }
+            90% { background-position: 7% -5%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn { animation: none !important; }
+            .hero-texture { display: none; }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            transform: translateY(30px);
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(20, 20, 21, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--asphalt-lighter);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--amber);
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .logo span {
+            color: var(--text-main);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            margin-left: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--amber);
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--amber);
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 1001;
+            padding: 5px;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: 
+                linear-gradient(to right, rgba(20, 20, 21, 0.95) 0%, rgba(20, 20, 21, 0.7) 50%, rgba(20, 20, 21, 0.95) 100%),
+                radial-gradient(circle at 50% 50%, rgba(255, 159, 0, 0.15) 0%, transparent 60%),
+                url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=1920') center/cover no-repeat;
+            text-align: center;
+            padding: 100px 20px 40px;
+        }
+
+        .hero-texture {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1;
+            animation: noise 8s steps(10) infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to bottom, transparent, var(--asphalt));
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            animation: fadeIn 1s ease-out forwards;
+            width: 100%;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.2rem, 9vw, 5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            word-wrap: break-word;
+        }
+
+        .hero h1 span {
+            color: var(--amber);
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--amber);
+            color: var(--asphalt);
+            padding: 18px 40px;
+            font-size: 16px;
+            font-weight: 800;
+            font-family: var(--font-headings);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+            animation: pulseGlow 3s infinite;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: var(--amber-hover);
+            transform: translateY(-2px);
+        }
+
+        .trust-bar {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trust-item svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--amber);
+        }
+
+        /* Sections General */
+        section {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(2rem, 6vw, 2.5rem);
+            margin-bottom: 50px;
+            font-weight: 800;
+        }
+
+        .section-title span {
+            color: var(--amber);
+        }
+
+        /* Services */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .service-card {
+            background: var(--asphalt-light);
+            padding: 30px 20px;
+            border-radius: 8px;
+            border-bottom: 4px solid transparent;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(255,159,0,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            border-bottom: 4px solid var(--amber);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1);
+        }
+
+        .service-icon {
+            font-size: 36px;
+            color: var(--amber);
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .service-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--asphalt-lighter);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .service-price { color: var(--amber); }
+        .service-time { color: var(--text-muted); }
+
+        /* Reviews */
+        .reviews-bg {
+            background: var(--asphalt-light);
+            border-top: 1px solid var(--asphalt-lighter);
+            border-bottom: 1px solid var(--asphalt-lighter);
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .review-card {
+            background: var(--asphalt);
+            padding: 30px;
+            border-radius: 8px;
+        }
+
+        .stars {
+            color: var(--amber);
+            margin-bottom: 15px;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        .review-text {
+            font-style: italic;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .review-author {
+            font-weight: 600;
+            color: var(--text-main);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        /* FAQ */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--asphalt-light);
+            margin-bottom: 15px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 20px;
+            font-family: var(--font-headings);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .faq-question:hover {
+            background: var(--asphalt-lighter);
+        }
+
+        .faq-icon {
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background: var(--asphalt);
+        }
+
+        .faq-answer p {
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--asphalt-light);
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 300px;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        /* Booking Form */
+        .booking-section {
+            background: linear-gradient(135deg, var(--asphalt) 0%, var(--asphalt-light) 100%);
+            border: 1px solid var(--asphalt-lighter);
+            border-radius: 12px;
+            padding: 50px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .booking-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,159,0,0.05) 0%, transparent 60%);
+            z-index: 0;
+        }
+
+        .booking-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .booking-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            background: var(--asphalt);
+            border: 1px solid var(--asphalt-lighter);
+            color: var(--text-main);
+            border-radius: 4px;
+            font-family: var(--font-text);
+            font-size: 16px; /* Prevents iOS zoom */
+            transition: border-color 0.3s ease;
+            appearance: none;
+        }
+
+        /* Date/Time picker icon fix for dark theme */
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FF9F00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--amber);
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-message h3 {
+            color: var(--amber);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* Footer */
+        footer {
+            background: #0a0a0a;
+            border-top: 2px solid var(--amber);
+            padding: 60px 20px 80px; /* Extra bottom padding for mobile sticky CTA */
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .footer-info p {
+            color: var(--text-muted);
+            margin: 10px 0;
+            font-size: 0.95rem;
+        }
+
+        .footer-info strong {
+            color: var(--text-main);
+        }
+
+        .footer-info a {
+            color: var(--amber);
+        }
+
+        .map-container {
+            border-radius: 8px;
+            overflow: hidden;
+            height: 250px;
+            border: 1px solid var(--asphalt-lighter);
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--asphalt-lighter);
+            color: var(--asphalt-lighter);
+            font-size: 0.8rem;
+        }
+
+        /* Mobile Sticky CTA */
+        .mobile-sticky-cta {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--amber);
+            color: var(--asphalt);
+            text-align: center;
+            padding: 15px;
+            font-weight: 800;
+            font-size: 16px;
+            font-family: var(--font-headings);
+            text-transform: uppercase;
+            z-index: 999;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        }
+
+        .mobile-sticky-cta.hidden {
+            transform: translateY(100%);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .services-grid, .reviews-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .footer-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                height: 100vh;
+                width: 250px;
+                background: var(--asphalt-light);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: right 0.3s ease;
+                border-left: 1px solid var(--asphalt-lighter);
+                box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .nav-links a {
+                margin: 20px 0;
+                font-size: 1.1rem;
+            }
+
+            .services-grid, .reviews-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-form {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+
+            .booking-section {
+                padding: 40px 20px;
+            }
+
+            .trust-bar {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .mobile-sticky-cta {
+                display: block;
+                transition: transform 0.3s ease;
+            }
+        }
+
+        @media (max-width: 480px) {
+            section {
+                padding: 60px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">МОТОР<span>ХАУС</span></a>
+            <button class="hamburger" aria-label="Меню">☰</button>
+            <nav class="nav-links">
+                <a href="#services">Услуги</a>
+                <a href="#reviews">Отзывы</a>
+                <a href="#faq">FAQ</a>
+                <a href="#booking">Запись</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-texture"></div>
+        <div class="hero-content">
+            <h1>Брутальный подход.<br><span>Ювелирная</span> точность.</h1>
+            <p>Профессиональный ремонт и обслуживание автомобилей на Каширском шоссе. Честные цены, мощное оборудование и мастера, которые знают свое дело.</p>
+            <a href="#booking" class="btn">Записаться в бокс</a>
+            
+            <div class="trust-bar">
+                <div class="trust-item">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    Каширское ш., 61
+                </div>
+                <div class="trust-item">
+                    <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    09:00 - 21:00
+                </div>
+                <div class="trust-item">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                    Гарантия 1 год
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services">
+        <h2 class="section-title animate-on-scroll">Наши <span>Услуги</span></h2>
+        <div class="services-grid">
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon">⚡</div>
+                <h3>Компьютерная диагностика</h3>
+                <p>Полное сканирование электронных систем дилерским оборудованием. Выявляем скрытые ошибки до того, как они станут проблемой.</p>
+                <div class="service-meta">
+                    <span class="service-price">от 900 ₽</span>
+                    <span class="service-time">~30 мин</span>
+                </div>
+            </div>
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon">🔧</div>
+                <h3>Ремонт ДВС</h3>
+                <p>От замены ремня ГРМ до капитального ремонта двигателя. Работаем с бензиновыми и дизельными агрегатами любой сложности.</p>
+                <div class="service-meta">
+                    <span class="service-price">от 5 000 ₽</span>
+                    <span class="service-time">от 4 часов</span>
+                </div>
+            </div>
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon">⚙️</div>
+                <h3>Ходовая часть</h3>
+                <p>Замена амортизаторов, рычагов, сайлентблоков. Делаем подвеску упругой и надежной для любых дорог.</p>
+                <div class="service-meta">
+                    <span class="service-price">от 1 200 ₽</span>
+                    <span class="service-time">от 1 часа</span>
+                </div>
+            </div>
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon">🔋</div>
+                <h3>Автоэлектрика</h3>
+                <p>Поиск и устранение обрывов, замыканий, ремонт генераторов и стартеров. Установка дополнительного оборудования.</p>
+                <div class="service-meta">
+                    <span class="service-price">от 1 500 ₽</span>
+                    <span class="service-time">от 1 часа</span>
+                </div>
+            </div>
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon">🛞</div>
+                <h3>Шиномонтаж 3D</h3>
+                <p>Высокоточная балансировка, правка литых дисков, устранение грыж. Сезонная переобувка без очередей по записи.</p>
+                <div class="service-meta">
+                    <span class="service-price">от 1 800 ₽</span>
+                    <span class="service-time">~40 мин</span>
+                </div>
+            </div>
+            <div class="service-card animate-on-scroll">
+                <div class="service-icon">🛢️</div>
+                <h3>Регулярное ТО</h3>
+                <p>Замена масла в ДВС и АКПП, фильтров, свечей и технических жидкостей. Используем проверенные расходники в наличии.</p>
+                <div class="service-meta">
+                    <span class="service-price">от 1 000 ₽</span>
+                    <span class="service-time">~45 мин</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="reviews-bg">
+        <section id="reviews">
+            <h2 class="section-title animate-on-scroll">Что <span>говорят</span> клиенты</h2>
+            <div class="reviews-grid">
+                <div class="review-card animate-on-scroll">
+                    <div class="stars">★★★★★</div>
+                    <p class="review-text">"Застучал движок на трассе. Дотащили до МоторХауса. Парни быстро разобрали, дефектовали, нашли запчасти. Через 4 дня машина была на ходу. Респект!"</p>
+                    <p class="review-author">— Алексей В., BMW X5</p>
+                </div>
+                <div class="review-card animate-on-scroll">
+                    <div class="stars">★★★★★</div>
+                    <p class="review-text">"Отличный сервис на Каширке. Без развода на лишние работы, все по факту. Приехал на диагностику ходовой, поменяли только то, что реально умерло."</p>
+                    <p class="review-author">— Дмитрий С., Kia Optima</p>
+                </div>
+                <div class="review-card animate-on-scroll">
+                    <div class="stars">★★★★★</div>
+                    <p class="review-text">"Искал нормального электрика неделю. Тут за час нашли, почему высаживался аккум. Бокс чистый, мастера адекватные. Теперь только сюда."</p>
+                    <p class="review-author">— Михаил Т., VW Tiguan</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <section id="faq">
+        <h2 class="section-title animate-on-scroll">Частые <span>Вопросы</span></h2>
+        <div class="faq-container animate-on-scroll">
+            <div class="faq-item">
+                <div class="faq-question">
+                    Вы даете гарантию на работы? <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Да, мы предоставляем гарантию 1 год или 10 000 км пробега на слесарные работы и запчасти, купленные в нашем сервисе.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    Можно ли находиться в ремзоне? <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Конечно. Вы можете присутствовать при диагностике и ремонте вашего автомобиля, соблюдая технику безопасности. Мы за полную прозрачность.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    Запчасти нужно привозить свои? <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Не обязательно. У нас собственный склад ходовых расходников и налаженные связи с поставщиками. Привезем нужную деталь от 2 часов. Но если хотите со своими — без проблем.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="booking">
+        <div class="booking-section animate-on-scroll">
+            <div class="booking-content" id="form-content">
+                <h2>Заезд в <span>бокс</span></h2>
+                <p style="color: var(--text-muted); margin-top: 10px;">Выберите удобное время, и мастер свяжется с вами</p>
+                <form class="booking-form" id="bookingForm">
+                    <div class="form-group">
+                        <input type="text" placeholder="Ваше Имя" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" placeholder="Телефон" required pattern="[0-9\-\+\s\(\)]+">
+                    </div>
+                    <div class="form-group">
+                        <select required>
+                            <option value="" disabled selected>Выберите услугу</option>
+                            <option value="diag">Диагностика (от 900 ₽)</option>
+                            <option value="engine">Ремонт ДВС (от 5000 ₽)</option>
+                            <option value="suspension">Ходовая часть (от 1200 ₽)</option>
+                            <option value="electro">Автоэлектрика (от 1500 ₽)</option>
+                            <option value="tires">Шиномонтаж (от 1800 ₽)</option>
+                            <option value="to">Регулярное ТО (от 1000 ₽)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="datetime-local" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <button type="submit" class="btn" style="width: 100%;">Подтвердить запись</button>
+                    </div>
+                </form>
+            </div>
+            <div class="success-message" id="successMessage">
+                <h3>Заявка принята! ⚙️</h3>
+                <p>Мы свяжемся с вами в течение 10 минут для подтверждения времени заезда.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-info">
+                <a href="#" class="logo" style="display:inline-block; margin-bottom: 20px;">МОТОР<span>ХАУС</span></a>
+                <p><strong>Адрес:</strong> г. Москва, Каширское шоссе, д. 61</p>
+                <p><strong>Режим работы:</strong> Ежедневно с 09:00 до 21:00</p>
+                <p><strong>Телефон:</strong> <a href="tel:+74951234567">+7 (495) 123-45-67</a></p>
+                <div style="margin-top: 20px;">
+                    <a href="#" style="margin-right: 15px; text-decoration: underline;">ВКонтакте</a>
+                    <a href="#" style="text-decoration: underline;">Telegram</a>
+                </div>
+            </div>
+            <div class="map-container">
+                <!-- Placeholder for map iframe -->
+                <iframe src="https://yandex.ru/map-widget/v1/?um=constructor%3Aplaceholder&amp;source=constructor&amp;ll=37.708890%2C55.627780&amp;z=15" frameborder="0"></iframe>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2024 МоторХаус. Все права защищены.
+        </div>
+    </footer>
+
+    <a href="#booking" class="mobile-sticky-cta" id="mobileStickyBtn">Записаться в бокс</a>
+
+    <script>
+        // Hamburger Menu
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            hamburger.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
+        });
+
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.textContent = '☰';
+            });
+        });
+
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(item => {
+            item.addEventListener('click', () => {
+                const parent = item.parentElement;
+                parent.classList.toggle('active');
+            });
+        });
+
+        // Intersection Observer for Animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+        // Form Submit
+        document.getElementById('bookingForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('form-content').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+        });
+
+        // Sticky Mobile CTA Visibility
+        const stickyBtn = document.getElementById('mobileStickyBtn');
+        const bookingSection = document.getElementById('booking');
+
+        if ('IntersectionObserver' in window) {
+            const ctaObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        stickyBtn.classList.add('hidden');
+                    } else {
+                        stickyBtn.classList.remove('hidden');
+                    }
+                });
+            }, { threshold: 0 });
+            ctaObserver.observe(bookingSection);
+        }
+        
+        // Scroll Spy
+        const sections = document.querySelectorAll('section');
+        const navItems = document.querySelectorAll('.nav-links a[href^="#"]');
+        
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(a => {
+                a.classList.remove('active');
+                if (a.getAttribute('href') === `#${current}`) {
+                    a.classList.add('active');
+                }
+            });
+        });
+    </script>
+<a class="zeus-badge" href="https://zeuscode.ru" target="_blank" rel="noopener noreferrer">Сделано на ZeusCode</a>
+<style id="zeus-badge-css">
+.zeus-badge{
+  position:fixed;right:14px;bottom:12px;z-index:2147483646;
+  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;
+  letter-spacing:.02em;text-decoration:none;
+  color:rgba(120,120,120,.42);pointer-events:auto;
+  transition:color .2s ease,opacity .2s ease;
+}
+.zeus-badge:hover{color:rgba(120,120,120,.78)}
+</style>
+</body>
+</html>
+
+---
+🔗 Живая ссылка: https://zeuscode.ru/go/site-2897/

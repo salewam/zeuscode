@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="310" viewBox="0 0 480 310" role="img" aria-label="Кубики Extensions">
+  <defs><style>
+  .bg { fill: #0e1116; }
+  .panel { fill: #1e1e1e; stroke: #3c3c3c; stroke-width: 1; }
+  .bar { fill: #252526; }
+  .side { fill: #333333; }
+  .txt { fill: #cccccc; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .w { fill: #ffffff; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .muted { fill: #858585; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .blue { fill: #0078d4; }
+  .field { fill: #3c3c3c; }
+  .field-on { fill: #2a2d2e; stroke: #e8a84a; stroke-width: 2.5; }
+  .call { fill: #e8a84a; }
+  .call-t { fill: #1a1206; font-family: -apple-system, system-ui, sans-serif; font-weight: 800; }
+  .ok { fill: #3dd68c; }
+  .btn-t { fill: #fff; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .cap { fill: #e8a84a; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+</style>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#e8a84a"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="480" height="310" rx="14"/>
+  
+  <!-- title bar -->
+  <rect class="bar" x="16" y="16" width="448" height="32" rx="8"/>
+  <text class="muted" x="32" y="37" font-size="12">Visual Studio Code</text>
+  <!-- activity bar -->
+  <rect class="side" x="16" y="48" width="56" height="246" rx="0"/>
+  <!-- file icon -->
+  <rect x="30" y="70" width="28" height="22" rx="3" fill="none" stroke="#858585" stroke-width="1.5"/>
+  <text class="muted" x="44" y="110" text-anchor="middle" font-size="10">файлы</text>
+  <!-- search -->
+  <circle cx="44" cy="140" r="9" fill="none" stroke="#858585" stroke-width="1.5"/>
+  <!-- EXTENSIONS CUBES - large and clear -->
+  <rect x="22" y="168" width="44" height="52" rx="6" fill="#1e1e1e" stroke="#e8a84a" stroke-width="2.5"/>
+  <rect x="33" y="180" width="10.5" height="10.5" rx="2" fill="#1e1e1e" stroke="#e8a84a" stroke-width="1.8"/><rect x="46.5" y="180" width="10.5" height="10.5" rx="2" fill="#1e1e1e" stroke="#e8a84a" stroke-width="1.8"/><rect x="33" y="193.5" width="10.5" height="10.5" rx="2" fill="#1e1e1e" stroke="#e8a84a" stroke-width="1.8"/><rect x="48.5" y="195.5" width="10.5" height="10.5" rx="2" fill="#1e1e1e" stroke="#e8a84a" stroke-width="1.8"/>
+  <circle class="call" cx="78" cy="194" r="15"/><text class="call-t" x="78" y="199" text-anchor="middle" font-size="14">1</text>
+  <path stroke="#e8a84a" stroke-width="3" fill="none" stroke-linecap="round" marker-end="url(#ah)" d="M93,194 L120,194"/>
+  <!-- editor area -->
+  <rect class="panel" x="72" y="48" width="392" height="246"/>
+  <text class="w" x="96" y="90" font-size="22" font-weight="800">Extensions</text>
+  <text class="muted" x="96" y="118" font-size="13">Расширения — вот эти кубики слева</text>
+  <rect class="field" x="96" y="140" width="340" height="40" rx="6"/>
+  <text class="muted" x="112" y="165" font-size="13">Search Extensions in Marketplace</text>
+  <text class="cap" x="268" y="270" text-anchor="middle" font-size="14">Нажми на кубики слева ↓</text>
+
+</svg>

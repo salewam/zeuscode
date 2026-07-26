@@ -1,0 +1,7 @@
+{
+  "id": "B14",
+  "bucket": "ui_trivial",
+  "prompt": "поменяй отступ на 14px",
+  "expected_path": "FAST",
+  "expect_code_fence": false
+}

@@ -1,0 +1,367 @@
+{
+  "label": "3_custom_strongest",
+  "title": "Набор из самых сильных",
+  "ok": true,
+  "status": 200,
+  "latency_s": 515.62,
+  "routed_by": "ui_author_critics_web",
+  "path": "FULL",
+  "product_mode": "custom",
+  "leader": "claude-fable-5",
+  "panel": [
+    "claude-opus-4-8",
+    "claude-fable-5",
+    "gpt-5.6-sol"
+  ],
+  "ui_crew": {
+    "author": "claude-fable-5",
+    "critics": [
+      "gpt-5.6-sol",
+      "claude-opus-4-8"
+    ],
+    "power_scores": {
+      "claude-opus-4-8": 968,
+      "claude-fable-5": 1000,
+      "gpt-5.6-sol": 1000
+    },
+    "web": {
+      "ok": true,
+      "degraded": false,
+      "backend": "browser,duckduckgo_html,jina",
+      "queries": [
+        "автосервис сайт запись онлайн",
+        "car repair shop website book appointment",
+        "best auto repair shop website design examples"
+      ],
+      "refs_used": [
+        "https://www.abcp.ru/carservice",
+        "https://checkinauto.com/",
+        "https://www.avtomato.ru/"
+      ],
+      "browser_used": 2,
+      "browser_live_used": 2,
+      "browser_available": true,
+      "live_refs": [
+        "https://www.abcp.ru/carservice",
+        "https://checkinauto.com/",
+        "https://www.avtomato.ru/"
+      ]
+    },
+    "critique_merged": {
+      "upgrades": [
+        "Заменить содержимое на один валидный самодостаточный HTML-документ с встроенными CSS и JS, начинающийся с <!doctype html>.",
+        "Сделать «МоторХаус» главным элементом full-bleed hero на фоне реального бокса или малярной камеры; использовать асфальтовую палитру с янтарными и охристыми акцентами.",
+        "Добавить плотную сетку минимум из шести содержательных карточек услуг с ориентировочными ценами или сроками: это усилит прозрачность предложения по примеру CheckInAuto.",
+        "Создать отдельный визуально насыщенный блок «Малярный цех» с камерой, материалами, сроками, гарантией на ЛКП и убедительной парой «до/после».",
+        "Добавить блоки доверия: честная смета, гарантия, зона ожидания, три конкретных отзыва и кликабельный FAQ-аккордеон.",
+        "Реализовать настоящую форму записи с полями имени, телефона, автомобиля, услуги, даты и времени, валидацией и inline-сообщением об успешной отправке; удобство онлайн-записи должно быть центральным преимуществом, как в ABCP.",
+        "Использовать реальные локальные данные и конкретику вместо общих заявлений: адрес на Каширском шоссе, телефон, режим 9:00–21:00, фото работ и проверяемые условия гарантии, следуя подходу Avtomato.",
+        "Добавить 2–3 осмысленных motion-эффекта: вступительное раскрытие hero, stagger-появление карточек при прокрутке и плавное раскрытие FAQ с поддержкой prefers-reduced-motion.",
+        "Ground the hero atmosphere in real reference cues (Avtomato/CheckInAuto use real work photos): overlay a subtle photographic body-shop layer via CSS gradient + duotone image blend in asphalt+amber, avoid any flat gradient.",
+        "Add trust stats bar under hero like CheckInAuto (5000+ СТО, 120000 отзывов): e.g. 'лет на Каширском', 'машин в год', 'гарантия на ЛКП' — quantified numbers build credibility.",
+        "Make the до/после block interactive with a draggable slider (or tap-to-reveal) instead of two static placeholders — this is the signature feature buyers judge a малярный цех by.",
+        "Add price-from anchors on service cards (от 3000 ₽ style, per CheckInAuto services list) so users understand cost before form — 'прозрачные цены' is a top ref conversion driver."
+      ],
+      "must_fix": [
+        "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">",
+        "Предоставленный результат не является HTML-сайтом: это вызов инструмента Write для создания markdown-файла с пользовательскими предпочтениями, поэтому страница вообще не отображается.",
+        "Добавить <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">, иначе макет не будет корректно масштабироваться на телефоне шириной около 390px.",
+        "Для экранов до 768px и 480px добавить отдельные media queries: все сетки перевести в одну колонку, ограничить ширину медиа, исключить горизонтальный скролл и оставить основной текст не меньше 16px.",
+        "На телефоне реализовать доступное hamburger-меню с кнопкой и состоянием aria-expanded; все кнопки, ссылки и элементы FAQ должны иметь tap target не меньше 44x44px.",
+        "Мобильный hero должен помещать бренд, ключевое предложение, адрес и основной CTA без чрезмерной высоты; поля формы и select должны иметь размер шрифта не меньше 16px.",
+        "Мобильный sticky CTA необходимо скрывать или переводить в обычный поток при пересечении с формой, а также учитывать safe-area-inset-bottom, чтобы он не перекрывал поля и кнопку отправки.",
+        "Add <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> — mobile audit flags it missing; without it the entire responsive layout collapses on phones."
+      ],
+      "praise": [
+        "Brief demands brand-first hero, амбер/асфальт palette and inline form success — keep МоторХаус as the dominant hero headline.",
+        "Separate Малярный цех section is a strong differentiator vs generic сервис лендинги — keep it prominent."
+      ],
+      "mobile_gaps": [
+        "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">"
+      ]
+    }
+  },
+  "metrics": {
+    "bytes": 18382,
+    "has_html_close": true,
+    "has_media": true,
+    "has_viewport": true,
+    "has_form": true,
+    "has_nav": true,
+    "has_paint": false,
+    "sections": 5,
+    "live_link": null
+  },
+  "error": null,
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "custom",
+    "path": "FULL",
+    "policy_path": "FULL",
+    "escalate_from": null,
+    "routed_by": "ui_author_critics_web",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "ui",
+    "leader": "claude-fable-5",
+    "panel": [
+      "claude-opus-4-8",
+      "claude-fable-5",
+      "gpt-5.6-sol"
+    ],
+    "trace_id": "551b51961e804da2",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "claude-fable-5",
+        "model_id": "claude-fable-5",
+        "billable_state": "cancelled_no_tokens",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "agent"
+      },
+      {
+        "model": "claude-fable-5",
+        "model_id": "claude-fable-5",
+        "billable_state": "cancelled_no_tokens",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "agent"
+      },
+      {
+        "model": "claude-fable-5",
+        "model_id": "claude-fable-5",
+        "billable_state": "completed",
+        "prompt_tokens": 724,
+        "completion_tokens": 4768,
+        "role": "agent"
+      },
+      {
+        "model": "gpt-5.6-sol",
+        "model_id": "gpt-5.6-sol",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 763,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "completed",
+        "prompt_tokens": 3307,
+        "completion_tokens": 1161,
+        "role": "agent"
+      },
+      {
+        "model": "claude-fable-5",
+        "model_id": "claude-fable-5",
+        "billable_state": "cancelled_no_tokens",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "agent"
+      },
+      {
+        "model": "claude-fable-5",
+        "model_id": "claude-fable-5",
+        "billable_state": "completed",
+        "prompt_tokens": 855,
+        "completion_tokens": 7844,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Печь &amp; Зерно — ремесленная пекарня в вашем районе</title>\n<meta name=\"description\" content=\"Ремесленная пекарня «Печь и Зерно»: хлеб на закваске, свежая выпечка каждое утро, доставка по району. Закажите к завтраку.\">\n<style>\n  :root{\n    --clay:#c4572e;\n    --clay-dark:#9c3f1d;\n    --cream:#faf4ea;\n    --paper:#fffdf8;\n    --ink:#2b2118;\n    --moss:#4c5b3f;\n    --line:#e6d9c6;\n    --radius:14px;\n  }\n  *{margin:0;padding:0;box-sizing:border-box}\n  html{scroll-behavior:smooth}\n  body{\n    font-family:\"Georgia\",\"Times New Roman\",serif;\n    background:var(--cream);\n    color:var(--ink);\n    line-height:1.6;\n    overflow-x:hidden;\n  }\n  img{max-width:100%;display:block}\n  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}\n\n  /* ---------- Header ---------- */\n  header{\n    position:sticky;top:0;z-index:50;\n    background:rgba(250,244,234,.94);\n    backdrop-filter:blur(8px);\n    border-bottom:1px solid var(--line);\n  }\n  .nav{\n    display:flex;align-items:center;justify-content:space-between;\n    padding:14px 24px;max-width:1080px;margin:0 auto;\n  }\n  .logo{\n    font-size:1.25rem;font-weight:700;letter-spacing:.02em;\n    color:var(--clay-dark);text-decoration:none;\n  }\n  .logo span{color:var(--moss)}\n  .nav-links{display:flex;gap:28px;list-style:none;align-items:center}\n  .nav-links a{\n    color:var(--ink);text-decoration:none;font-size:.98rem;\n    border-bottom:2px solid transparent;transition:border-color .2s;\n  }\n  .nav-links a:hover{border-color:var(--clay)}\n  .nav-cta{\n    background:var(--clay);color:#fff !important;padding:10px 18px;\n    border-radius:999px;border-bottom:none !important;\n    transition:background .2s;\n  }\n  .nav-cta:hover{background:var(--clay-dark)}\n  .burger{\n    display:none;background:none;border:none;cursor:pointer;\n    width:44px;height:44px;padding:10px;\n  }\n  .burger span{\n    display:block;height:2px;background:var(--ink);margin:6px 0;\n    transition:transform .25s,opacity .25s;\n  }\n  .burger.open span:nth-child(1){transform:translateY(8px) rotate(45deg)}\n  .burger.open span:nth-child(2){opacity:0}\n  .burger.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}\n\n  /* ---------- Hero ---------- */\n  .hero{\n    background:\n      radial-gradient(ellipse at 80% 10%, rgba(196,87,46,.14), transparent 55%),\n      radial-gradient(ellipse at 10% 90%, rgba(76,91,63,.12), transparent 50%),\n      var(--paper);\n    padding:88px 0 72px;\n    border-bottom:1px solid var(--line);\n  }\n  .hero-grid{\n    display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center;\n  }\n  .kicker{\n    display:inline-block;font-size:.82rem;letter-spacing:.14em;\n    text-transform:uppercase;color:var(--moss);\n    border:1px solid var(--moss);border-radius:999px;\n    padding:6px 14px;margin-bottom:20px;\n  }\n  h1{\n    font-size:clamp(2rem,4.5vw,3.2rem);\n    line-height:1.15;font-weight:700;margin-bottom:18px;\n  }\n  h1 em{font-style:normal;color:var(--clay)}\n  .hero p{font-size:1.1rem;max-width:34ch;color:#4a3d30;margin-bottom:28px}\n  .cta-row{display:flex;gap:14px;flex-wrap:wrap}\n  .btn{\n    display:inline-block;text-decoration:none;font-size:1rem;\n    padding:14px 28px;border-radius:999px;transition:transform .2s,background .2s;\n    text-align:center;\n  }\n  .btn-main{background:var(--clay);color:#fff}\n  .btn-main:hover{background:var(--clay-dark);transform:translateY(-2px)}\n  .btn-ghost{border:1.5px solid var(--ink);color:var(--ink)}\n  .btn-ghost:hover{background:var(--ink);color:var(--cream)}\n  .hero-art{\n    aspect-ratio:4/5;border-radius:var(--radius);\n    background:\n      linear-gradient(160deg, rgba(196,87,46,.9), rgba(156,63,29,.95)),\n      repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,.05) 14px 28px);\n    display:flex;align-items:flex-end;padding:28px;\n    color:#fff;box-shadow:0 24px 48px -24px rgba(156,63,29,.5);\n  }\n  .hero-art p{color:#fdeee4;font-size:1rem;max-width:100%;margin:0}\n  .hero-art strong{display:block;font-size:2.4rem;line-height:1.1;margin-bottom:6px}\n\n  /* ---------- Sections ---------- */\n  section{padding:80px 0}\n  .sec-head{max-width:56ch;margin-bottom:44px}\n  .sec-head h2{font-size:clamp(1.6rem,3vw,2.2rem);margin-bottom:10px}\n  .sec-head p{color:#5c4d3d}\n\n  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}\n  .card{\n    background:var(--paper);border:1px solid var(--line);\n    border-radius:var(--radius);padding:28px;\n    transition:transform .25s,box-shadow .25s;\n  }\n  .card:hover{transform:translateY(-4px);box-shadow:0 16px 32px -20px rgba(43,33,24,.3)}\n  .card .num{\n    font-size:.8rem;letter-spacing:.12em;color:var(--clay);\n    text-transform:uppercase;margin-bottom:12px;\n  }\n  .card h3{font-size:1.2rem;margin-bottom:8px}\n  .card p{font-size:.96rem;color:#5c4d3d}\n\n  .about{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}\n  .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}\n  .about-art{\n    aspect-ratio:1;border-radius:var(--radius);\n    background:\n      linear-gradient(200deg, rgba(76,91,63,.9), rgba(43,33,24,.9)),\n      repeating-linear-gradient(-45deg, transparent 0 12px, rgba(255,255,255,.05) 12px 24px);\n    display:flex;align-items:center;justify-content:center;\n    color:#f3ecd9;font-size:1.1rem;text-align:center;padding:24px;\n  }\n  .stats{display:flex;gap:32px;margin-top:28px;flex-wrap:wrap}\n  .stat strong{display:block;font-size:1.8rem;color:var(--clay)}\n  .stat span{font-size:.9rem;color:#5c4d3d}\n\n  .quotes{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}\n  blockquote{\n    background:var(--paper);border-left:4px solid var(--clay);\n    border-radius:0 var(--radius) var(--radius) 0;\n    padding:24px 28px;font-size:1rem;\n  }\n  blockquote footer{margin-top:12px;font-size:.88rem;color:var(--moss)}\n\n  /* ---------- Form ---------- */\n  .order{background:var(--ink);color:var(--cream)}\n  .order .sec-head h2{color:#fff}\n  .order .sec-head p{color:#cbbba7}\n  form{max-width:520px;display:grid;gap:16px}\n  label{font-size:.9rem;letter-spacing:.02em}\n  input,textarea{\n    width:100%;font-size:16px;font-family:inherit;\n    padding:14px 16px;border-radius:10px;\n    border:1px solid #55483a;background:#3a2f24;color:var(--cream);\n  }\n  input::placeholder,textarea::placeholder{color:#9d8a73}\n  input:focus,textarea:focus{outline:2px solid var(--clay);border-color:var(--clay)}\n  .submit{\n    background:var(--clay);color:#fff;border:none;cursor:pointer;\n    font-size:1.05rem;padding:16px;border-radius:999px;\n    transition:background .2s;font-family:inherit;\n  }\n  .submit:hover{background:var(--clay-dark)}\n  .form-success{\n    display:none;background:#3d5233;border:1px solid var(--moss);\n    color:#e8f0dd;border-radius:10px;padding:16px 18px;font-size:.98rem;\n  }\n  .form-success.show{display:block;animation:fadeUp .5s ease both}\n\n  footer.site{\n    background:#211a12;color:#a8977f;padding:36px 0;font-size:.9rem;\n  }\n  footer.site .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}\n  footer.site a{color:#d8c6ab;text-decoration:none}\n\n  /* ---------- Motion (осознанный, ограниченный) ---------- */\n  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}\n  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}\n  .reveal.in{opacity:1;transform:none}\n  @media (prefers-reduced-motion:reduce){\n    .reveal{opacity:1;transform:none;transition:none}\n    html{scroll-behavior:auto}\n  }\n\n  /* ---------- Mobile ---------- */\n  @media (max-width:768px){\n    .burger{display:block}\n    .nav-links{\n      position:absolute;top:100%;left:0;right:0;\n      background:var(--paper);border-bottom:1px solid var(--line);\n      flex-direction:column;gap:0;align-items:stretch;\n      display:none;padding:8px 0 16px;\n      box-shadow:0 18px 30px -18px rgba(43,33,24,.35);\n    }\n    .nav-links.open{display:flex}\n    .nav-links li{padding:0 24px}\n    .nav-links a{display:block;padding:14px 0;border-bottom:1px solid var(--line);font-size:1.05rem}\n    .nav-links .nav-cta{margin-top:12px;border-radius:999px;text-align:center;border-bottom:none !important}\n    section{padding:56px 0}\n    .hero{padding:56px 0 48px}\n    .hero-grid,.about-grid{grid-template-columns:1fr;gap:32px}\n    .hero-art{aspect-ratio:16/10}\n    .cards{grid-template-columns:1fr 1fr;gap:16px}\n    .quotes{grid-template-columns:1fr}\n    .cta-row{flex-direction:column}\n    .btn{width:100%}\n  }\n  @media (max-width:480px){\n    .wrap{padding:0 18px}\n    .nav{padding:12px 18px}\n    h1{font-size:1.85rem}\n    .hero p{font-size:1rem}\n    .cards{grid-template-columns:1fr}\n    .card{padding:22px}\n    .hero-art strong{font-size:1.8rem}\n    .stats{gap:20px}\n    blockquote{padding:20px 20px}\n    section{padding:48px 0}\n  }\n</style>\n</head>\n<body>\n\n<header>\n  <nav class=\"nav\" aria-label=\"Основная навигация\">\n    <a class=\"logo\" href=\"#top\">Печь <span>&amp;</span> Зерно</a>\n    <button class=\"burger\" id=\"burger\" aria-label=\"Открыть меню\" aria-expanded=\"false\" aria-controls=\"menu\">\n      <span></span><span></span><span></span>\n    </button>\n    <ul class=\"nav-links\" id=\"menu\">\n      <li><a href=\"#assort\">Ассортимент</a></li>\n      <li><a href=\"#about\">О пекарне</a></li>\n      <li><a href=\"#reviews\">Отзывы</a></li>\n      <li><a class=\"nav-cta\" href=\"#order\">Заказать к завтраку</a></li>\n    </ul>\n  </nav>\n</header>\n\n<main id=\"top\">\n  <section class=\"hero\">\n    <div class=\"wrap hero-grid\">\n      <div class=\"reveal in\">\n        <span class=\"kicker\">Пекарня вашего района · с 6:00 утра</span>\n        <h1>Хлеб на закваске, который <em>ещё тёплый</em>, когда вы завтракаете</h1>\n        <p>Печём каждое утро из муки жернового помола. Без улучшителей, без заморозки, без «вчерашнего».</p>\n        <div class=\"cta-row\">\n          <a class=\"btn btn-main\" href=\"#order\">Заказать доставку</a>\n          <a class=\"btn btn-ghost\" href=\"#assort\">Посмотреть ассортимент</a>\n        </div>\n      </div>\n      <div class=\"hero-art reveal in\" role=\"img\" aria-label=\"Фирменная витрина пекарни\">\n        <p><strong>04:30</strong>каждое утро наши пекари ставят первую партию в печь</p>\n      </div>\n    </div>\n  </section>\n\n  <section id=\"assort\">\n    <div class=\"wrap\">\n      <div class=\"sec-head reveal\">\n        <h2>Что достаём из печи сегодня</h2>\n        <p>Небольшой, но честный ассортимент. Каждая позиция — рецепт, который мы доводили месяцами.</p>\n      </div>\n      <div class=\"cards\">\n        <article class=\"card reveal\">\n          <div class=\"num\">01 · Хлеб</div>\n          <h3>Тартин на закваске</h3>\n          <p>72 часа холодной ферментации, хрустящая корка, влажный мякиш. Наш бестселлер — от 240 ₽.</p>\n        </article>\n        <article class=\"card reveal\">\n          <div class=\"num\">02 · Выпечка</div>\n          <h3>Круассаны на сливочном масле</h3>\n          <p>27 слоёв теста, масло 82,5%. Классика, миндальный и с солёной карамелью — от 160 ₽.</p>\n        </article>\n        <article class=\"card reveal\">\n          <div class=\"num\">03 · К чаю</div>\n          <h3>Ржаные пряники и галеты</h3>\n          <p>Сезонные ягоды и мёд с местной пасеки. Меняем начинки каждую неделю — от 120 ₽.</p>\n        </article>\n      </div>\n    </div>\n  </section>\n\n  <section class=\"about\" id=\"about\">\n    <div class=\"wrap about-grid\">\n      <div class=\"about-art reveal\" role=\"img\" aria-label=\"Пекари за работой\">\n        Мука · Вода · Соль · Закваска —<br>и больше ничего\n      </div>\n      <div class=\"reveal\">\n        <div class=\"sec-head\" style=\"margin-bottom:20px\">\n          <h2>Маленькая пекарня с большой печью</h2>\n          <p>Мы открылись в 2019 году в подвале на Садовой. Сегодня нас знают по запаху за квартал: подовая печь работает шесть дней в неделю, а закваске «Марфе» уже пять лет.</p>\n        </div>\n        <div class=\"stats\">\n          <div class=\"stat\"><strong>5 лет</strong><span>живёт наша закваска</span></div>\n          <div class=\"stat\"><strong>300+</strong><span>буханок каждое утро</span></div>\n          <div class=\"stat\"><strong>0</strong><span>улучшителей и консервантов</span></div>\n        </div>\n      </div>\n    </div>\n  </section>\n\n  <section id=\"reviews\">\n    <div class=\"wrap\">\n      <div class=\"sec-head reveal\">\n        <h2>Соседи говорят</h2>\n        <p>Нам важнее возвращающиеся покупатели, чем звёзды в рейтингах. Но и звёзды у нас — 4,9.</p>\n      </div>\n      <div class=\"quotes\">\n        <blockquote class=\"reveal\">\n          «Беру тартин каждую субботу уже два года. Однажды уехала в отпуск и поняла, что скучаю по хлебу больше, чем по дому.»\n          <footer>— Анна, живёт через дорогу</footer>\n        </blockquote>\n        <blockquote class=\"reveal\">\n          «Заказываю доставку к 8 утра в офис. Круассаны приезжают тёплыми — коллеги думают, что у нас своя кухня.»\n          <footer>— Дмитрий, кофейня «Штиль»</footer>\n        </blockquote>\n      </div>\n    </div>\n  </section>\n\n  <section class=\"order\" id=\"order\">\n    <div class=\"wrap\">\n      <div class=\"sec-head reveal\">\n        <h2>Заказать свежую выпечку к завтраку</h2>\n        <p>Оставьте номер — перезвоним в течение 15 минут, соберём заказ и привезём к нужному часу. Доставка по району бесплатная от 800 ₽.</p>\n      </div>\n      <form id=\"orderForm\" novalidate>\n        <div>\n          <label for=\"name\">Как вас зовут</label>\n          <input id=\"name\" name=\"name\" type=\"text\" placeholder=\"Мария\" autocomplete=\"name\" required>\n        </div>\n        <div>\n          <label for=\"phone\">Телефон</label>\n          <input id=\"phone\" name=\"phone\" type=\"tel\" inputmode=\"tel\" placeholder=\"+7 (___) ___-__-__\" autocomplete=\"tel\" required>\n        </div>\n        <div>\n          <label for=\"wish\">Что привезти и к какому времени</label>\n          <textarea id=\"wish\" name=\"wish\" rows=\"3\" placeholder=\"Например: 2 тартина и 4 круассана к 8:30\"></textarea>\n        </div>\n        <button class=\"submit\" type=\"submit\">Отправить заявку</button>\n        <p class=\"form-success\" id=\"formSuccess\" role=\"status\">\n          Спасибо! Заявка принята — перезвоним в течение 15 минут и подтвердим время доставки. 🍞\n        </p>\n      </form>\n    </div>\n  </section>\n</main>\n\n<footer class=\"site\">\n  <div class=\"wrap\">\n    <div>© 2024 Пекарня «Печь &amp; Зерно» · ул. Садовая, 12</div>\n    <div>Ежедневно 7:00–21:00 · <a href=\"tel:+79990000000\">+7 999 000-00-00</a></div>\n  </div>\n</footer>\n\n<script>\n  // Hamburger\n  var burger = document.getElementById('burger');\n  var menu = document.getElementById('menu');\n  burger.addEventListener('click', function(){\n    var open = menu.classList.toggle('open');\n    burger.classList.toggle('open', open);\n    burger.setAttribute('aria-expanded', open ? 'true' : 'false');\n  });\n  menu.addEventListener('click', function(e){\n    if (e.target.tagName === 'A'){\n      menu.classList.remove('open');\n      burger.classList.remove('open');\n      burger.setAttribute('aria-expanded','false');\n    }\n  });\n\n  // Scroll reveal (одна осознанная анимация появления)\n  var io = new IntersectionObserver(function(entries){\n    entries.forEach(function(en){\n      if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }\n    });\n  }, {threshold:.15});\n  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });\n\n  // Форма: inline success вместо alert\n  var form = document.getElementById('orderForm');\n  var success = document.getElementById('formSuccess');\n  form.addEventListener('submit', function(e){\n    e.preventDefault();\n    var name = document.getElementById('name');\n    var phone = document.getElementById('phone');\n    var ok = true;\n    [name, phone].forEach(function(f){\n      if (!f.value.trim()){ f.style.borderColor = '#c4572e'; ok = false; }\n      else { f.style.borderColor = ''; }\n    });\n    if (!ok) return;\n    success.classList.add('show');\n    form.querySelector('.submit').disabled = true;\n    form.querySelector('.submit').textContent = 'Заявка отправлена ✓';\n  });\n</script>\n\n<a class=\"zeus-badge\" href=\"https://zeuscode.ru\" target=\"_blank\" rel=\"noopener noreferrer\">Сделано на ZeusCode</a>\n<style id=\"zeus-badge-css\">\n.zeus-badge{\n  position:fixed;right:14px;bottom:12px;z-index:2147483646;\n  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;\n  letter-spacing:.02em;text-decoration:none;\n  color:rgba(120,120,120,.42);pointer-events:auto;\n  transition:color .2s ease,opacity .2s ease;\n}\n.zeus-badge:hover{color:rgba(120,120,120,.78)}\n</style>\n</body>\n</html>\n\n---\n🔗 Живая ссылка: https://zeuscode.ru/go/site-f85a/\n",
+    "thinking_visible": true,
+    "epic3": {
+      "crew": "ui_author_critics",
+      "author": "claude-fable-5",
+      "critics": [
+        "gpt-5.6-sol",
+        "claude-opus-4-8"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 968,
+        "claude-fable-5": 1000,
+        "gpt-5.6-sol": 1000
+      },
+      "author_attempts": [
+        {
+          "model": "claude-fable-5",
+          "attempt": 1,
+          "ok": false,
+          "error": "Upstream error 500: {\"type\": \"error\", \"error\": {\"type\": \"api_error\", \"message\": \"Internal error, please try again later\"}}",
+          "preferred": true
+        },
+        {
+          "model": "claude-fable-5",
+          "attempt": 2,
+          "ok": false,
+          "error": "Upstream error 500: {\"type\": \"error\", \"error\": {\"type\": \"api_error\", \"message\": \"Internal error, please try again later\"}}",
+          "preferred": true
+        },
+        {
+          "model": "claude-fable-5",
+          "attempt": 3,
+          "ok": true,
+          "error": null,
+          "preferred": true
+        }
+      ],
+      "author_preferred": "claude-fable-5",
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://checkinauto.com/",
+          "https://www.avtomato.ru/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://checkinauto.com/",
+          "https://www.avtomato.ru/"
+        ]
+      },
+      "mobile_gaps": [
+        "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">"
+      ],
+      "critique_merged": {
+        "upgrades": [
+          "Заменить содержимое на один валидный самодостаточный HTML-документ с встроенными CSS и JS, начинающийся с <!doctype html>.",
+          "Сделать «МоторХаус» главным элементом full-bleed hero на фоне реального бокса или малярной камеры; использовать асфальтовую палитру с янтарными и охристыми акцентами.",
+          "Добавить плотную сетку минимум из шести содержательных карточек услуг с ориентировочными ценами или сроками: это усилит прозрачность предложения по примеру CheckInAuto.",
+          "Создать отдельный визуально насыщенный блок «Малярный цех» с камерой, материалами, сроками, гарантией на ЛКП и убедительной парой «до/после».",
+          "Добавить блоки доверия: честная смета, гарантия, зона ожидания, три конкретных отзыва и кликабельный FAQ-аккордеон.",
+          "Реализовать настоящую форму записи с полями имени, телефона, автомобиля, услуги, даты и времени, валидацией и inline-сообщением об успешной отправке; удобство онлайн-записи должно быть центральным преимуществом, как в ABCP.",
+          "Использовать реальные локальные данные и конкретику вместо общих заявлений: адрес на Каширском шоссе, телефон, режим 9:00–21:00, фото работ и проверяемые условия гарантии, следуя подходу Avtomato.",
+          "Добавить 2–3 осмысленных motion-эффекта: вступительное раскрытие hero, stagger-появление карточек при прокрутке и плавное раскрытие FAQ с поддержкой prefers-reduced-motion.",
+          "Ground the hero atmosphere in real reference cues (Avtomato/CheckInAuto use real work photos): overlay a subtle photographic body-shop layer via CSS gradient + duotone image blend in asphalt+amber, avoid any flat gradient.",
+          "Add trust stats bar under hero like CheckInAuto (5000+ СТО, 120000 отзывов): e.g. 'лет на Каширском', 'машин в год', 'гарантия на ЛКП' — quantified numbers build credibility.",
+          "Make the до/после block interactive with a draggable slider (or tap-to-reveal) instead of two static placeholders — this is the signature feature buyers judge a малярный цех by.",
+          "Add price-from anchors on service cards (от 3000 ₽ style, per CheckInAuto services list) so users understand cost before form — 'прозрачные цены' is a top ref conversion driver."
+        ],
+        "must_fix": [
+          "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">",
+          "Предоставленный результат не является HTML-сайтом: это вызов инструмента Write для создания markdown-файла с пользовательскими предпочтениями, поэтому страница вообще не отображается.",
+          "Добавить <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">, иначе макет не будет корректно масштабироваться на телефоне шириной около 390px.",
+          "Для экранов до 768px и 480px добавить отдельные media queries: все сетки перевести в одну колонку, ограничить ширину медиа, исключить горизонтальный скролл и оставить основной текст не меньше 16px.",
+          "На телефоне реализовать доступное hamburger-меню с кнопкой и состоянием aria-expanded; все кнопки, ссылки и элементы FAQ должны иметь tap target не меньше 44x44px.",
+          "Мобильный hero должен помещать бренд, ключевое предложение, адрес и основной CTA без чрезмерной высоты; поля формы и select должны иметь размер шрифта не меньше 16px.",
+          "Мобильный sticky CTA необходимо скрывать или переводить в обычный поток при пересечении с формой, а также учитывать safe-area-inset-bottom, чтобы он не перекрывал поля и кнопку отправки.",
+          "Add <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> — mobile audit flags it missing; without it the entire responsive layout collapses on phones."
+        ],
+        "praise": [
+          "Brief demands brand-first hero, амбер/асфальт palette and inline form success — keep МоторХаус as the dominant hero headline.",
+          "Separate Малярный цех section is a strong differentiator vs generic сервис лендинги — keep it prominent."
+        ],
+        "mobile_gaps": [
+          "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">"
+        ]
+      },
+      "mobile_fix_pass": true,
+      "mobile_final_gaps": [
+        "Fixed/sticky bars need safe spacing on phones (bottom CTA/nav must not cover form fields)"
+      ],
+      "mobile_critical_holes": 0
+    },
+    "ui_crew": {
+      "author": "claude-fable-5",
+      "critics": [
+        "gpt-5.6-sol",
+        "claude-opus-4-8"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 968,
+        "claude-fable-5": 1000,
+        "gpt-5.6-sol": 1000
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://checkinauto.com/",
+          "https://www.avtomato.ru/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://checkinauto.com/",
+          "https://www.avtomato.ru/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Заменить содержимое на один валидный самодостаточный HTML-документ с встроенными CSS и JS, начинающийся с <!doctype html>.",
+          "Сделать «МоторХаус» главным элементом full-bleed hero на фоне реального бокса или малярной камеры; использовать асфальтовую палитру с янтарными и охристыми акцентами.",
+          "Добавить плотную сетку минимум из шести содержательных карточек услуг с ориентировочными ценами или сроками: это усилит прозрачность предложения по примеру CheckInAuto.",
+          "Создать отдельный визуально насыщенный блок «Малярный цех» с камерой, материалами, сроками, гарантией на ЛКП и убедительной парой «до/после».",
+          "Добавить блоки доверия: честная смета, гарантия, зона ожидания, три конкретных отзыва и кликабельный FAQ-аккордеон.",
+          "Реализовать настоящую форму записи с полями имени, телефона, автомобиля, услуги, даты и времени, валидацией и inline-сообщением об успешной отправке; удобство онлайн-записи должно быть центральным преимуществом, как в ABCP.",
+          "Использовать реальные локальные данные и конкретику вместо общих заявлений: адрес на Каширском шоссе, телефон, режим 9:00–21:00, фото работ и проверяемые условия гарантии, следуя подходу Avtomato.",
+          "Добавить 2–3 осмысленных motion-эффекта: вступительное раскрытие hero, stagger-появление карточек при прокрутке и плавное раскрытие FAQ с поддержкой prefers-reduced-motion.",
+          "Ground the hero atmosphere in real reference cues (Avtomato/CheckInAuto use real work photos): overlay a subtle photographic body-shop layer via CSS gradient + duotone image blend in asphalt+amber, avoid any flat gradient.",
+          "Add trust stats bar under hero like CheckInAuto (5000+ СТО, 120000 отзывов): e.g. 'лет на Каширском', 'машин в год', 'гарантия на ЛКП' — quantified numbers build credibility.",
+          "Make the до/после block interactive with a draggable slider (or tap-to-reveal) instead of two static placeholders — this is the signature feature buyers judge a малярный цех by.",
+          "Add price-from anchors on service cards (от 3000 ₽ style, per CheckInAuto services list) so users understand cost before form — 'прозрачные цены' is a top ref conversion driver."
+        ],
+        "must_fix": [
+          "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">",
+          "Предоставленный результат не является HTML-сайтом: это вызов инструмента Write для создания markdown-файла с пользовательскими предпочтениями, поэтому страница вообще не отображается.",
+          "Добавить <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">, иначе макет не будет корректно масштабироваться на телефоне шириной около 390px.",
+          "Для экранов до 768px и 480px добавить отдельные media queries: все сетки перевести в одну колонку, ограничить ширину медиа, исключить горизонтальный скролл и оставить основной текст не меньше 16px.",
+          "На телефоне реализовать доступное hamburger-меню с кнопкой и состоянием aria-expanded; все кнопки, ссылки и элементы FAQ должны иметь tap target не меньше 44x44px.",
+          "Мобильный hero должен помещать бренд, ключевое предложение, адрес и основной CTA без чрезмерной высоты; поля формы и select должны иметь размер шрифта не меньше 16px.",
+          "Мобильный sticky CTA необходимо скрывать или переводить в обычный поток при пересечении с формой, а также учитывать safe-area-inset-bottom, чтобы он не перекрывал поля и кнопку отправки.",
+          "Add <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> — mobile audit flags it missing; without it the entire responsive layout collapses on phones."
+        ],
+        "praise": [
+          "Brief demands brand-first hero, амбер/асфальт palette and inline form success — keep МоторХаус as the dominant hero headline.",
+          "Separate Малярный цех section is a strong differentiator vs generic сервис лендинги — keep it prominent."
+        ],
+        "mobile_gaps": [
+          "Add <meta name=viewport content=\"width=device-width, initial-scale=1\">"
+        ]
+      }
+    },
+    "classifier": {
+      "stack": "full",
+      "task": "ui",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  }
+}

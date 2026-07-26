@@ -1,0 +1,28 @@
+{
+  "baseline_id_note": "Must embed lexicon_v1; see app.fusion.metrics.compute_baseline_id",
+  "lexicon_id": "lexicon_v1",
+  "frontier_model_ids": [
+    "claude-opus-4-8",
+    "gemini-3.1-pro",
+    "deepseek-v4-pro"
+  ],
+  "judge_model_ids": [
+    "gemini-2.5-pro",
+    "claude-sonnet-4-5"
+  ],
+  "pass_oracle": {
+    "path_match": true,
+    "non_empty_answer": true,
+    "code_fence_when_expected": true,
+    "min_correctness": 3,
+    "min_completeness": 3,
+    "billing_ok": true
+  },
+  "canary_blockers": {
+    "per_bucket_bar_pp": -2,
+    "sm_c1_thumbs_down_hard_ceiling_pp": 2,
+    "notes": "per-bucket pass rate ≥ baseline−2pp; SM-C1 +2pp 👎 ceiling on hard bucket. Populate bucket_pass_rates before canary→100% to enforce."
+  },
+  "bucket_pass_rates": {},
+  "n_min": 50
+}

@@ -1,0 +1,7 @@
+{
+  "id": "B15",
+  "bucket": "code",
+  "prompt": "напиши python hello world вариант 15",
+  "expected_path": "FULL",
+  "expect_code_fence": true
+}

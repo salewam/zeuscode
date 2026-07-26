@@ -1,0 +1,7 @@
+{
+  "id": "F16",
+  "bucket": "race_hard",
+  "prompt": "сравни три подхода к sticky Leader и выбери лучший с trade-offs",
+  "expected_path": "RACE",
+  "expect_code_fence": false
+}

@@ -1,0 +1,169 @@
+{
+  "cid": "u11_hard",
+  "prompt": "Спроектируй кратко очередь исходящих webhooks: таблица, worker, idempotency, backoff. 10-15 предложений.",
+  "zeus": {
+    "mode": "power",
+    "effort": "high"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "Таблица `outgoing_webhooks` хранит задачи: поля `id`, `url`, `payload`, `status` (pending/processing/done/failed), `attempts`, `next_retry_at`, `created_at`, `updated_at` и уникальный `idempotency_key`.  \nWorker периодически выбирает записи со статусом pending и `next_retry_at <= now` с блокировкой `FOR UPDATE SKIP LOCKED`, чтобы избежать двойной обработки.  \nПеред отправкой статус меняется на processing атомарно в той же транзакции.  \nHTTP-запрос отправляется с заголовком `Idempotency-Key`, содержащим заранее сгенерированный UUID; получатель использует этот ключ для дедупликации.  \nПри успешном ответе 2xx задача помечается как done и больше не обрабатывается.  \nПри ошибке сервера (5xx) или сетевой неудаче увеличивается счётчик попыток, а `next_retry_at` отодвигается по экспоненциальной стратегии с джиттером: например, `now + min(2^attempts, 3600) + random` секунд.  \nWorker игнорирует задачи с превышенным лимитом попыток, переводя их в статус failed для ручного разбора.  \nИндексы на `status, next_retry_at` ускоряют выборку готовых к отправке задач.  \nИдемпотентность со стороны отправителя гарантируется тем, что каждый ключ уникален в рамках задачи, и при повторах используется тот же ключ, а статусная модель предотвращает повторную отправку уже успешно доставленных хуков.  \nТакая очередь на базе СУБД проста в реализации и не требует внешнего брокера сообщений.\n\n—\nДополнения из других веток: ## -- ... 1. 10. 10s 11. 12.; -- 1. 10. 11. 12. 13. 2. 20",
+  "answer_excerpt": "Таблица `outgoing_webhooks` хранит задачи: поля `id`, `url`, `payload`, `status` (pending/processing/done/failed), `attempts`, `next_retry_at`, `created_at`, `updated_at` и уникальный `idempotency_key`.  \nWorker периодически выбирает записи со статусом pending и `next_retry_at <= now` с блокировкой `FOR UPDATE SKIP LOCKED`, чтобы избежать двойной обработки.  \nПеред отправкой статус меняется на processing атомарно в той же транзакции.  \nHTTP-запрос отправляется с заголовком `Idempotency-Key`, сод",
+  "onestack": {
+    "mode": "fusion-full",
+    "fusion_mode": "full",
+    "stack_size": "full",
+    "product_mode": "power",
+    "path": "FULL",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_full",
+    "phase": "execute",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "deepseek-v4-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "afeef16de3114d15",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "deepseek-v4-pro",
+        "model_id": "deepseek-v4-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 65,
+        "completion_tokens": 846,
+        "role": "agent"
+      },
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 127,
+        "completion_tokens": 512,
+        "role": "agent"
+      },
+      {
+        "model": "claude-opus-4-8",
+        "model_id": "claude-opus-4-8",
+        "billable_state": "completed",
+        "prompt_tokens": 212,
+        "completion_tokens": 1557,
+        "role": "agent"
+      },
+      {
+        "model": "aspect:correctness",
+        "model_id": "aspect:correctness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      },
+      {
+        "model": "aspect:completeness",
+        "model_id": "aspect:completeness",
+        "billable_state": "completed",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "role": "verifier"
+      }
+    ],
+    "answer_only": "Таблица `outgoing_webhooks` хранит задачи: поля `id`, `url`, `payload`, `status` (pending/processing/done/failed), `attempts`, `next_retry_at`, `created_at`, `updated_at` и уникальный `idempotency_key`.  \nWorker периодически выбирает записи со статусом pending и `next_retry_at <= now` с блокировкой `FOR UPDATE SKIP LOCKED`, чтобы избежать двойной обработки.  \nПеред отправкой статус меняется на processing атомарно в той же транзакции.  \nHTTP-запрос отправляется с заголовком `Idempotency-Key`, содержащим заранее сгенерированный UUID; получатель использует этот ключ для дедупликации.  \nПри успешном ответе 2xx задача помечается как done и больше не обрабатывается.  \nПри ошибке сервера (5xx) или сетевой неудаче увеличивается счётчик попыток, а `next_retry_at` отодвигается по экспоненциальной стратегии с джиттером: например, `now + min(2^attempts, 3600) + random` секунд.  \nWorker игнорирует задачи с превышенным лимитом попыток, переводя их в статус failed для ручного разбора.  \nИндексы на `status, next_retry_at` ускоряют выборку готовых к отправке задач.  \nИдемпотентность со стороны отправителя гарантируется тем, что каждый ключ уникален в рамках задачи, и при повторах используется тот же ключ, а статусная модель предотвращает повторную отправку уже успешно доставленных хуков.  \nТакая очередь на базе СУБД проста в реализации и не требует внешнего брокера сообщений.\n\n—\nДополнения из других веток: ## -- ... 1. 10. 10s 11. 12.; -- 1. 10. 11. 12. 13. 2. 20",
+    "thinking_visible": true,
+    "epic3": {
+      "families": {
+        "deepseek-v4-pro": "deepseek",
+        "claude-opus-4-8": "claude",
+        "gemini-3.1-pro": "gemini"
+      },
+      "ranked": [
+        [
+          "claude-opus-4-8",
+          0.477
+        ],
+        [
+          "deepseek-v4-pro",
+          0.402
+        ],
+        [
+          "gemini-3.1-pro",
+          0.3582
+        ]
+      ],
+      "top_k": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro",
+        "gemini-3.1-pro"
+      ],
+      "near_duplicate_score": 0.16666666666666666,
+      "aspects_must_fail": false,
+      "anti_bias_fail": false,
+      "judge_analysis": {
+        "consensus": [],
+        "contradictions": [
+          "branch_approaches_diverge"
+        ],
+        "unique": [
+          "deepseek-v4-pro:distinct",
+          "gemini-3.1-pro:distinct"
+        ],
+        "blind_spots": []
+      }
+    },
+    "classifier": {
+      "stack": "fast",
+      "task": "light",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.404,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "heavy",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 404,
+    "completion_tokens": 2915,
+    "total_tokens": 3319
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 5.1162,
+    "markup": 1.5,
+    "balance_left_rub": 871.07,
+    "key_spent_rub": 9.8892,
+    "key_budget_rub": 0.0,
+    "path": "FULL",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_full",
+    "trace_id": "afeef16de3114d15",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "FULL",
+  "policy_path": "CASCADE",
+  "leader": "deepseek-v4-pro",
+  "routed_by": "cascade_escalate_full",
+  "trace_id": "afeef16de3114d15",
+  "escalate_from": "CASCADE",
+  "latency_s": 48.405,
+  "ok": true
+}

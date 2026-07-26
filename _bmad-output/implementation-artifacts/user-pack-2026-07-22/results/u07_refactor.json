@@ -1,0 +1,97 @@
+{
+  "cid": "u07_refactor",
+  "prompt": "Упрости этот код без потери смысла:\n```\ndef f(x):\n    if x == True:\n        return True\n    else:\n        return False\n```",
+  "zeus": {
+    "mode": "simple"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "# Упрощение кода\n\nВот упрощенный вариант:\n\n```python\ndef f(x):\n    return bool(x)\n```\n\n**Или еще проще:**\n\n```python\ndef f(x):\n    return x\n```\n\n**Объяснение:**\n- Исходный код просто преобразует значение в булево значение\n- `bool(x)` явно приводит любое значение к типу `bool`\n- Если просто `return x`, функция вернет то же самое (так как `True == True` и `False == False`)\n- Самый минималистичный вариант — вообще избавиться от функции и использовать значение напрямую\n\n**Выбор зависит от контекста:**\n- `return x` — если нужна точная семантика исходного кода\n- `return bool(x)` — если нужно гарантировать булев тип на выходе",
+  "answer_excerpt": "# Упрощение кода\n\nВот упрощенный вариант:\n\n```python\ndef f(x):\n    return bool(x)\n```\n\n**Или еще проще:**\n\n```python\ndef f(x):\n    return x\n```\n\n**Объяснение:**\n- Исходный код просто преобразует значение в булево значение\n- `bool(x)` явно приводит любое значение к типу `bool`\n- Если просто `return x`, функция вернет то же самое (так как `True == True` и `False == False`)\n- Самый минималистичный вариант — вообще избавиться от функции и использовать значение напрямую\n\n**Выбор зависит от контекста:",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "simple",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "claude-haiku-4-5",
+    "panel": [
+      "deepseek-v4-flash",
+      "gemini-3-pro",
+      "claude-haiku-4-5"
+    ],
+    "trace_id": "913a370a20fd4fa7",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "claude-haiku-4-5",
+        "model_id": "claude-haiku-4-5",
+        "billable_state": "completed",
+        "prompt_tokens": 88,
+        "completion_tokens": 297,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "# Упрощение кода\n\nВот упрощенный вариант:\n\n```python\ndef f(x):\n    return bool(x)\n```\n\n**Или еще проще:**\n\n```python\ndef f(x):\n    return x\n```\n\n**Объяснение:**\n- Исходный код просто преобразует значение в булево значение\n- `bool(x)` явно приводит любое значение к типу `bool`\n- Если просто `return x`, функция вернет то же самое (так как `True == True` и `False == False`)\n- Самый минималистичный вариант — вообще избавиться от функции и использовать значение напрямую\n\n**Выбор зависит от контекста:**\n- `return x` — если нужна точная семантика исходного кода\n- `return bool(x)` — если нужно гарантировать булев тип на выходе",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "code",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 88,
+    "completion_tokens": 297,
+    "total_tokens": 385
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.0786,
+    "markup": 1.5,
+    "balance_left_rub": 878.16,
+    "key_spent_rub": 0.6168,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "913a370a20fd4fa7",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "claude-haiku-4-5",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "913a370a20fd4fa7",
+  "escalate_from": "CASCADE",
+  "latency_s": 19.926,
+  "ok": true
+}

@@ -1,0 +1,23 @@
+{
+  "sticky_pick_leader": true,
+  "sticky_leader_value": "deepseek-v4-pro",
+  "shadow_default_no_force": {
+    "serving": "FULL",
+    "policy": "FULL",
+    "rb": "auto"
+  },
+  "shadow_forced": {
+    "serving": "FAST",
+    "policy": "FULL",
+    "rb": "auto+shadow_baseline",
+    "pass": true
+  },
+  "kill_switch": {
+    "serving": "FAST",
+    "flag": "kill_switch",
+    "pass": true
+  },
+  "budgets_present": true,
+  "fusion_no_routers": true,
+  "offenders": []
+}

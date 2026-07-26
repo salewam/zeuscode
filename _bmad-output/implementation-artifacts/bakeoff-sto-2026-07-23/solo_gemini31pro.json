@@ -1,0 +1,32 @@
+{
+  "status": 200,
+  "latency_s": 43.74464850000004,
+  "onestack": null,
+  "usage": {
+    "completion_tokens": 4367,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 310,
+    "total_tokens": 4677
+  },
+  "billing": {
+    "currency": "RUB",
+    "charged_rub": 2.1813,
+    "markup": 1.5,
+    "balance_left_rub": 846.53,
+    "key_spent_rub": 31.0037,
+    "key_budget_rub": 0.0,
+    "path": null,
+    "policy_path": null,
+    "routed_by": null,
+    "trace_id": null,
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "content_preview": "<!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>МоторХаус | Автосервис на Каширском шоссе</title>\n    <link rel=\"preconnect\" href=\"[https://fonts.googleapis.com](https://fonts.googleapis.com)\">\n    <link rel=\"preconnect\" href=\"[https://fonts.gstatic.com](https://fonts.gstatic.com)\" crossorigin>\n    <link href=\"[https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Oswald:wgh",
+  "error": null
+}

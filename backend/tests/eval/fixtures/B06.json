@@ -1,0 +1,7 @@
+{
+  "id": "B06",
+  "bucket": "hard",
+  "prompt": "сложная задача: multi-agent race design 6",
+  "expected_path": "RACE",
+  "expect_code_fence": false
+}

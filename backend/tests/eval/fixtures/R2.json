@@ -1,0 +1,7 @@
+{
+  "id": "R2",
+  "bucket": "regression_billing",
+  "prompt": "ответь коротко: сколько токенов списали?",
+  "expected_path": "FAST",
+  "expect_code_fence": false
+}

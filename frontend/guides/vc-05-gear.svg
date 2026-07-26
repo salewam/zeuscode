@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="310" viewBox="0 0 480 310" role="img" aria-label="Local Config шестерёнка">
+  <defs><style>
+  .bg { fill: #0e1116; }
+  .panel { fill: #1e1e1e; stroke: #3c3c3c; stroke-width: 1; }
+  .bar { fill: #252526; }
+  .side { fill: #333333; }
+  .txt { fill: #cccccc; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .w { fill: #ffffff; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .muted { fill: #858585; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+  .blue { fill: #0078d4; }
+  .field { fill: #3c3c3c; }
+  .field-on { fill: #2a2d2e; stroke: #e8a84a; stroke-width: 2.5; }
+  .call { fill: #e8a84a; }
+  .call-t { fill: #1a1206; font-family: -apple-system, system-ui, sans-serif; font-weight: 800; }
+  .ok { fill: #3dd68c; }
+  .btn-t { fill: #fff; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .cap { fill: #e8a84a; font-family: -apple-system, system-ui, sans-serif; font-weight: 700; }
+</style>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#e8a84a"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="480" height="310" rx="14"/>
+  
+  <rect class="panel" x="16" y="16" width="448" height="278" rx="12"/>
+  <text class="w" x="36" y="48" font-size="16" font-weight="800">Continue · чат</text>
+  <!-- dropdown -->
+  <rect class="field-on" x="36" y="70" width="220" height="40" rx="8"/>
+  <text class="w" x="52" y="95" font-size="14">Local Config ▾</text>
+  <circle class="call" cx="270" cy="90" r="15"/><text class="call-t" x="270" y="95" text-anchor="middle" font-size="14">1</text>
+  <!-- gear -->
+  <rect class="field-on" x="270" y="70" width="44" height="40" rx="8"/>
+  <text class="w" x="292" y="96" text-anchor="middle" font-size="18">⚙</text>
+  <circle class="call" cx="330" cy="90" r="15"/><text class="call-t" x="330" y="95" text-anchor="middle" font-size="14">2</text>
+  <text class="txt" x="36" y="150" font-size="14">1. Нажми список моделей сверху</text>
+  <text class="txt" x="36" y="178" font-size="14">2. Найди <tspan font-weight="700" fill="#fff">Local Config</tspan> → шестерёнку рядом</text>
+  <text class="txt" x="36" y="206" font-size="14">Откроется файл <tspan class="mono" fill="#e8a84a">config.yaml</tspan></text>
+  <text class="cap" x="240" y="260" text-anchor="middle" font-size="13">Именно сюда вставим настройки ZeusCode</text>
+
+</svg>

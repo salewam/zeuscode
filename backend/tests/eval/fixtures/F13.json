@@ -1,0 +1,7 @@
+{
+  "id": "F13",
+  "bucket": "plan",
+  "prompt": "составь план внедрения Path policy",
+  "expected_path": "FULL",
+  "expect_code_fence": false
+}

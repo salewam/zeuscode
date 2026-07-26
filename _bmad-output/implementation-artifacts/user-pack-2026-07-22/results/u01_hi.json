@@ -1,0 +1,97 @@
+{
+  "cid": "u01_hi",
+  "prompt": "привет, ты на связи?",
+  "zeus": {
+    "mode": "simple"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "Привет! Да, я на связи. \n\nЯ Claude, ассистент от Anthropic. Я готов помочь вам с различными задачами — ответить на вопросы, помочь с анализом информации, написанием текстов, кодированием и многим другим.\n\nЧем я могу вам помочь?",
+  "answer_excerpt": "Привет! Да, я на связи. \n\nЯ Claude, ассистент от Anthropic. Я готов помочь вам с различными задачами — ответить на вопросы, помочь с анализом информации, написанием текстов, кодированием и многим другим.\n\nЧем я могу вам помочь?",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "simple",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "claude-haiku-4-5",
+    "panel": [
+      "deepseek-v4-flash",
+      "gemini-3-pro",
+      "claude-haiku-4-5"
+    ],
+    "trace_id": "85c8d725c7c54d3c",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "claude-haiku-4-5",
+        "model_id": "claude-haiku-4-5",
+        "billable_state": "completed",
+        "prompt_tokens": 57,
+        "completion_tokens": 122,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "Привет! Да, я на связи. \n\nЯ Claude, ассистент от Anthropic. Я готов помочь вам с различными задачами — ответить на вопросы, помочь с анализом информации, написанием текстов, кодированием и многим другим.\n\nЧем я могу вам помочь?",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "fast",
+      "task": "light",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.404,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 57,
+    "completion_tokens": 122,
+    "total_tokens": 179
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.0333,
+    "markup": 1.5,
+    "balance_left_rub": 879.01,
+    "key_spent_rub": 0.0333,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "85c8d725c7c54d3c",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "claude-haiku-4-5",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "85c8d725c7c54d3c",
+  "escalate_from": "CASCADE",
+  "latency_s": 12.995,
+  "ok": true
+}

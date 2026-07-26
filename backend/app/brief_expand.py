@@ -12,6 +12,16 @@ from typing import Any
 
 from app import upstream
 from app.config import get_settings
+from app.media_packs import (
+    detect_media_niche,
+    media_brief_block,
+    pick_media_pair,
+)
+from app.uniqueness import (
+    build_sto_identity,
+    css_skeleton_from_identity,
+    uniqueness_brief_block,
+)
 
 settings = get_settings()
 
@@ -20,8 +30,8 @@ _EXPAND_SYSTEM = """Ты оркестратор ZeusCode Studio. Распако�
 Правила:
 1. НЕ задавай вопросы пользователю в ожидании ответа — СРАЗУ строй бриф с явными допущениями.
 2. Вопросы клади в questions[] — это follow-up после сдачи, не блокер.
-3. Пиши конкретику: бренд, город/район (если не дан — выдумай реалистичный РФ), услуги, цены в ₽, часы, телефон, CTA, секции страницы, API если нужен.
-4. Anti-AI: запрети indigo/purple/Inter; палитра под отрасль (для автосервиса — масло/металл/асфальт/янтарь, не SaaS).
+3. Пиши конкретику: бренд УНИКАЛЬНЫЙ для этого ТЗ (не штампуй «МоторХаус» всем), город/район, услуги, цены в ₽, часы, телефон, CTA, секции, API.
+4. Anti-AI: запрети indigo/purple/Inter; палитра под отрасль (для автосервиса — масло/металл/асфальт/янтарь, не SaaS). Уникальность: другой бренд/адрес/H1/порядок секций чем у чужого клиента.
 5. Ответ СТРОГО JSON без markdown fence:
 {
   "title": "краткое имя продукта",
@@ -58,11 +68,25 @@ def needs_expand(user_text: str, brief: str | None = None) -> bool:
     if len(text) < 280:
         return True
     if re.search(
-        r"(?i)сделай|собери|лендинг|сайт|страниц|landing|для\s+\w+",
+        r"(?i)сделай|собери|лендинг|сайт|страниц|landing|презентац|pitch|deck|слайд|"
+        r"приложен|web\s*app|для\s+\w+|to-?do|задач|кабинет|crm",
         text,
     ) and len(text) < 800:
         return True
     return False
+
+
+def _looks_like_app(user_text: str) -> bool:
+    t = user_text or ""
+    if re.search(r"(?i)лендинг|landing|визитк|автосервис|\bсто\b|кофейн", t):
+        return False
+    return bool(
+        re.search(
+            r"(?i)приложен|web\s*app|\bapps?\b|to-?do|задач|кабинет|crm|"
+            r"инструмент|сервис\s+для|список.+созда",
+            t,
+        )
+    )
 
 
 def format_expanded_brief(data: dict[str, Any]) -> str:
@@ -87,8 +111,202 @@ def format_expanded_brief(data: dict[str, Any]) -> str:
     return "\n".join(bits).strip()
 
 
+def _fallback_app(user_text: str) -> dict[str, Any]:
+    """Deterministic app brief when LLM fails or niche skip."""
+    t = user_text or ""
+    shop = bool(
+        re.search(
+            r"(?i)букет|цвет|каталог|магазин|заказ|доставк|salon|shop",
+            t,
+        )
+    )
+    if shop:
+        return {
+            "title": "Каталог + заказ",
+            "summary": (t.strip()[:220] or "Мини-приложение: каталог и заказ"),
+            "product_id": "app",
+            "assumptions": [
+                "App-shell: catalog / order / orders",
+                "≥4 позиции с image+price+composition",
+                "Форма: name, phone, bouquet_id, date, address",
+                "Только HTML+CSS+JS",
+            ],
+            "questions": [],
+            "brand": {"name": "Букет Лайн", "tone": "тёплый продуктовый", "city": "Москва"},
+            "sections": ["catalog", "order", "orders"],
+            "screens_or_sections": ["catalog", "order", "orders"],
+            "services": [],
+            "cta": {"primary": "Оформить заказ", "secondary": "К каталогу"},
+            "contacts": {"phone": "+7 (495) 123-45-67", "address": "Москва"},
+            "api": [
+                {"method": "GET", "path": "/api/bouquets", "fields": ["id", "name", "price", "image", "composition"]},
+                {"method": "GET", "path": "/api/orders", "fields": []},
+                {
+                    "method": "POST",
+                    "path": "/api/orders",
+                    "fields": ["name", "phone", "bouquet_id", "delivery_date", "address"],
+                },
+            ],
+            "must_haves": [
+                "3 экрана: catalog, order, orders",
+                "Карточки: img + price + meta + «В заказ»",
+                "select наполняется из GET /api/bouquets",
+                "POST json + address + res.ok",
+                "styles.css ≥2.5KB, не скелет",
+                "Backend seed ≥4 с unsplash image",
+            ],
+            "visual": "Плотный app UI: tokens, шрифты, grid карточек с фото. Не лендинг. Не React.",
+            "brief_md": """# Бриф: каталог + заказ (product_id=app)
+
+## Продукт
+Не лендинг. App-shell: Каталог / Новый заказ / Мои заказы.
+
+## Стек
+HTML + CSS + JS. Запрет: React, Vue, JSX, alert(), onclick=.
+
+## Экраны
+1. catalog — карточки img+price+composition+кнопка «В заказ»; states loading/empty/error
+2. order — name, phone, bouquet_id (select из API), address, delivery_date; POST json
+3. orders — список GET /api/orders
+
+## API
+- GET /api/bouquets → ≥4 {id,name,price,image,composition}
+- GET /api/orders
+- POST /api/orders {name,phone,bouquet_id,delivery_date,address}
+
+## Запреты
+thin_catalog, thin_styles, dead_select, missing_json_headers, hero-лендинг, React.
+""",
+            "source": "fallback_app_shop",
+        }
+    return {
+        "title": "Веб-приложение",
+        "summary": t.strip()[:200] or "Простое веб-приложение со списком и действием",
+        "product_id": "app",
+        "assumptions": [
+            "App-shell: nav + ≥2 экрана (список / создание)",
+            "Ключевое действие сохраняет данные через API",
+            "States: loading / empty / error / ready",
+            "Не маркетинговый лендинг",
+            "Плотный UI: styles.css ≥2.5KB",
+        ],
+        "questions": [
+            "Как назвать приложение?",
+            "Какая главная сущность (задачи, записи, клиенты)?",
+            "Нужен ли вход (auth) в этом MVP?",
+        ],
+        "brand": {"name": "App", "tone": "спокойный", "city": ""},
+        "sections": ["list", "create"],
+        "screens_or_sections": ["list", "create"],
+        "services": [],
+        "cta": {"primary": "Создать", "secondary": "К списку"},
+        "contacts": {},
+        "api": [
+            {"method": "GET", "path": "/api/items", "fields": []},
+            {"method": "POST", "path": "/api/items", "fields": ["title"]},
+        ],
+        "must_haves": [
+            "Nav между списком и формой создания",
+            "POST /api/items + показ в списке",
+            "Empty и error состояния",
+            "Только HTML+CSS+JS — без React/Vue",
+            "styles.css плотный, не 14 строк",
+            "Mobile-first, без AI-aesthetic",
+        ],
+        "visual": "Продуктовый UI: tokens, один accent. Не hero-лендинг. Не React.",
+        "brief_md": """# Бриф: веб-приложение (product_id=app)
+
+## Продукт
+Не лендинг. App-shell: шапка + nav, экраны list/create, данные через API.
+
+## Стек (жёстко)
+HTML + CSS + JS. **Запрет:** React, Vue, npm-бандлы, JSX.
+
+## Экраны
+1. Список — loading / empty / error / ready
+2. Создание — поле title + submit; ошибка через role=alert
+
+## API
+- GET /api/items → {items:[{id,title}]}
+- POST /api/items {title} → 201 {id,title}
+
+## Запреты
+Hero-маркетинг, indigo/Inter/glow, fake success в catch, alert(), onclick=, React, thin_styles.
+""",
+        "source": "fallback_app",
+    }
+
+
+def _is_deck_task(user_text: str) -> bool:
+    return bool(
+        re.search(r"(?i)презентац|pitch|deck|слайд|питч|инвестор.?deck", user_text or "")
+    )
+
+
+def _fallback_deck(user_text: str) -> dict[str, Any]:
+    """HTML deck brief — content-filled slides for cheap models."""
+    pair = pick_media_pair(user_text, niche="deck")
+    media_md = media_brief_block(pair)
+    return {
+        "title": "Презентация",
+        "summary": "HTML-колода 8 слайдов с фактами, цифрами и разным media.",
+        "product_kind": "deck",
+        "product_id": "deck",
+        "assumptions": [
+            "Формат: HTML-deck /src/deck/ (или /src/frontend/)",
+            "8 слайдов × 100vh, навигация точками/клавишами",
+            "Бренд и цифры — реалистичные допущения РФ",
+        ],
+        "questions": [
+            "Для кого колода: инвесторы, клиенты, партнёры?",
+            "Есть ли обязательные цифры/логотип?",
+        ],
+        "brand": {"name": "Проект", "tone": "деловой, факты", "city": "Москва"},
+        "sections": [
+            "Title", "Problem", "Solution", "How", "Proof", "Offer", "Why", "CTA"
+        ],
+        "cta": {"primary": "Назначить созвон", "secondary": "Написать в Telegram"},
+        "contacts": {
+            "phone": "+7 (495) 211-34-56",
+            "address": "Москва",
+            "hours": "Ответ в будни до 18:00",
+        },
+        "api": [],
+        "must_haves": [
+            "≥8 слайдов с текстом",
+            "3 разных remote фото на разных слайдах",
+            "Цифры/факты, не egg-copy",
+            "CTA с tel на последнем слайде",
+        ],
+        "hero_media": {
+            "primary": pair["primary"]["url"],
+            "secondary": pair["secondary"]["url"],
+            "tertiary": pair["tertiary"]["url"],
+            "rule": pair["rule"],
+        },
+        "visual": "Без indigo/Inter. Full-bleed фото на слайдах 1, 3, 5 — разные URL.",
+        "brief_md": (
+            f"# Бриф: презентация (HTML deck)\n\n## Задача\n{user_text.strip()}\n\n"
+            "## Формат\n`/src/deck/index.html` + `styles.css`. "
+            "Каждый слайд = section.slide на min-height:100vh.\n\n"
+            f"{media_md}\n"
+            "## Слайды (все 8)\n"
+            "1 Title · 2 Problem (3 боли) · 3 Solution (+photo #2) · 4 How · "
+            "5 Proof (+photo #3) · 6 Offer · 7 Why · 8 CTA tel:+74952113456\n\n"
+            "## Запреты\nОдин URL на колоду; lorem; egg-copy; 3 пустых слайда. "
+            "См. content-fill.md § Презентация.\n"
+        ),
+    }
+
+
 def _fallback_autoservice(user_text: str) -> dict[str, Any]:
-    """Deterministic rich brief when LLM fails — used for autoservice-like tasks."""
+    """Deterministic rich brief — landings / STO / decks for cheap models."""
+    if _is_deck_task(user_text) and not re.search(
+        r"(?i)автосервис|сто\b|лендинг\s+сайт|сайт\s+авто",
+        user_text or "",
+    ):
+        return _fallback_deck(user_text)
+
     is_auto = bool(
         re.search(
             r"(?i)автосервис|сто\b|шиномонтаж|ремонт\s+авто|автомастер",
@@ -96,13 +314,16 @@ def _fallback_autoservice(user_text: str) -> dict[str, Any]:
         )
     )
     if not is_auto:
+        pair = pick_media_pair(user_text)
+        media_md = media_brief_block(pair)
         return {
             "title": "Сайт по запросу",
             "summary": user_text.strip()[:200],
+            "product_kind": "landing",
             "assumptions": [
                 "Один лендинг + форма заявки",
                 "Реалистичные контакты и цены в ₽",
-                "Фото/атмосфера в hero, не пустой градиент",
+                "Разные remote-фото в hero и mid-page",
             ],
             "questions": [
                 "Как называется бренд и город?",
@@ -110,11 +331,31 @@ def _fallback_autoservice(user_text: str) -> dict[str, Any]:
                 "Нужен ли прайс с цифрами или только услуги?",
             ],
             "brand": {"name": "Studio", "tone": "деловой", "city": "Москва"},
-            "sections": ["Hero", "Услуги", "Как работаем", "Отзывы", "Заявка", "Контакты"],
+            "sections": [
+                "Hero", "Услуги", "Как работаем", "Почему мы",
+                "Отзывы", "FAQ", "Заявка", "Контакты",
+            ],
             "services": [],
+            "reviews": [
+                {
+                    "quote": "Сделали быстро, всё объяснили по делу, без навязывания.",
+                    "name": "Анна",
+                    "detail": "Москва",
+                },
+                {
+                    "quote": "Удобная запись, перезвонили через десять минут.",
+                    "name": "Сергей",
+                    "detail": "Химки",
+                },
+            ],
+            "faq": [
+                {"q": "Сколько занимает ответ?", "a": "В рабочие часы — до 15 минут."},
+                {"q": "Цена заранее?", "a": "Ориентир «от» на сайте, смета после уточнения."},
+                {"q": "Гарантия?", "a": "На работы — по договору."},
+            ],
             "cta": {"primary": "Оставить заявку", "secondary": "Позвонить"},
             "contacts": {
-                "phone": "+7 (495) 000-00-00",
+                "phone": "+7 (495) 211-34-56",
                 "address": "Москва",
                 "hours": "Пн–Сб 09:00–20:00",
             },
@@ -126,61 +367,84 @@ def _fallback_autoservice(user_text: str) -> dict[str, Any]:
                 }
             ],
             "must_haves": [
-                "Рабочая форма заявки",
-                "Реальные секции и цены если уместно",
+                "Hero + mid-page: два разных remote URL",
+                "≥6 секций + форма + FAQ/отзывы с текстом",
+                "Явный CTA (кнопка/ссылка — класс любой)",
                 "Адаптив + a11y focus",
             ],
-            "visual": "Отраслевая палитра, full-bleed hero с фото, без indigo/Inter.",
+            "hero_media": {
+                "primary": pair["primary"]["url"],
+                "secondary": pair["secondary"]["url"],
+                "tertiary": pair["tertiary"]["url"],
+                "rule": pair["rule"],
+            },
+            "visual": "Отраслевая палитра, два remote фото, без indigo/Inter.",
             "brief_md": (
-                f"# Бриф\n\nЗадача: {user_text.strip()}\n\n"
-                "Собери лендинг с hero, услугами, формой заявки POST /api/lead "
-                "(name, phone, message), контактами. Цены в ₽. Без AI-look."
+                f"# Бриф\n\nЗадача: {user_text.strip()}\n\n{media_md}\n"
+                "Лендинг: hero + услуги + как работаем + отзывы + FAQ + "
+                "форма POST /api/lead (name, phone, message). "
+                "См. content-fill.md. Без одного фото на всё."
             ),
         }
 
+    pair = pick_media_pair(user_text, niche="sto")
+    media_md = media_brief_block(pair)
+    ident = build_sto_identity(user_text)
+    uniq_md = uniqueness_brief_block(ident)
+    p_url = pair["primary"]["url"]
+    s_url = pair["secondary"]["url"]
+    t_url = pair["tertiary"]["url"]
+    f_url = (pair.get("fourth") or pair["tertiary"])["url"]
+    css_skel = css_skeleton_from_identity(ident, p_url)
+    services_out = [
+        {
+            "name": name,
+            "price_from_rub": price,
+            "note": note,
+            "includes": includes,
+        }
+        for name, price, note, includes in ident["services"]
+    ]
+    reviews_out = [
+        {"quote": q, "name": n, "detail": d} for q, n, d in ident["reviews"]
+    ]
+    faq_out = [{"q": q, "a": a} for q, a in ident["faq"]]
+    brand = ident["brand"]
     return {
-        "title": "Автосервис полного цикла",
-        "summary": "Лендинг СТО: все виды работ, прайс, запись на ремонт, контакты.",
+        "title": f"Автосервис «{brand}»",
+        "summary": f"Лендинг СТО {brand}: витрина, прайс, запись, FAQ. uniq={ident['uniq']}",
+        "product_kind": "landing",
         "assumptions": [
-            "Бренд: «МоторХаус» · Москва, ЮАО, Каширское ш.",
-            "Полный цикл: ТО, диагностика, ходовая, масло, шиномонтаж, кузов/полировка, электрика",
-            "Запись онлайн + звонок; ответ мастера за 15 минут в рабочее время",
-            "Цены «от» в ₽, без скрытых доплат в копирайте",
+            f"Бренд: «{brand}» · {ident['address']}",
+            "Полный цикл работ, цены «от» в ₽",
+            "Запись онлайн + звонок в рабочие часы",
+            f"UNIQUE seed {ident['uniq']} — не клонировать чужой сайт",
         ],
         "questions": [
-            "Фиксируем бренд «МоторХаус» или своё имя?",
-            "Нужен ли личный кабинет / история заказов или только заявка?",
-            "Есть ли свои фото боксов/мастеров для hero?",
-            "Работаете с юрлицами (счёт) — показывать блок B2B?",
+            f"Бренд «{brand}» ок или своё имя?",
+            "Нужен ли кабинет или только заявка?",
         ],
         "brand": {
-            "name": "МоторХаус",
-            "tone": "уверенный, мастерской, без «премиум-воды»",
-            "city": "Москва",
+            "name": brand,
+            "tone": ident["tone"],
+            "city": ident["city"],
+            "uniq": ident["uniq"],
         },
         "sections": [
-            "Hero",
-            "Все виды работ",
-            "Прайс от",
-            "Как записаться",
-            "Гарантия / почему мы",
-            "Отзывы",
-            "Форма записи",
-            "Контакты / карта-заглушка",
+            "Hero", "Витрина", "Услуги", "Как записаться", "Почему мы",
+            "Отзывы", "FAQ", "Форма", "Контакты",
         ],
-        "services": [
-            {"name": "Диагностика", "price_from_rub": 1500, "note": "компьютер + осмотр"},
-            {"name": "ТО по регламенту", "price_from_rub": 4500, "note": "масло + фильтры"},
-            {"name": "Ходовая / тормоза", "price_from_rub": 2500, "note": "запчасти отдельно"},
-            {"name": "Шиномонтаж", "price_from_rub": 1800, "note": "R15–R21"},
-            {"name": "Электрика", "price_from_rub": 2000, "note": "стартер, генератор, проводка"},
-            {"name": "Кузов / полировка", "price_from_rub": 5000, "note": "оценка после осмотра"},
-        ],
-        "cta": {"primary": "Записаться на ремонт", "secondary": "Позвонить мастеру"},
+        "services": services_out,
+        "reviews": reviews_out,
+        "faq": faq_out,
+        "cta": {
+            "primary": ident["cta_primary"],
+            "secondary": ident["cta_secondary"],
+        },
         "contacts": {
-            "phone": "+7 (495) 120-45-67",
-            "address": "Москва, Каширское ш., 31с1",
-            "hours": "Пн–Сб 09:00–21:00, Вс 10:00–18:00",
+            "phone": ident["phone"],
+            "address": ident["address"],
+            "hours": ident["hours"],
         },
         "api": [
             {
@@ -190,48 +454,60 @@ def _fallback_autoservice(user_text: str) -> dict[str, Any]:
             }
         ],
         "must_haves": [
-            "Hero с атмосферой бокса/авто, не пустой градиент",
-            "Сетка услуг со всеми видами работ + цены от",
-            "Форма записи → POST /api/booking",
-            "Телефон кликабельный tel:",
-            "Блок гарантии / этапов работы",
-            "Адаптив mobile-first",
+            f'html data-uniq="{ident["uniq"]}" + бренд «{brand}» в chrome/title',
+            "Hero: живой remote photo (не серый void)",
+            "Медиа-ряд: ≥2 разных <img src=https> (id/классы — свои, не обязан #vitrine)",
+            "6 услуг: абзац + список + цена от (из UNIQUE блока)",
+            "why: реальное <img> (не только div background)",
+            "HTML ≥7500B, ≥7 section, ≥3 photo-ID",
+            "Свой type + chrome + motion + @media; палитра из UNIQUE (токены — любые имена)",
+            "НЕ копировать МоторХаус/Каширское и НЕ клонировать один каркас с заменой имени",
         ],
+        "hero_media": {
+            "primary": p_url,
+            "secondary": s_url,
+            "tertiary": t_url,
+            "fourth": f_url,
+            "scene": pair["primary"]["scene"],
+            "rule": pair["rule"],
+        },
+        "uniqueness": ident,
         "visual": (
-            "Палитра: асфальт #1a1c1e, металл #c5c9ce, янтарь-масло #c47a2c, "
-            "светлый цех #f3f1ec. Display: плотный гротеск/Georgia для заголовков, "
-            "system-ui для текста. Hero — full-bleed фото бокса или авто в работе."
+            f"Палитра UNIQUE accent={ident['palette']['amber']}. "
+            "Hero=фото+читаемый overlay (направление градиента — любое). "
+            "Медиа-ряд ≥2 фото. Не #f8fafc. Свой layout — не штамп эталона."
         ),
-        "brief_md": """# Бриф: автосервис «МоторХаус»
-
-## Продукт
-Одностраничный сайт СТО полного цикла: запись на ремонт, прайс «от», все виды работ, контакты.
-
-## Бренд
-- Имя: МоторХаус
-- Город: Москва, Каширское ш., 31с1
-- Тон: мастерской, цифры и факты, без «премиум-яйцевого» копирайта
-
-## Секции (обязательно)
-1. Hero — название, 1 оффер («Все виды работ · запись сегодня»), CTA запись + tel
-2. Все виды работ — карточки/список: диагностика, ТО, ходовая, шиномонтаж, электрика, кузов
-3. Прайс «от» в ₽ (таблица или сетка)
-4. Как записаться — 3 шага
-5. Гарантия / почему мы — 3 факта (не вода)
-6. Отзывы — 2–3 коротких с именем и авто
-7. Форма записи: имя, телефон, марка/модель, услуга, удобный слот
-8. Контакты + часы
-
-## API
-POST /api/booking JSON: name, phone, car, service, slot → 200 {ok:true}
-
-## Визуал
-Асфальт/металл/янтарь, full-bleed hero с фото, без indigo/Inter/purple. 1–2 CSS transition.
-
-## Запреты
-Пустой hero-void, egg-copy («три сильные вещи»), outline:none без :focus-visible.
-""",
+        "brief_md": (
+            f"# Бриф: автосервис «{brand}»\n\n"
+            f"## Продукт\nВкусный лендинг СТО **{brand}**: медиа, жирные услуги, запись, FAQ.\n\n"
+            f"## Бренд\n{brand} · {ident['address']} · {ident['phone']} · {ident['hours']}\n\n"
+            f"{uniq_md}\n"
+            f"{media_md}\n"
+            "## Контент-якоря (классы/id — invent)\n"
+            "```html\n"
+            f'<html lang="ru" data-uniq="{ident["uniq"]}">\n'
+            f"<!-- brand chrome: {brand} -->\n"
+            f"<h1>{ident['h1']}</h1>\n"
+            f"<p>{ident['lead']}</p>\n"
+            f"<!-- media gallery ≥2 imgs: {s_url[:60]}… -->\n"
+            f"<!-- h2 hint: {ident['vitrine_title']} -->\n"
+            "```\n\n"
+            "## CSS tokens ONLY (полный layout — invent, не копируй эталон)\n"
+            "```css\n"
+            f"{css_skel}"
+            "```\n\n"
+            f"## Секции (порядок UNIQUE `{ident['layout']['id']}`)\n"
+            f"{ident['layout']['order']}\n\n"
+            "## API\nPOST /api/booking {{name,phone,car,service,slot}}\n\n"
+            "## Запреты\n"
+            "Клон чужого бренда; серый hero; browser-blue; пустой media; "
+            "H1 «Профессиональный/Качественный»; один photo-ID; услуги без списка; "
+            "why=hero фото; footer без tel:; #f8fafc; "
+            "один каркас sticky+Georgia+#vitrine всем юзерам.\n"
+            "Эталон КАЧЕСТВА (не бренда/не layout): taste.md + uniqueness.md + content-fill.md.\n"
+        ),
     }
+
 
 
 def _parse_json_loose(text: str) -> dict[str, Any] | None:
@@ -292,6 +568,32 @@ def inject_api_prelock(data: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def _niche_instant_expand(user_text: str) -> dict[str, Any] | None:
+    """Rich deterministic briefs for known niches — same quality, 0 LLM latency."""
+    if _is_deck_task(user_text or "") and not re.search(
+        r"(?i)автосервис|\bсто\b",
+        user_text or "",
+    ):
+        data = _fallback_deck(user_text)
+        data["source"] = "niche_instant_deck"
+        data["model"] = "deterministic"
+        return data
+    if re.search(
+        r"(?i)автосервис|сто\b|шиномонтаж|ремонт\s+авто|автомастер",
+        user_text or "",
+    ):
+        data = _fallback_autoservice(user_text)
+        data["source"] = "niche_instant"
+        data["model"] = "deterministic"
+        return data
+    if _looks_like_app(user_text or ""):
+        data = _fallback_app(user_text)
+        data["source"] = "niche_instant_app"
+        data["model"] = "deterministic"
+        return data
+    return None
+
+
 async def expand_task_brief(
     *,
     user_text: str,
@@ -311,13 +613,14 @@ async def expand_task_brief(
             "source": "passthrough",
         }
 
-    mid = (model or "").strip() or (settings.STUDIO_JUDGE_MODEL or "gemini-2.5-pro")
-    # light: skip LLM cost — use deterministic fallback for known niches / generic
-    if mode == "light":
-        data = _fallback_autoservice(user_text)
-        data["source"] = "fallback_light"
-        data["model"] = "deterministic"
-        return data
+    # Niche packs are curated — better+faster than a slow judge rewrite
+    niche = _niche_instant_expand(user_text)
+    if niche:
+        return niche
+
+    mid = "gemini-2.5-flash"
+    if mode == "premium" and (model or "").strip():
+        mid = (model or "").strip()
 
     user_payload = (
         f"Режим Studio: {mode}\n"
@@ -331,6 +634,7 @@ async def expand_task_brief(
                 {"role": "system", "content": _EXPAND_SYSTEM},
                 {"role": "user", "content": user_payload},
             ],
+            max_tokens=1800,
         )
         text = upstream.extract_text(resp)
         data = _parse_json_loose(text)
@@ -343,7 +647,11 @@ async def expand_task_brief(
         data["completion_tokens"] = ct
         return data
     except Exception as e:
-        data = _fallback_autoservice(user_text)
+        data = (
+            _fallback_app(user_text)
+            if _looks_like_app(user_text)
+            else _fallback_autoservice(user_text)
+        )
         data["source"] = "fallback_error"
         data["error"] = str(e)[:200]
         data["model"] = mid

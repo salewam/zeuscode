@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МоторХаус — Автосервис на Каширском шоссе</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Play:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --asphalt: #2c2e33;
+            --asphalt-dark: #1a1b1f;
+            --amber: #ffbf00;
+            --amber-hover: #e6ac00;
+            --text-light: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Play', sans-serif;
+            background-color: var(--asphalt-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .btn {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* Header & Hero */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(26, 27, 31, 0.8), rgba(26, 27, 31, 0.7)),
+                        url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .brand-name {
+            font-size: clamp(3rem, 8vw, 6rem);
+            color: var(--amber);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: 2px 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .slogan {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .btn {
+            background-color: var(--amber);
+            color: var(--asphalt-dark);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 191, 0, 0.3);
+        }
+
+        .btn:hover {
+            background-color: var(--amber-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Sections */
+        section {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: var(--amber);
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--amber);
+            margin: 15px auto 0;
+        }
+
+        /* Services */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: var(--asphalt);
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 8px;
+            border-bottom: 4px solid transparent;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .service-card:hover {
+            border-color: var(--amber);
+            transform: translateY(-5px);
+        }
+
+        .service-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--text-light);
+        }
+
+        /* Why Us */
+        .why-us {
+            background: var(--asphalt);
+            padding-top: 80px;
+            padding-bottom: 80px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        /* Form */
+        .booking-section {
+            background: linear-gradient(rgba(44, 46, 51, 0.9), rgba(44, 46, 51, 0.9)),
+                        url('https://images.unsplash.com/photo-1503375836856-2e23d185e783?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            border-radius: 10px;
+            padding: 60px 40px;
+            margin-top: 40px;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            background: var(--asphalt-dark);
+            border: 1px solid #444;
+            color: var(--text-light);
+            font-family: 'Play', sans-serif;
+            border-radius: 4px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--amber);
+        }
+
+        /* Reviews */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .review-card {
+            background: var(--asphalt);
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid var(--amber);
+        }
+
+        .review-author {
+            font-weight: 700;
+            color: var(--amber);
+            margin-bottom: 10px;
+        }
+
+        /* Footer */
+        footer {
+            background: #111;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 2px solid var(--asphalt);
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            font-size: 1.1rem;
+        }
+
+        .footer-amber {
+            color: var(--amber);
+            font-weight: 700;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .booking-section {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1 class="brand-name">МоторХаус</h1>
+        <p class="slogan">Честный сервис для тех, кто ценит свой автомобиль</p>
+        <a href="#book" class="btn">Записаться</a>
+    </header>
+
+    <section id="services">
+        <h2 class="section-title">Наши услуги</h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <h3>Техническое обслуживание</h3>
+                <p>Регулярное ТО по регламенту дилера с сохранением гарантии.</p>
+            </div>
+            <div class="service-card">
+                <h3>Компьютерная диагностика</h3>
+                <p>Точное выявление неисправностей сканерами последнего поколения.</p>
+            </div>
+            <div class="service-card">
+                <h3>Замена масла</h3>
+                <p>Экспресс-замена масел в ДВС, АКПП, МКПП и мостах.</p>
+            </div>
+            <div class="service-card">
+                <h3>Шиномонтаж</h3>
+                <p>Балансировка, правка дисков, сезонное хранение шин.</p>
+            </div>
+            <div class="service-card">
+                <h3>Кузовной ремонт</h3>
+                <p>Восстановление геометрии, локальная и полная покраска.</p>
+            </div>
+            <div class="service-card">
+                <h3>Автоэлектрика</h3>
+                <p>Ремонт проводки, установка сигнализаций и доп. оборудования.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="why-us">
+        <h2 class="section-title">Почему мы</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">01</div>
+                <div>
+                    <h3 style="color: #ffbf00; margin-bottom: 5px;">Прозрачные цены</h3>
+                    <p>Согласовываем каждую копейку до начала работ. Никаких сюрпризов в заказ-наряде.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">02</div>
+                <div>
+                    <h3 style="color: #ffbf00; margin-bottom: 5px;">Гарантия на работы</h3>
+                    <p>Даем письменную гарантию на запчасти и оказанные услуги до 1 года.</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">03</div>
+                <div>
+                    <h3 style="color: #ffbf00; margin-bottom: 5px;">Собственный склад</h3>
+                    <p>Популярные запчасти в наличии. Быстрая доставка редких деталей.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="book">
+        <div class="booking-section">
+            <h2 class="section-title" style="margin-bottom: 30px;">Запись на сервис</h2>
+            <form action="#" method="POST" onsubmit="event.preventDefault(); alert('Спасибо! Заявка отправлена. Мы скоро перезвоним.');">
+                <input type="text" name="name" placeholder="Ваше имя" required>
+                <input type="tel" name="phone" placeholder="Телефон" required>
+                <input type="text" name="car" placeholder="Марка и модель авто" required>
+                <select name="service" required>
+                    <option value="" disabled selected>Выберите услугу</option>
+                    <option value="to">Техническое обслуживание</option>
+                    <option value="diag">Диагностика</option>
+                    <option value="oil">Замена масла</option>
+                    <option value="tires">Шиномонтаж</option>
+                    <option value="body">Кузовной ремонт</option>
+                    <option value="electro">Электрика</option>
+                    <option value="other">Другое</option>
+                </select>
+                <button type="submit" class="btn">Отправить заявку</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="reviews">
+        <h2 class="section-title">Отзывы клиентов</h2>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="review-author">Алексей С. (BMW X5)</div>
+                <p>Отличный сервис! Приехал на диагностику ходовой, нашли причину стука, которую дилер не мог найти месяц. Сделали быстро и по адекватной цене.</p>
+            </div>
+            <div class="review-card">
+                <div class="review-author">Мария К. (Mazda CX-5)</div>
+                <p>Регулярно делаю здесь ТО. Всегда чисто, вежливые мастера, в ремзону пускают без проблем. Масло меняют при мне. Рекомендую!</p>
+            </div>
+            <div class="review-card">
+                <div class="review-author">Игорь В. (Ford Focus)</div>
+                <p>Красил бампер после ДТП. В цвет попали идеально, переходов не видно. Сделали за 2 дня, как и обещали. Спасибо парням из кузовного!</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="brand-name" style="font-size: 2rem; text-shadow: none;">МоторХаус</div>
+            <div>Москва, Каширское шоссе, д. 61, корп. 3</div>
+            <div class="footer-amber">+7 (495) 123-45-67</div>
+            <div>Ежедневно с 09:00 до 21:00</div>
+        </div>
+    </footer>
+
+<a class="zeus-badge" href="https://zeuscode.ru" target="_blank" rel="noopener noreferrer">Сделано на ZeusCode</a>
+<style id="zeus-badge-css">
+.zeus-badge{
+  position:fixed;right:14px;bottom:12px;z-index:2147483646;
+  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;
+  letter-spacing:.02em;text-decoration:none;
+  color:rgba(120,120,120,.42);pointer-events:auto;
+  transition:color .2s ease,opacity .2s ease;
+}
+.zeus-badge:hover{color:rgba(120,120,120,.78)}
+</style>
+</body>
+</html>
+
+---
+🔗 Живая ссылка: https://zeuscode.ru/go/site-391b/

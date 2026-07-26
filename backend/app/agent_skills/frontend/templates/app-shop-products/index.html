@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Свежая Полка — продукты с доставкой, Москва</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <div>
+          <div class="brand__name">Свежая Полка</div>
+          <div class="brand__meta">Москва · доставка сегодня</div>
+        </div>
+      </div>
+      <nav class="tabs app-nav" aria-label="Разделы">
+        <button type="button" class="tab is-on" data-view="catalog">Каталог</button>
+        <button type="button" class="tab" data-view="order">Корзина <span id="cart-badge" class="badge" hidden>0</span></button>
+        <button type="button" class="tab" data-view="orders">Покупки <span id="orders-badge" class="badge" hidden>0</span></button>
+      </nav>
+      <a class="phone" href="tel:+74951234567">+7 (495) 123-45-67</a>
+    </header>
+
+    <main>
+      <section id="view-catalog" data-screen="catalog" class="panel">
+        <div class="panel__head">
+          <div>
+            <h1>Каталог продуктов</h1>
+            <p class="sub">Свежие продукты с доставкой по Москве</p>
+          </div>
+          <div class="filters" role="group" aria-label="Фильтр">
+            <button type="button" class="chip is-on" data-filter="all">Все</button>
+            <button type="button" class="chip" data-filter="Овощи">Овощи</button>
+            <button type="button" class="chip" data-filter="Фрукты">Фрукты</button>
+            <button type="button" class="chip" data-filter="Молочка">Молочка</button>
+          </div>
+        </div>
+        <div id="status-catalog" class="banner" role="status">Загрузка каталога…</div>
+        <div id="catalog-list" class="grid"></div>
+      </section>
+
+      <section id="view-order" data-screen="order" class="panel" hidden>
+        <div class="panel__head">
+          <div>
+            <h1>Корзина</h1>
+            <p class="sub">Проверьте состав и оформите доставку</p>
+          </div>
+        </div>
+        <div class="order-layout">
+          <aside id="order-preview" class="preview" aria-live="polite">
+            <div class="preview__empty">Добавьте товары из каталога</div>
+          </aside>
+          <form id="order-form" class="form" novalidate>
+            <div id="cart-lines" class="orders" aria-label="Позиции корзины"></div>
+            <label>Имя<input id="name" name="name" required minlength="2" autocomplete="name" placeholder="Анна" /></label>
+            <label>Телефон<input id="phone" name="phone" required minlength="7" type="tel" autocomplete="tel" placeholder="+7 9…" /></label>
+            <label class="sr-only">Товар
+              <select id="product_id" name="product_id"></select>
+            </label>
+            <label>Адрес доставки<input id="address" name="address" required minlength="5" autocomplete="street-address" placeholder="ул. Садовая, 10" /></label>
+            <label>Дата доставки<input id="delivery_date" name="delivery_date" required type="date" /></label>
+            <label>Комментарий курьеру<textarea id="comment" name="comment" rows="2" placeholder="Домофон, этаж"></textarea></label>
+            <button type="submit" class="btn" id="submit-btn">Оформить покупку</button>
+            <div id="status-order" class="banner" role="status" hidden></div>
+          </form>
+        </div>
+      </section>
+
+      <section id="view-orders" data-screen="orders" class="panel" hidden>
+        <div class="panel__head">
+          <div>
+            <h1>Мои покупки</h1>
+            <p class="sub">История оформленных заказов за сессию</p>
+          </div>
+          <button type="button" class="btn btn--ghost" id="refresh-orders">Обновить</button>
+        </div>
+        <div id="status-orders" class="banner" role="status">Загрузка…</div>
+        <div id="orders-list" class="orders"></div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div>«Свежая Полка» · доставка продуктов · ежедневно 09:00–21:00</div>
+      <div class="foot__muted">Москва</div>
+    </footer>
+  </div>
+  <div id="toast" role="alert" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>

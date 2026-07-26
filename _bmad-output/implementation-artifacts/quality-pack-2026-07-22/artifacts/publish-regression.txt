@@ -1,0 +1,3 @@
+PASS: publish regression gate
+{'ok': True, 'has_html_shell': True, 'has_zeus_badge': True, 'chars': 676}
+checklist: /Users/money/Desktop/Projects/ultra-mode-mvp/_bmad-output/implementation-artifacts/ops/publish-regression-checklist.md

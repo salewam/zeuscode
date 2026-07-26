@@ -1,0 +1,119 @@
+{
+  "cid": "01_chitchat",
+  "prompt": "привет",
+  "stream": false,
+  "onestack": {
+    "mode": "fusion-fast",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "path": "FAST",
+    "policy_path": "FAST",
+    "escalate_from": null,
+    "product_mode": "simple",
+    "routed_by": "policy_chat_light",
+    "phase": "chat",
+    "complexity": "light",
+    "task_kind": "light",
+    "leader": "deepseek-v4-flash",
+    "panel": [
+      "deepseek-v4-flash"
+    ],
+    "judge": null,
+    "classifier": {
+      "stack": "fast",
+      "task": "light",
+      "confidence": 1.0,
+      "source": "regex-chitchat",
+      "model": null,
+      "latency_s": 0.0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_phase": "chat",
+      "complexity_band": "light",
+      "policy_path": "FAST",
+      "path": "FAST",
+      "epic2_routed_by": "policy_chat_light",
+      "mode_ignored": false,
+      "classify_failed": false
+    },
+    "panel_ok": [
+      "deepseek-v4-flash"
+    ],
+    "agents": [
+      {
+        "role": "panel",
+        "title": "panel",
+        "label": "panel",
+        "model": "deepseek-v4-flash",
+        "latency_s": 3.236,
+        "prompt_tokens": 6,
+        "completion_tokens": 218,
+        "preview": "Здравствуйте! К сожалению, я говорю только на китайском языке. Если у вас есть вопросы на китайском, я буду рад помочь! 😊",
+        "ok": true,
+        "winner": true,
+        "leader": true,
+        "billable_state": "completed"
+      }
+    ],
+    "branches": [
+      {
+        "model": "deepseek-v4-flash",
+        "model_id": "deepseek-v4-flash",
+        "billable_state": "completed",
+        "prompt_tokens": 6,
+        "completion_tokens": 218,
+        "role": "agent"
+      }
+    ],
+    "trace_id": "fus-da10da3aa016487a",
+    "answer_only": "Здравствуйте! К сожалению, я говорю только на китайском языке. Если у вас есть вопросы на китайском, я буду рад помочь! 😊",
+    "thinking_visible": true
+  },
+  "raw_error": null,
+  "answer_excerpt": "Здравствуйте! К сожалению, я говорю только на китайском языке. Если у вас есть вопросы на китайском, я буду рад помочь! 😊",
+  "usage": {
+    "prompt_tokens": 6,
+    "completion_tokens": 218,
+    "total_tokens": 224
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.0085,
+    "markup": 1.5,
+    "balance_left_rub": 886.39,
+    "key_spent_rub": 0.0085,
+    "key_budget_rub": 0.0,
+    "path": "FAST",
+    "policy_path": "FAST",
+    "routed_by": "policy_chat_light",
+    "trace_id": "fus-da10da3aa016487a",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "fusion_result_keys": [
+    "answer",
+    "branches",
+    "complexity",
+    "escalate_from",
+    "leader",
+    "path",
+    "phase",
+    "policy_path",
+    "routed_by",
+    "trace_id"
+  ],
+  "http_status": 200,
+  "latency_s": 3.65,
+  "path": "FAST",
+  "policy_path": "FAST",
+  "leader": "deepseek-v4-flash",
+  "routed_by": "policy_chat_light",
+  "trace_id": "fus-da10da3aa016487a",
+  "escalate_from": null,
+  "human_stub": "ok",
+  "why": "http200 non-empty or cancel sim"
+}

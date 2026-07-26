@@ -1,0 +1,20 @@
+{
+  "cid": "12_cancel_midstream",
+  "prompt": "Пиши длинный текст про распределённые системы, минимум 30 предложений.",
+  "stream": true,
+  "onestack": {},
+  "cancel_simulated": true,
+  "note": "Aborted SSE after ~120 bytes",
+  "answer_excerpt": "data: {\"id\": \"chatcmpl-fusion-1784724713\", \"object\": \"chat.completion.chunk\", \"created\": 1784724713, \"model\": \"zeus/fusion\", \"choices\": [{\"index\": 0, \"delta\": {\"role\": \"assistant\"}, \"finish_reason\": null}]}\n\n",
+  "client_saw_prefix": "data: {\"id\": \"chatcmpl-fusion-1784724713\", \"object\": \"chat.completion.chunk\", \"created\": 1784724713, \"model\": \"zeus/fusi",
+  "http_status": 200,
+  "latency_s": 0.01,
+  "path": null,
+  "policy_path": null,
+  "leader": null,
+  "routed_by": null,
+  "trace_id": null,
+  "escalate_from": null,
+  "human_stub": "ok",
+  "why": "http200 non-empty or cancel sim"
+}

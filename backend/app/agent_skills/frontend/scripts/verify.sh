@@ -62,6 +62,53 @@ if [[ -n "${ENTRY:-}" ]] && grep -Eq '<input' "$ENTRY"; then
   fi
 fi
 
+# Placeholder contacts
+if grep -RInE '\+7[[:space:]]*\([[:space:]]*495[[:space:]]*\)[[:space:]]*000|8[[:space:]]*\([[:space:]]*495[[:space:]]*\)[[:space:]]*000|your@email\.com|example\.com' "$ROOT" \
+  --include='*.html' --include='*.js' --include='*.css' 2>/dev/null | head -5; then
+  err "placeholder_contact (000-телефон / example.com)"
+else
+  ok "no placeholder contacts"
+fi
+
+# Fake success in catch / offline lie
+if grep -RInE 'catch[[:space:]]*\([^)]*\)[[:space:]]*\{[^}]{0,400}(Заявк|заявк|успешн|мы[[:space:]]+свяжемся)' "$ROOT" \
+  --include='*.js' 2>/dev/null | head -5; then
+  err "fake_form_success: success copy inside catch"
+fi
+
+# Local assets referenced but missing on disk
+while IFS= read -r -d '' f; do
+  while IFS= read -r ref; do
+    [[ -z "$ref" ]] && continue
+    # strip query
+    ref="${ref%%\?*}"
+    if [[ "$ref" == assets/* || "$ref" == ./assets/* ]]; then
+      target="$ROOT/${ref#./}"
+      if [[ ! -f "$target" ]]; then
+        err "missing_asset: $ref not found under $ROOT"
+      fi
+    fi
+  done < <(grep -oE "url\(['\"]?[^'\")]+|src=['\"][^'\"]+" "$f" 2>/dev/null | sed -E "s/^url\(['\"]?//;s/^src=['\"]//" || true)
+done < <(find "$ROOT" \( -name '*.css' -o -name '*.html' \) -print0 2>/dev/null || true)
+
+# Broken @import of tokens without file in parent design (best-effort)
+if grep -RInE "@import[^;]*tokens\.css" "$ROOT" --include='*.css' 2>/dev/null | head -3; then
+  if [[ ! -f "$ROOT/../design/tokens.css" && ! -f "$ROOT/tokens.css" ]]; then
+    err "broken_css_import: @import tokens.css but file missing"
+  else
+    ok "tokens import resolves"
+  fi
+fi
+
+# ZeusCode publish badge (required on shippable HTML)
+if [[ -n "${ENTRY:-}" ]]; then
+  if grep -qiE 'zeus-badge|сделано на zeuscode|made with zeuscode' "$ENTRY"; then
+    ok "zeus badge present"
+  else
+    err "missing_zeus_badge: добавь еле прозрачный «Сделано на ZeusCode» (см. publish.md)"
+  fi
+fi
+
 if [[ "$fail" -ne 0 ]]; then
   say "verify: FAILED"
   exit 1

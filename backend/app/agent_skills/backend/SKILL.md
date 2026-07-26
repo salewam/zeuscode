@@ -41,9 +41,16 @@ In / Out / 2xx / 4xx (401, 404 ownership, 422…)
 Greenfield import: `schemas.*`, `deps`, `db`. Кабинет: `app.deps`, `app.db`.  
 Layout: `/src/backend/routers/`, `schemas/`, `services/`. Скелеты: `assets/templates/`.
 
+## Landing / lead API (если в brief есть POST /api/…)
+
+Ты **обязан** сдать route, иначе FE получит `api_orphan` и gate ≠ PASS.  
+Шаблон booking/lead: `references/landing-api.md`.  
+Поля/path = Locked API contract. Pydantic In/Out + 422 на пустые name/phone.
+
 ## Красные флаги
 
 Голый except; SQL f-string; секреты в ответе; `response_model=dict`; auth потом; god-router.  
+Молча пропустить `/api/booking` из brief → бан.  
 Полный список: `references/anti-patterns.md`. Security: `references/security.md`.
 
 ## Anti-rationalization

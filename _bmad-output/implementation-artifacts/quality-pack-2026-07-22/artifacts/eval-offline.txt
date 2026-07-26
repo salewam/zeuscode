@@ -1,0 +1,2 @@
+eval: n=50 pass_rate=70.0% n_min_ok=True ok=True
+wrote /Users/money/Desktop/Projects/ultra-mode-mvp/backend/tests/eval/last_report.json

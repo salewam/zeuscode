@@ -1,0 +1,796 @@
+{
+  "summary": {
+    "n": 50,
+    "n_min_ok": true,
+    "passed": 35,
+    "pass_rate": 70.0,
+    "per_bucket": {
+      "architecture": {
+        "n": 6,
+        "pass_rate": 16.67
+      },
+      "chitchat": {
+        "n": 7,
+        "pass_rate": 100.0
+      },
+      "code": {
+        "n": 6,
+        "pass_rate": 100.0
+      },
+      "debug": {
+        "n": 1,
+        "pass_rate": 0.0
+      },
+      "docs": {
+        "n": 1,
+        "pass_rate": 0.0
+      },
+      "hard": {
+        "n": 4,
+        "pass_rate": 100.0
+      },
+      "inject": {
+        "n": 3,
+        "pass_rate": 66.67
+      },
+      "migrate": {
+        "n": 1,
+        "pass_rate": 100.0
+      },
+      "plan": {
+        "n": 1,
+        "pass_rate": 100.0
+      },
+      "race_hard": {
+        "n": 1,
+        "pass_rate": 100.0
+      },
+      "regression_billing": {
+        "n": 1,
+        "pass_rate": 100.0
+      },
+      "regression_publish": {
+        "n": 1,
+        "pass_rate": 100.0
+      },
+      "review": {
+        "n": 5,
+        "pass_rate": 20.0
+      },
+      "short": {
+        "n": 1,
+        "pass_rate": 100.0
+      },
+      "sticky_followup": {
+        "n": 2,
+        "pass_rate": 0.0
+      },
+      "test": {
+        "n": 1,
+        "pass_rate": 0.0
+      },
+      "ui": {
+        "n": 1,
+        "pass_rate": 100.0
+      },
+      "ui_landing": {
+        "n": 1,
+        "pass_rate": 100.0
+      },
+      "ui_trivial": {
+        "n": 6,
+        "pass_rate": 100.0
+      }
+    },
+    "canary_blockers": {
+      "per_bucket_bar_pp": -2,
+      "sm_c1_thumbs_down_hard_ceiling_pp": 2,
+      "notes": "per-bucket pass rate ≥ baseline−2pp; SM-C1 +2pp 👎 ceiling on hard bucket. Populate bucket_pass_rates before canary→100% to enforce."
+    },
+    "canary_bars_ok": true,
+    "canary_bars_mode": "documented_no_bucket_baseline",
+    "ok": true
+  },
+  "results": [
+    {
+      "id": "B01",
+      "bucket": "chitchat",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B02",
+      "bucket": "ui_trivial",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B03",
+      "bucket": "code",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B04",
+      "bucket": "architecture",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B05",
+      "bucket": "review",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B06",
+      "bucket": "hard",
+      "expected_path": "RACE",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B07",
+      "bucket": "chitchat",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B08",
+      "bucket": "ui_trivial",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B09",
+      "bucket": "code",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B10",
+      "bucket": "architecture",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B11",
+      "bucket": "review",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B12",
+      "bucket": "hard",
+      "expected_path": "RACE",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B13",
+      "bucket": "chitchat",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B14",
+      "bucket": "ui_trivial",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B15",
+      "bucket": "code",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B16",
+      "bucket": "architecture",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B17",
+      "bucket": "review",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B18",
+      "bucket": "hard",
+      "expected_path": "RACE",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B19",
+      "bucket": "chitchat",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B20",
+      "bucket": "ui_trivial",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B21",
+      "bucket": "code",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B22",
+      "bucket": "architecture",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B23",
+      "bucket": "review",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B24",
+      "bucket": "hard",
+      "expected_path": "RACE",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B25",
+      "bucket": "chitchat",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B26",
+      "bucket": "ui_trivial",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B27",
+      "bucket": "code",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "B28",
+      "bucket": "architecture",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F1",
+      "bucket": "chitchat",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F10",
+      "bucket": "migrate",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F11",
+      "bucket": "ui",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F12",
+      "bucket": "debug",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F13",
+      "bucket": "plan",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F14",
+      "bucket": "short",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F15",
+      "bucket": "docs",
+      "expected_path": "CASCADE",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F16",
+      "bucket": "race_hard",
+      "expected_path": "RACE",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F17",
+      "bucket": "sticky_followup",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F2",
+      "bucket": "chitchat",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F3",
+      "bucket": "sticky_followup",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F4",
+      "bucket": "ui_trivial",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F5",
+      "bucket": "ui_landing",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F6",
+      "bucket": "architecture",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F7",
+      "bucket": "code",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F8",
+      "bucket": "review",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "F9",
+      "bucket": "test",
+      "expected_path": "FULL",
+      "actual_path": "FAST",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "I1",
+      "bucket": "inject",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "I2",
+      "bucket": "inject",
+      "expected_path": "FAST",
+      "actual_path": "FULL",
+      "pass": false,
+      "checks": {
+        "path_match": false,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "I3",
+      "bucket": "inject",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "R1",
+      "bucket": "regression_publish",
+      "expected_path": "FULL",
+      "actual_path": "FULL",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    },
+    {
+      "id": "R2",
+      "bucket": "regression_billing",
+      "expected_path": "FAST",
+      "actual_path": "FAST",
+      "pass": true,
+      "checks": {
+        "path_match": true,
+        "non_empty": true,
+        "code_fence": true,
+        "quality": true,
+        "billing_ok": true
+      }
+    }
+  ]
+}

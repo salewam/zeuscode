@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/Users/money/Desktop/Projects/ultra-mode-mvp/backend/scripts/smoke_fusion_stack.py", line 48, in <module>
+    asyncio.run(main())
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/Users/money/Desktop/Projects/ultra-mode-mvp/backend/scripts/smoke_fusion_stack.py", line 37, in main
+    await one("hi", "привет")
+  File "/Users/money/Desktop/Projects/ultra-mode-mvp/backend/scripts/smoke_fusion_stack.py", line 10, in one
+    data = await run_fusion(
+  File "/Users/money/Desktop/Projects/ultra-mode-mvp/backend/app/fusion/_monolith.py", line 2227, in run_fusion
+    async for ev in iter_fusion(
+  File "/Users/money/Desktop/Projects/ultra-mode-mvp/backend/app/fusion/_monolith.py", line 1959, in iter_fusion
+    winner, partial = await _race_first(panel, messages, timeout_s=10.0)
+  File "/Users/money/Desktop/Projects/ultra-mode-mvp/backend/app/fusion/_monolith.py", line 1250, in _race_first
+    raise HTTPException(502, f"Fusion fast: нет ответа ({errors})")
+fastapi.exceptions.HTTPException: 502: Fusion fast: нет ответа (deepseek-v4-pro: DEEPSEEK_API_KEY not configured)

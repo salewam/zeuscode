@@ -9,6 +9,16 @@ from typing import Any
 
 SKILLS_ROOT = Path(__file__).resolve().parent / "agent_skills"
 
+
+def skills_enabled() -> bool:
+    """Kill-switch: when False, disk packs/refs never reach agent prompts."""
+    try:
+        from app.config import get_settings
+
+        return bool(get_settings().AGENT_SKILLS_ENABLED)
+    except Exception:  # noqa: BLE001
+        return False
+
 # Metadata + fallback system when pack folder missing
 SKILLS: dict[str, dict[str, Any]] = {
     "frontend": {
@@ -29,28 +39,65 @@ SKILLS: dict[str, dict[str, Any]] = {
             "Мобилка не разваливается",
             "Semantic HTML + focus-visible",
             "Не AI-aesthetic (см. anti-patterns)",
+            "Landing: нет 000-телефона / битых assets / вранья в catch",
         ],
         "artifact_kinds": ["code", "checklist"],
         "pack": "frontend",
         "refs_by_mode": {
-            "standard": ("anti-patterns.md", "checklist.md"),
-            "ultra": ("anti-patterns.md", "checklist.md", "a11y.md"),
-            "premium": ("anti-patterns.md", "checklist.md", "a11y.md", "stack.md"),
+            "light": ("landing-ship.md", "publish.md", "anti-patterns.md"),
+            "standard": ("landing-ship.md", "publish.md", "anti-patterns.md", "checklist.md"),
+            "ultra": (
+                "landing-ship.md",
+                "publish.md",
+                "uniqueness.md",
+                "content-fill.md",
+                "visual-polish.md",
+                "taste.md",
+                "anti-patterns.md",
+                "checklist.md",
+                "a11y.md",
+            ),
+            "premium": (
+                "landing-ship.md",
+                "publish.md",
+                "uniqueness.md",
+                "content-fill.md",
+                "visual-polish.md",
+                "taste.md",
+                "anti-patterns.md",
+                "checklist.md",
+                "a11y.md",
+                "stack.md",
+            ),
         },
         "overlay_by_mode": {
             "light": (
-                "Лайт: 1–2 файла, happy path, label+focus-visible. Без AI-look."
+                "Лайт: index.html+styles.css+app.js. Label+focus-visible. Без AI-look. "
+                "Лендинг: landing-ship.md — не 000-телефон, не url(assets) без файла, "
+                "форма либо fetch+error либо честный offline (не success в catch). "
+                "ОБЯЗАТЕЛЬНО: zeus-badge «Сделано на ZeusCode» + publish.md (живая /go/ ссылка). "
+                "UNIQUE под бриф — не клон эталона."
             ),
             "standard": (
-                "Стандарт: empty/error, styles.css, system-ui. "
-                "Бан indigo/Inter/outline:none/div-onclick. Design tokens = SSoT если есть."
+                "Стандарт: empty/error, styles.css самодостаточный (:root). "
+                "Бан indigo/Inter/outline:none/div-onclick. "
+                "Качество: landing-ship + publish + content-fill + visual-polish. "
+                "Каркас/палитра/копирайт — из брифа (uniqueness.md), не штамп. "
+                "Design tokens = свой :root, не голый @import. "
+                "Бейдж ZeusCode + публичный /go/ линк обязательны."
             ),
             "ultra": (
-                "Ultra: команда. Handoff path/поля для tests. Полный DoD + a11y. "
-                "Не пиши /src/frontend/tokens.css — только styles.css (+ @import design)."
+                "Ultra: вкус + архитектура под бриф (uniqueness.md + taste.md). "
+                "good_* / templates = планка качества, НЕ бренд и НЕ обязательный layout. "
+                "В Мышлении: UNIQUE (бренд, ниша, signature, палитра, 3 отличия от шаблона). "
+                "Must ship: живой media-якорь, честные контакты, форма без лжи, "
+                "достаточная плотность контента, zeus-badge + /go/. "
+                "Бан: AI-purple, egg-copy, clone эталона, browser-blue chrome."
             ),
             "premium": (
-                "Premium: эталон. Сверь anti-patterns. Ноль AI-look."
+                "Premium: максимальный вкус и UNIQUE юзера (не штамп). "
+                "Эталон качества = taste + uniqueness. "
+                "Ноль thin_* / clone_* / missing_uniq / egg_* / missing_zeus_badge."
             ),
         },
     },
@@ -72,14 +119,17 @@ SKILLS: dict[str, dict[str, Any]] = {
             "Ownership / auth на данных юзера",
             "Нет секретов и SQL f-string",
             "path=/src/backend/...",
+            "Если brief POST /api/booking|lead — route сдан (анти api_orphan)",
         ],
         "artifact_kinds": ["code", "checklist"],
         "pack": "backend",
         # Role-specific refs (frontend uses a11y; backend uses security)
         "refs_by_mode": {
-            "standard": ("checklist.md", "anti-patterns.md"),
-            "ultra": ("checklist.md", "anti-patterns.md", "security.md"),
+            "light": ("landing-api.md", "checklist.md"),
+            "standard": ("landing-api.md", "checklist.md", "anti-patterns.md"),
+            "ultra": ("landing-api.md", "checklist.md", "anti-patterns.md", "security.md"),
             "premium": (
+                "landing-api.md",
                 "checklist.md",
                 "anti-patterns.md",
                 "security.md",
@@ -88,25 +138,20 @@ SKILLS: dict[str, dict[str, Any]] = {
         },
         "overlay_by_mode": {
             "light": (
-                "Режим Лайт: очень кратко. Мышление — 2 предложения (method/path). "
-                "Результат — минимум кода, happy path + базовая валидация."
+                "Лайт: method/path в Мышлении. Happy path + 422. "
+                "Если в задаче /api/booking|lead — сдай router (landing-api.md)."
             ),
             "standard": (
-                "Режим Стандарт: нормальная глубина. "
-                "Мышление: контракт + коды ошибок. "
-                "Обязательно Pydantic In/Out и хотя бы один осмысленный 4xx; ownership если ресурс юзера."
+                "Стандарт: контракт + коды ошибок. Pydantic In/Out + ≥1 4xx. "
+                "Лендинг-brief с API → обязательный route (иначе FE api_orphan)."
             ),
             "ultra": (
-                "Режим Ultra: ты часть команды. "
-                "Мышление покажи явно (контракт для frontend/tests). "
-                "Результат полный, готовый к склейке. "
-                "Жёстко: anti-patterns + security. Без «auth потом»."
+                "Ultra: команда. Мышление = контракт для frontend/tests. "
+                "Жёстко: anti-patterns + security. Booking/lead из brief — не пропускай."
             ),
             "premium": (
-                "Режим Premium: максимальное качество API. "
-                "Мышление: контракт + риски + handoff. Результат эталонный. "
-                "Сверься с good_output; не повторяй bad_output. "
-                "Ноль security-дыр."
+                "Premium: эталонный API. Handoff + ноль security-дыр. "
+                "Locked contract = закон для FE/tests."
             ),
         },
     },
@@ -126,30 +171,42 @@ SKILLS: dict[str, dict[str, Any]] = {
             "Иерархия текста ясная",
             "Состояния UI описаны",
             "### Handoff frontend обязателен",
+            "Media-строка без битых assets / без 000-телефона",
             "Только path=/src/design/...",
         ],
         "artifact_kinds": ["plan", "code", "checklist"],
         "pack": "design",
         "refs_by_mode": {
-            "standard": ("anti-patterns.md", "checklist.md", "media.md"),
-            "ultra": ("anti-patterns.md", "checklist.md", "media.md"),
-            "premium": ("anti-patterns.md", "checklist.md", "media.md", "stack.md"),
+            "light": ("landing-ship.md", "anti-patterns.md"),
+            "standard": ("landing-ship.md", "anti-patterns.md", "checklist.md", "media.md"),
+            "ultra": ("landing-ship.md", "anti-patterns.md", "checklist.md", "media.md"),
+            "premium": (
+                "landing-ship.md",
+                "anti-patterns.md",
+                "checklist.md",
+                "media.md",
+                "stack.md",
+            ),
         },
         "overlay_by_mode": {
             "light": (
-                "Лайт: tokens.css + 3 буллета handoff. Без HTML/API."
+                "Лайт: tokens.css + Handoff с Media-строкой (landing-ship). Без HTML/API."
             ),
             "standard": (
                 "Стандарт: plan→tokens→### Handoff frontend (states/labels/Media). "
-                "Бан indigo/Inter/outline:none/empty hero. Media=фото сюжета (media.md). "
+                "Бан indigo/Inter/outline:none/empty hero. "
+                "Media: local path только если FE сдаст файл, иначе https remote OK. "
                 "Только /src/design/."
             ),
             "ultra": (
-                "Ultra: команда. Токены SSoT для frontend. "
-                "Обязательны loading/empty/error + Media-строка в handoff. Без полного UI."
+                "Ultra: токены SSoT под отрасль из брифа (свой :root). "
+                "Не штампуй asphalt/amber всем — только если ниша авто. "
+                "Handoff: remote URL из media pack ниши. "
+                "Media + veil. Контакты из брифа. Без полного UI."
             ),
             "premium": (
-                "Premium: эталонный контракт. Сверь anti-patterns. Ноль AI-look."
+                "Premium: контракт под бриф. anti-patterns + landing-ship + media.md. "
+                "Палитра отрасли UNIQUE, ноль AI-look / empty_hero."
             ),
         },
     },
@@ -247,17 +304,22 @@ SKILLS: dict[str, dict[str, Any]] = {
             "premium": ("checklist.md", "rubric.md", "anti-false-fail.md"),
         },
         "overlay_by_mode": {
-            "light": "Кратко: вердикт + 1–3 findings в scope задачи.",
+            "light": (
+                "Кратко: вердикт + findings в scope. "
+                "Лендинг: отдельно media/телефон/форма (landing-ship gates)."
+            ),
             "standard": (
                 "Рубрика + scope. Не FAIL за PATCH если не просили. "
-                "Critical только с path и фактом."
+                "Critical только с path и фактом. "
+                "Major: api_orphan / fake_form_success / missing_asset / placeholder_contact."
             ),
             "ultra": (
-                "Жёстко anti-false-fail. "
-                "Различай вину tests vs backend. Чистый gate ≠ повод выдумывать critical."
+                "Жёстко anti-false-fail + landing-ship. "
+                "Различай вину tests vs backend. Чистый старый regex ≠ повод игнорить ship gates."
             ),
             "premium": (
-                "Эталонный judge. Сверься с good_output reviewer. Ноль scope creep."
+                "Эталонный judge. good_output reviewer. "
+                "Ноль scope creep; ноль пропуска вранья формы на лендинге."
             ),
         },
     },
@@ -270,28 +332,47 @@ DEPTH: dict[str, dict[str, Any]] = {
         "label": "лайт",
         "think": False,
         "overlay": (
-            "Режим Лайт: очень кратко. Мышление — 2 предложения. "
-            "Результат — минимум кода, только суть. "
-            "States можно кратко описать, не раздувай."
+            "Режим Лайт: кратко, но shippable. Мышление — 2–4 предложения. "
+            "Результат — рабочие файлы, не набросок. "
+            "Лендинг: landing-ship (контакты/media/форма). "
+            "Не url(assets) без файла; не success в catch; не 000-телефон."
         ),
-        "refs": (),
-        "templates": False,
-        "include_examples": False,
-        "example_mode": None,
+        "refs": ("landing-ship.md", "anti-patterns.md"),
+        "ref_limits": {
+            "landing-ship.md": 1800,
+            "anti-patterns.md": 1800,
+            "landing-api.md": 1400,
+            "checklist.md": 1200,
+        },
+        "templates": True,
+        "template_chars": 400,
+        "template_max_files": 1,
+        "include_examples": True,
+        "example_mode": "micro",
     },
     "standard": {
         "label": "стандарт",
-        "think": True,
+        # Think phase = лишний LLM-раунд: мышление уже в ## Мышление основного ответа
+        "think": False,
         "overlay": (
             "Режим Стандарт: нормальная глубина. "
-            "Мышление короткое, результат рабочий и чистый. "
+            "Мышление в ## Мышление — максимум 6–8 строк, без воды. "
+            "Результат рабочий и чистый. "
             "Обязательно empty/error если async/список; токены CSS. "
             "ЗАПРЕТ: outline:none; indigo/purple/Inter (даже «как бренд»); div onclick. "
             "Обязателен :focus-visible на интерактив. "
-            "font-family без Inter/Roboto — только system-ui / ui-sans-serif / бриф-шрифт ≠ Inter."
+            "font-family без Inter/Roboto — только system-ui / ui-sans-serif / бриф-шрифт ≠ Inter. "
+            "Лендинг: landing-ship.md обязателен (media/API/контакты)."
         ),
-        "refs": ("checklist.md", "anti-patterns.md"),
-        "ref_limits": {"checklist.md": 1800, "anti-patterns.md": 2200, "stack.md": 1600},
+        "refs": ("landing-ship.md", "checklist.md", "anti-patterns.md"),
+        "ref_limits": {
+            "landing-ship.md": 1800,
+            "checklist.md": 2000,
+            "anti-patterns.md": 2400,
+            "landing-api.md": 1600,
+            "media.md": 1400,
+            "stack.md": 1600,
+        },
         "templates": True,
         "template_chars": 500,
         "template_max_files": 2,
@@ -300,48 +381,79 @@ DEPTH: dict[str, dict[str, Any]] = {
     },
     "ultra": {
         "label": "ultra",
-        "think": True,
+        "think": False,
         "overlay": (
-            "Режим Ultra: ты часть команды из 4 агентов. "
-            "Мышление покажи явно (что делаешь для кооператива). "
-            "Результат полный, готовый к склейке. "
-            "Жёстко: anti-patterns + a11y. Не AI-look. "
-            "ЗАПРЕТ outline:none / indigo / Inter (нет исключений ради бренда). "
-            "Только :focus-visible + system-ui."
+            "Режим Ultra: команда из 4. Мышление 6–8 строк. "
+            "Frontend: uniqueness.md + taste — UNIQUE под бриф "
+            "(бренд/IA/палитра/копирайт свои). "
+            "Эталоны good_* = планка качества, НЕ layout и НЕ классы. "
+            "Must: media-якорь, честные контакты, форма без лжи, плотность, "
+            "zeus-badge + /go/. Бан: AI-purple, egg-copy, clone чужого бренда."
         ),
-        "refs": ("checklist.md", "anti-patterns.md", "a11y.md"),
+        "refs": (
+            "landing-ship.md",
+            "publish.md",
+            "uniqueness.md",
+            "content-fill.md",
+            "visual-polish.md",
+            "taste.md",
+            "checklist.md",
+            "anti-patterns.md",
+            "a11y.md",
+            "media.md",
+        ),
         "ref_limits": {
-            "checklist.md": 2000,
-            "anti-patterns.md": 2400,
+            "landing-ship.md": 2800,
+            "publish.md": 1600,
+            "uniqueness.md": 2200,
+            "content-fill.md": 3200,
+            "visual-polish.md": 2800,
+            "taste.md": 3200,
+            "checklist.md": 2200,
+            "anti-patterns.md": 2600,
             "a11y.md": 1800,
             "security.md": 1800,
+            "landing-api.md": 1800,
+            "media.md": 2800,
             "stack.md": 1600,
         },
         "templates": True,
-        "template_chars": 600,
-        "template_max_files": 2,
+        "template_chars": 1000,
+        "template_max_files": 3,
         "include_examples": True,
-        "example_mode": "micro",
+        "example_mode": "landing",
     },
     "premium": {
         "label": "premium",
+        # Отдельный think оставляем только в premium — эталонный план
         "think": True,
         "overlay": (
             "Режим Premium: максимальное качество. "
-            "Мышление: план + риски + handoff. Результат эталонный. "
-            "Сверься с good_output; не повторяй bad_output. "
-            "Ноль AI-aesthetic."
+            "Мышление: план + риски + handoff (компактно). Результат эталонный. "
+            "Сверься с good_* как с планкой качества (не клонируй бренд/layout); не повторяй bad_output. "
+            "Ноль AI-aesthetic. Ноль api_orphan / fake_form_success / missing_asset / "
+            "thin_landing / no_hero_media."
         ),
-        "refs": ("checklist.md", "anti-patterns.md", "a11y.md", "stack.md"),
+        "refs": (
+            "landing-ship.md",
+            "checklist.md",
+            "anti-patterns.md",
+            "a11y.md",
+            "stack.md",
+            "media.md",
+        ),
         "ref_limits": {
+            "landing-ship.md": 2800,
             "checklist.md": 2800,
             "anti-patterns.md": 3000,
             "a11y.md": 2200,
             "stack.md": 2000,
             "security.md": 2200,
+            "landing-api.md": 1800,
+            "media.md": 2200,
         },
         "templates": True,
-        "template_chars": 800,
+        "template_chars": 900,
         "template_max_files": 3,
         "include_examples": True,
         "example_mode": "full",
@@ -350,6 +462,7 @@ DEPTH: dict[str, dict[str, Any]] = {
 
 INTENT_TEAMS: dict[str, list[str]] = {
     "feature": ["design", "frontend", "backend", "tests"],
+    "app": ["design", "frontend", "backend", "tests"],
     "bug": ["backend", "frontend", "tests", "design"],
     "ui": ["frontend", "design", "backend", "tests"],
     "api": ["backend", "tests", "frontend", "design"],
@@ -360,6 +473,7 @@ INTENT_TEAMS: dict[str, list[str]] = {
 
 INTENT_META: dict[str, dict[str, str]] = {
     "feature": {"title": "Фича", "hint": "собрать кусок продукта"},
+    "app": {"title": "Приложение", "hint": "экраны + действие + данные"},
     "bug": {"title": "Баг", "hint": "найти и починить"},
     "ui": {"title": "UI", "hint": "экран и визуал"},
     "api": {"title": "API", "hint": "эндпоинты и контракт"},
@@ -393,6 +507,8 @@ def _read_text(path: Path, limit: int | None = None) -> str:
 @lru_cache(maxsize=16)
 def load_skill_pack(pack_name: str) -> dict[str, Any] | None:
     """Load agent_skills/<pack>/SKILL.md + reference index. Cached."""
+    if not skills_enabled():
+        return None
     root = SKILLS_ROOT / pack_name
     skill_md = root / "SKILL.md"
     if not skill_md.is_file():
@@ -421,22 +537,71 @@ def _pack_ref(pack: dict[str, Any], name: str, limit: int = 6000) -> str:
 
 
 def _pack_examples(pack: dict[str, Any], *, mode: str = "full") -> str:
-    """Examples: micro = bad-only tiny (cheap); full = good+bad for premium."""
+    """Examples: micro=bad-only; landing=STO good+bad; full=good+auth+bad."""
     ex_dir: Path = pack["examples_dir"]
     if mode == "micro":
-        bad = _read_text(ex_dir / "bad_output.md", limit=900)
+        bad = _read_text(ex_dir / "bad_output.md", limit=1400)
         if not bad:
             return ""
         return (
-            "### Anti-example (не так — 900 символов)\n\n"
+            "### Anti-example (не так — ужато)\n\n"
             + bad
             + "\n\nПравило: если похоже на anti-example — перепиши до сдачи."
         )
     blocks: list[str] = []
-    for name in ("good_output.md", "good_auth.md"):
-        text = _read_text(ex_dir / name, limit=2800 if name == "good_output.md" else 2000)
+    if mode == "app":
+        good = _read_text(ex_dir / "good_app.md", limit=4200)
+        if good:
+            blocks.append("### examples/good_app.md (планка app)\n\n" + good)
+        blocks.append(
+            "### APP CONTRACT (не клон шаблона)\n\n"
+            "Сдай **уникальное** приложение под бриф юзера: свой бренд, ниша, "
+            "копирайт, визуал, поля карточек. "
+            "Шаблоны `app-shop*` — пример рабочих потоков, **не** обязательный UI.\n\n"
+            "DoD: shell+nav ≥2 экрана; каталог из API с фото+CTA; "
+            "заказ или корзина с fetch+res.ok; история заказов; "
+            "filters ↔ seed; логика только в app.js; API=\".\"; "
+            "не 2KB-скелет (HTML≥3KB, CSS≥4KB, JS≥3.5KB).\n\n"
+            "ЗАПРЕТ: сдать «Букет Лайн/Свежая Полка» byte-for-byte; "
+            "лендинг; inline `<script>`; React без просьбы; мёртвые CTA."
+        )
+        # No HTML dump from app-shop — even truncated markup biases clones
+        blocks.append(
+            "### Density hint (без HTML-эталона)\n\n"
+            "Экраны: header+nav → каталог → заказ/корзина → история. "
+            "Разметку, CSS и копирайт изобрети под **этот** бриф."
+        )
+        bad = _read_text(ex_dir / "bad_app_as_landing.md", limit=1400)
+        if bad:
+            blocks.append("### examples/bad_app_as_landing.md\n\n" + bad)
+        return "\n\n".join(blocks) if blocks else ""
+    if mode == "landing":
+        # Never inject MotorHaus HTML — stamps every landing into one layout.
+        blocks.append(
+            "### Планка лендинга (без эталонного HTML)\n\n"
+            "Каждый бриф = свой бренд, IA, палитра, копирайт (`uniqueness.md`).\n"
+            "Must: media-якорь, честные контакты, форма без лжи, достаточная плотность, "
+            "zeus-badge + /go/.\n"
+            "Бан: AI-purple/Inter, egg-copy, клон чужого бренда, пустой hero.\n"
+            "Файл `good_landing_sto.md` на диске — пример **только** для авто-ниши; "
+            "в промпт полный HTML **не** кладём.\n"
+        )
+        bad = _read_text(ex_dir / "bad_output.md", limit=1600)
+        if bad:
+            blocks.append("### examples/bad_output.md (не так)\n\n" + bad)
+        return "\n\n".join(blocks)
+    # default/full: prefer small goods, never dump entire STO landing HTML
+    for name in ("good_output.md", "good_deck.md", "good_auth.md"):
+        lim = 2800 if name != "good_auth.md" else 2000
+        text = _read_text(ex_dir / name, limit=lim)
         if text:
             blocks.append(f"### examples/{name} (планка)\n\n" + text)
+    if ex_dir.joinpath("good_landing_sto.md").is_file():
+        blocks.append(
+            "### good_landing_sto — напоминание\n\n"
+            "Эталон СТО = планка плотности для авто-ниши. "
+            "Другая ниша → свой layout/палитра. Не клонируй МоторХаус.\n"
+        )
     bad = _read_text(ex_dir / "bad_output.md", limit=1600)
     if bad:
         blocks.append("### examples/bad_output.md (не так)\n\n" + bad)
@@ -546,6 +711,28 @@ def infer_intent_from_task(task: str | None, fallback: str = "feature") -> str:
     if not t:
         return fallback
     low = t.lower()
+    # Web app / tool product (before generic landing "сайт")
+    app_hit = bool(
+        re.search(
+            r"(?i)(приложени[еяю]|web[-\s]?apps?|\bapps?\b|сервис\b|инструмент|"
+            r"кабинет|dashboard|to-?do|задач[аи]|"
+            r"список\s+\w+|созда(ть|вай).{0,40}(задач|запис|элемент)|"
+            r"\bcrm\b|учёт\b)",
+            low,
+        )
+    )
+    landing_hit = bool(
+        re.search(
+            r"(?i)(лендинг|ленд\b|landing|визитк|одностраничн|"
+            r"автосервис|\bсто\b|кофейн|салон\s+красот)",
+            low,
+        )
+    )
+    if app_hit and not landing_hit:
+        return "app"
+    if app_hit and re.search(r"\b(экран|навигац|список|создать|кабинет)\b", low):
+        return "app"
+
     scores = {k: 0 for k in ("api", "ui", "tests", "bug", "refactor", "ask")}
     if re.search(r"/api/|\bfastapi\b|\bendpoint\b|\bbearer\b|\bauth\b", low):
         scores["api"] += 3
@@ -583,6 +770,9 @@ def infer_intent_from_task(task: str | None, fallback: str = "feature") -> str:
     best = max(scores, key=lambda k: scores[k])
     if scores[best] <= 0:
         return fallback
+    # Landing + API together → full feature team (FE+BE), never API-only
+    if scores["ui"] >= 3 and scores["api"] >= 3:
+        return "feature"
     # API+tests phrasing → api (backend first) unless UI dominates
     if scores["api"] >= 3 and scores["ui"] < 3:
         return "api"
@@ -611,8 +801,40 @@ def rank_roles_for_task(task: str | None, team: list[str]) -> list[str]:
 
 def build_role_system(role: str, brief: str | None, intent: str, mode: str) -> str:
     skill = get_skill(role)
+    if not skills_enabled():
+        # Minimal role prompt — no pack SKILL.md / refs / examples / templates.
+        parts = [
+            skill.get("system") or f"Ты {skill.get('title') or role}-агент ZeusCode.",
+            "Скилл-паки отключены (AGENT_SKILLS_ENABLED=false). Работай по брифу и ТЗ пользователя.",
+        ]
+        if brief and brief.strip():
+            parts.append(f"\nБриф проекта:\n{brief.strip()[:3500]}")
+        intent_title = INTENT_META.get(intent, {}).get("title", intent)
+        parts.append(f"\nИнтент: {intent_title}.")
+        return "\n".join(parts)
+
     depth = get_depth(mode)
     overlay = (skill.get("overlay_by_mode") or {}).get(mode) or depth["overlay"]
+    if intent == "app" and role in ("frontend", "design"):
+        overlay = (
+            "Интент APP: изобрети мини-приложение **под бриф** (бренд, ниша, визуал, копирайт). "
+            "Не клонируй один шаблон всем юзерам. DoD = рабочие потоки, не имена CSS-классов. "
+            "Обязательно: nav≥2 экрана; каталог из API (фото+цена+CTA); "
+            "заказ или корзина с fetch+res.ok; экран истории; filters↔seed; "
+            "index.html+styles.css+app.js; логика только в app.js; API=\".\". "
+            "Плотность: не 2KB-скелет (HTML≥3KB CSS≥4KB JS≥3.5KB). "
+            "Шаблоны app-shop* — справка по плотности, не pixel-clone. "
+            "ЗАПРЕТ: React без просьбы, alert-success, onclick, inline script, "
+            "лендинг вместо shell, мёртвые картинки, grocery без корзины."
+        )
+    if intent == "app" and role == "backend":
+        overlay = (
+            "Интент APP: /api из brief. Seed ≥4 с image=unsplash, поле **name** (не title), "
+            "desc|description|composition, tag|category. "
+            "category/tag значения = ТОЧНО data-filter на FE (не хит при Овощи). "
+            "POST orders → *_name из item['name']. APIRouter(prefix=\"/api\") + include_router. "
+            "См. app-api.md."
+        )
     parts = [
         skill["system"],
         "",
@@ -623,20 +845,52 @@ def build_role_system(role: str, brief: str | None, intent: str, mode: str) -> s
     pack_name = skill.get("pack_name") or skill.get("pack")
     pack = load_skill_pack(pack_name) if pack_name else None
     if pack:
-        ref_names = (skill.get("refs_by_mode") or {}).get(mode) or depth.get("refs") or ()
-        limits = depth.get("ref_limits") or {}
+        ref_names = list(
+            (skill.get("refs_by_mode") or {}).get(mode) or depth.get("refs") or ()
+        )
+        if intent == "app" and role == "frontend":
+            # Prefer app-shell over landing-ship for apps
+            ref_names = [
+                "app-shell.md" if n == "landing-ship.md" else n for n in ref_names
+            ]
+            if "app-shell.md" not in ref_names:
+                ref_names = ["app-shell.md", *ref_names]
+        if intent == "app" and role == "design":
+            ref_names = [
+                "app-shell.md" if n == "landing-ship.md" else n for n in ref_names
+            ]
+            if "app-shell.md" not in ref_names and (pack["refs_dir"] / "app-shell.md").is_file():
+                ref_names = ["app-shell.md", *ref_names]
+            # design pack may not have app-shell — frontend does; skip missing
+        if intent == "app" and role == "backend":
+            ref_names = [
+                "app-api.md" if n == "landing-api.md" else n for n in ref_names
+            ]
+            if "app-api.md" not in ref_names:
+                ref_names = ["app-api.md", *ref_names]
+        limits = dict(depth.get("ref_limits") or {})
+        limits.setdefault("app-shell.md", 3200)
+        limits.setdefault("app-api.md", 2200)
         if "security.md" in ref_names and "security.md" not in limits:
             limits = {**limits, "security.md": 1800}
-        ref_blocks = [
-            _pack_ref(pack, n, limit=int(limits.get(n, 2000))) for n in ref_names
-        ]
-        ref_blocks = [b for b in ref_blocks if b]
+        ref_blocks = []
+        for n in ref_names:
+            # design: load app-shell from frontend pack if missing locally
+            block = _pack_ref(pack, n, limit=int(limits.get(n, 2000)))
+            if not block and n == "app-shell.md" and role == "design":
+                fe = load_skill_pack("frontend")
+                if fe:
+                    block = _pack_ref(fe, n, limit=int(limits.get(n, 2000)))
+            if block:
+                ref_blocks.append(block)
         if ref_blocks:
             parts.append("\n## Reference pack (учти, ужато)\n")
             parts.extend(ref_blocks)
 
         if depth.get("include_examples"):
             ex_mode = depth.get("example_mode") or ("full" if mode == "premium" else "micro")
+            if intent == "app" and role == "frontend":
+                ex_mode = "app"
             ex = _pack_examples(pack, mode=ex_mode)
             if ex:
                 parts.append("\n## Examples\n" + ex)
@@ -651,13 +905,25 @@ def build_role_system(role: str, brief: str | None, intent: str, mode: str) -> s
                 parts.append("\n## Templates\n" + tmpl)
 
     if brief and brief.strip():
-        parts.append(f"\nБриф проекта:\n{brief.strip()[:1500]}")
+        # Landing briefs carry Unsplash URLs + service packs — don't truncate to death
+        brief_lim = 6000 if mode in ("ultra", "premium") else 3500
+        parts.append(f"\nБриф проекта:\n{brief.strip()[:brief_lim]}")
     intent_title = INTENT_META.get(intent, {}).get("title", intent)
     parts.append(f"\nИнтент: {intent_title}.")
 
     checklist = skill.get("checklist") or []
-    if checklist and mode in ("ultra", "premium", "standard"):
-        parts.append("\nЧеклист роли:\n- " + "\n- ".join(checklist[:6]))
+    if intent == "app" and role == "frontend":
+        checklist = [
+            "Уникальный UI под бриф (не клон эталона)",
+            "Shell: бренд + nav ≥2 экрана + status/toast",
+            "Каталог: API + img + CTA; filters ↔ seed",
+            "Заказ/корзина + история с fetch и res.ok",
+            "Логика только в app.js; API=\".\"",
+            "Без React/alert/onclick/лендинга",
+        ]
+    if checklist and mode in ("ultra", "premium", "standard", "light"):
+        n = 4 if mode == "light" else 6
+        parts.append("\nЧеклист роли:\n- " + "\n- ".join(checklist[:n]))
     return "\n".join(parts)
 
 

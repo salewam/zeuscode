@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>ZeusCode</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/static/tg-miniapp.css?v=clients17" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand-row">
+        <div class="brand">ZeusCode</div>
+        <button type="button" class="pill-link hidden" id="btn-learn-again" title="Пройти снова">?</button>
+      </div>
+      <div class="sub" id="hello">Загрузка…</div>
+
+      <div class="seg seg-3" id="tabs" role="tablist" aria-label="Разделы">
+        <button type="button" class="seg-btn" role="tab" data-route="learn" id="tab-learn">Старт</button>
+        <button type="button" class="seg-btn" role="tab" data-route="fusion" id="tab-fusion">Модели</button>
+        <button type="button" class="seg-btn" role="tab" data-route="advisor" id="tab-advisor">Советник</button>
+      </div>
+    </header>
+
+    <div id="view-learn" class="view hidden" role="tabpanel">
+      <div class="learn-progress" id="learn-dots" aria-hidden="true"></div>
+      <button type="button" class="back-chip hidden" id="learn-back">← Назад</button>
+      <div id="learn-step" class="learn-step"></div>
+    </div>
+
+    <div id="view-fusion" class="view hidden" role="tabpanel">
+      <section class="block">
+        <h2>Как работать</h2>
+        <p class="hint">Один ключ = все модели. Здесь выбираешь, как работает <b>zeuscode</b> в любом клиенте. Или собери свой набор.</p>
+        <div class="modes" id="modes"></div>
+      </section>
+
+      <section class="block" id="models-block">
+        <h2>Твой набор <span class="muted" id="pick-n">0/3</span></h2>
+        <p class="hint" id="models-hint">В режиме «Набор» отметь до трёх нейронок.</p>
+        <div class="search-wrap hidden" id="search-wrap">
+          <input type="search" id="q" placeholder="Найти нейронку…" autocomplete="off" />
+        </div>
+        <div class="models" id="models"></div>
+      </section>
+
+      <section class="block">
+        <h2>Ключ</h2>
+        <p class="hint">Один раз скопировал — и хватит. Если потерял — перевыпусти.</p>
+        <div class="cred" id="key-box">
+          <div class="cred-label">Твой ключ</div>
+          <div class="cred-val" id="key-val">…</div>
+        </div>
+        <div class="cred-actions">
+          <button type="button" class="btn-soft primary" id="btn-copy-key">Скопировать ключ</button>
+          <button type="button" class="btn-soft" id="btn-rekey">Перевыпустить</button>
+        </div>
+      </section>
+
+      <button type="button" class="soft-banner" id="banner-learn">
+        <span class="soft-banner__t">Ещё не настроил окно?</span>
+        <span class="soft-banner__h">Короткий старт — куда вставить ключ →</span>
+      </button>
+    </div>
+
+    <div id="view-advisor" class="view hidden" role="tabpanel">
+      <section class="block">
+        <h2>Советник</h2>
+        <p class="hint">Спроси простым языком: какой режим, какую нейронку, куда вставить ключ.</p>
+        <div class="adv-chips">
+          <button type="button" class="adv-chip" data-ask="Какой режим взять для обычного лендинга?">Режим для лендинга</button>
+          <button type="button" class="adv-chip" data-ask="Гиперсложный проект — хочу максимально круто и без ошибок. Что выбрать?">Сложный проект</button>
+          <button type="button" class="adv-chip" data-ask="Куда вставить ключ, если у меня VS Code?">Куда ключ</button>
+        </div>
+        <div class="adv-log" id="adv-log"></div>
+        <div class="adv-compose">
+          <textarea id="adv-input" rows="2" placeholder="Напиши вопрос…" maxlength="2000"></textarea>
+          <button type="button" class="btn-soft primary" id="adv-send">Спросить</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="err hidden" id="err"></div>
+    <div class="ok hidden" id="ok"></div>
+  </div>
+  <script src="/static/tg-platforms.js?v=clients17"></script>
+  <script src="/static/tg-miniapp.js?v=clients17"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+{
+  "cid": "u12_ui_copy",
+  "prompt": "Напиши 3 коротких варианта CTA для лендинга AI-кодинг инструмента на русском.",
+  "zeus": {
+    "mode": "simple"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "# Варианты CTA для AI-кодинг инструмента\n\n## Вариант 1 (Прямой и активный)\n**\"Начать кодить бесплатно\"**\n\nЛаконичный, побуждает к немедленному действию. Хорошо работает для конверсии пользователей, готовых попробовать.\n\n## Вариант 2 (С социальным доказательством)\n**\"Присоединиться к 50K+ разработчиков\"**\n\nДобавляет доверие через цифру. Эффективен для FOMO-мотивации и показа популярности.\n\n## Вариант 3 (Результат-ориентированный)\n**\"Ускори разработку на 5x\"**\n\nФокусируется на конкретном преимуществе. Привлекает профессионалов, ищущих повышение продуктивности.\n\n---\n\n**Рекомендация:** Выбор зависит от целевой аудитории:\n- Новички / студенты → вариант 1\n- Широкая аудитория → вариант 2  \n- Опытные разработчики → вариант 3",
+  "answer_excerpt": "# Варианты CTA для AI-кодинг инструмента\n\n## Вариант 1 (Прямой и активный)\n**\"Начать кодить бесплатно\"**\n\nЛаконичный, побуждает к немедленному действию. Хорошо работает для конверсии пользователей, готовых попробовать.\n\n## Вариант 2 (С социальным доказательством)\n**\"Присоединиться к 50K+ разработчиков\"**\n\nДобавляет доверие через цифру. Эффективен для FOMO-мотивации и показа популярности.\n\n## Вариант 3 (Результат-ориентированный)\n**\"Ускори разработку на 5x\"**\n\nФокусируется на конкретном преимущес",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "simple",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "ui",
+    "leader": "claude-haiku-4-5",
+    "panel": [
+      "gemini-3-pro",
+      "deepseek-v4-flash",
+      "claude-haiku-4-5"
+    ],
+    "trace_id": "5a53197a107e459e",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "claude-haiku-4-5",
+        "model_id": "claude-haiku-4-5",
+        "billable_state": "completed",
+        "prompt_tokens": 87,
+        "completion_tokens": 408,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "# Варианты CTA для AI-кодинг инструмента\n\n## Вариант 1 (Прямой и активный)\n**\"Начать кодить бесплатно\"**\n\nЛаконичный, побуждает к немедленному действию. Хорошо работает для конверсии пользователей, готовых попробовать.\n\n## Вариант 2 (С социальным доказательством)\n**\"Присоединиться к 50K+ разработчиков\"**\n\nДобавляет доверие через цифру. Эффективен для FOMO-мотивации и показа популярности.\n\n## Вариант 3 (Результат-ориентированный)\n**\"Ускори разработку на 5x\"**\n\nФокусируется на конкретном преимуществе. Привлекает профессионалов, ищущих повышение продуктивности.\n\n---\n\n**Рекомендация:** Выбор зависит от целевой аудитории:\n- Новички / студенты → вариант 1\n- Широкая аудитория → вариант 2  \n- Опытные разработчики → вариант 3",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "ui",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.402,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 87,
+    "completion_tokens": 408,
+    "total_tokens": 495
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.1062,
+    "markup": 1.5,
+    "balance_left_rub": 870.94,
+    "key_spent_rub": 9.9954,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "5a53197a107e459e",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "claude-haiku-4-5",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "5a53197a107e459e",
+  "escalate_from": "CASCADE",
+  "latency_s": 14.952,
+  "ok": true
+}

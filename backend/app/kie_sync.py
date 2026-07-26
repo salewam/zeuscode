@@ -40,7 +40,8 @@ ID_ALIASES: dict[str, str] = {
 # Path overrides for Gemini OpenAI-compatible routes
 PATH_OVERRIDES: dict[str, str] = {
     "gemini-3.5-flash": "gemini-3-5-flash-openai",
-    "gemini-3.1-pro": "gemini-3.1-pro-openai",
+    # Kie rejects gemini-3.1-pro-openai; plain id works
+    "gemini-3.1-pro": "gemini-3.1-pro",
 }
 
 
@@ -91,11 +92,24 @@ def _kind_bucket(kind: str) -> str:
     return "other"
 
 
+# Kie returns 500 for these ids (live ping 2026-07-21) — drop from catalog
+_UPSTREAM_DOWN = frozenset(
+    {
+        "gpt-5-codex",
+        "gpt-5.1-codex",
+        "gpt-5.2-codex",
+        "gpt-5.3-codex",
+    }
+)
+
+
 def infer_adapter(model_id: str, provider: str, modality: str) -> tuple[str, bool]:
     """Return (adapter, ready). Chat: gemini/claude/gpt/grok wired via Kie."""
     if modality != "chat":
         return "pending", False
     pid = model_id.lower()
+    if pid in _UPSTREAM_DOWN:
+        return "responses", False
     prov = (provider or "").lower()
     if pid.startswith("gemini") or "google" in prov:
         return "gemini", True
@@ -192,6 +206,8 @@ def rows_to_models(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     models: list[dict[str, Any]] = []
     for (modality, mid), items in grouped.items():
+        if (mid or "").lower() in _UPSTREAM_DOWN:
+            continue  # known dead on Kie — do not resurface
         provider = provider_label(items[0].get("provider") or "", modality)
         title = items[0].get("_name") or mid
         buckets: dict[str, list[float]] = {

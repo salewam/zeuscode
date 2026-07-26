@@ -1,0 +1,22 @@
+{
+  "label": "solo_opus",
+  "ok": false,
+  "status": 500,
+  "latency_s": 111.64,
+  "routed_by": null,
+  "ui_crew": null,
+  "leader": null,
+  "task_kind": null,
+  "path": null,
+  "metrics": {
+    "bytes": 0,
+    "has_html_close": false,
+    "has_media": false,
+    "has_form": false,
+    "has_nav": false,
+    "sections": 0,
+    "live_link": null
+  },
+  "error": "{\"detail\":\"Upstream error 500: {\\\"type\\\": \\\"error\\\", \\\"error\\\": {\\\"type\\\": \\\"api_error\\\", \\\"message\\\": \\\"Server exception, please try again later\\\"}}\"}",
+  "onestack": {}
+}

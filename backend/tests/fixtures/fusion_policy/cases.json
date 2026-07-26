@@ -1,0 +1,240 @@
+{
+  "lexicon_id": "lexicon_v1",
+  "cases": [
+    {
+      "id": "F1",
+      "given": {
+        "user_q": "привет",
+        "classify_phase": "chat",
+        "complexity_band": "light",
+        "confidence": 0.95,
+        "effort": "med",
+        "product_mode": "power",
+        "kill_switch": false,
+        "stream": false,
+        "has_last_assistant": false
+      },
+      "expect": {
+        "path": "FAST",
+        "routed_by": "policy_chat_light",
+        "complexity": "light"
+      }
+    },
+    {
+      "id": "F2",
+      "given": {
+        "user_q": "поменяй цвет кнопки на красный",
+        "classify_phase": "ui",
+        "complexity_band": "light",
+        "confidence": 0.85,
+        "effort": "med",
+        "product_mode": "power",
+        "kill_switch": false
+      },
+      "expect": {
+        "path": "CASCADE",
+        "routed_by": "policy_light_cascade",
+        "complexity": "light"
+      }
+    },
+    {
+      "id": "F5",
+      "given": {
+        "user_q": "спроектируй модуль auth",
+        "classify_phase": "implement",
+        "complexity_band": "med",
+        "confidence": 0.7,
+        "effort": "med",
+        "product_mode": "power",
+        "design_lexicon": true
+      },
+      "expect": {
+        "path": "FULL",
+        "routed_by": "policy_design_lexicon_full",
+        "design_lexicon": true,
+        "interactive": false
+      }
+    },
+    {
+      "id": "F7",
+      "given": {
+        "user_q": "сделай code review этого PR",
+        "classify_phase": "review",
+        "complexity_band": "heavy",
+        "confidence": 0.8,
+        "effort": "med",
+        "product_mode": "power",
+        "kill_switch": true
+      },
+      "expect": {
+        "path": "FAST",
+        "routed_by": "kill_switch"
+      }
+    },
+    {
+      "id": "F8a",
+      "given": {
+        "user_q": "привет",
+        "classify_phase": "chat",
+        "complexity_band": "light",
+        "confidence": 0.9,
+        "effort": "med",
+        "product_mode": "power",
+        "zeus_mode": "full"
+      },
+      "expect": {
+        "path": "FULL",
+        "routed_by": "forced_full"
+      }
+    },
+    {
+      "id": "F8b",
+      "given": {
+        "user_q": "привет",
+        "classify_phase": "chat",
+        "complexity_band": "light",
+        "confidence": 0.9,
+        "effort": "med",
+        "product_mode": "power",
+        "model_id": "zeus/fusion-full"
+      },
+      "expect": {
+        "path": "FULL",
+        "routed_by": "legacy_full_alias"
+      }
+    },
+    {
+      "id": "F9",
+      "given": {
+        "user_q": "anything",
+        "classify_failed": true,
+        "effort": "med",
+        "product_mode": "power"
+      },
+      "expect": {
+        "path": "CASCADE",
+        "routed_by": "classify_fallback_cascade"
+      }
+    },
+    {
+      "id": "F10",
+      "given": {
+        "user_q": "добавь кнопку сохранить",
+        "classify_phase": "implement",
+        "complexity_band": "light",
+        "confidence": 0.75,
+        "effort": "med",
+        "product_mode": "power"
+      },
+      "expect": {
+        "path": "CASCADE",
+        "routed_by": "policy_light_cascade"
+      }
+    },
+    {
+      "id": "F14",
+      "given": {
+        "user_q": "привет",
+        "classify_phase": "chat",
+        "complexity_band": "light",
+        "confidence": 0.75,
+        "effort": "high",
+        "product_mode": "power"
+      },
+      "expect": {
+        "path": "CASCADE",
+        "routed_by_family": "policy_",
+        "complexity": "med",
+        "not_path": "FAST"
+      }
+    },
+    {
+      "id": "F15",
+      "given": {
+        "user_q": "спроектируй модуль auth",
+        "classify_phase": "implement",
+        "complexity_band": "med",
+        "confidence": 0.7,
+        "effort": "med",
+        "product_mode": "simple",
+        "design_lexicon": true
+      },
+      "expect": {
+        "path": "CASCADE",
+        "routed_by": "mode_simple_clamp"
+      }
+    },
+    {
+      "id": "F16",
+      "given": {
+        "user_q": "реализуй endpoint авторизации",
+        "classify_phase": "implement",
+        "complexity_band": "med",
+        "confidence": 0.7,
+        "effort": "high",
+        "product_mode": "power"
+      },
+      "expect": {
+        "path": "FULL",
+        "routed_by": "policy_heavy_full",
+        "complexity": "heavy"
+      }
+    },
+    {
+      "id": "I1",
+      "kind": "interactive_gate",
+      "given": {
+        "user_q": "поправь отступы у кнопки пожалуйста ок",
+        "classify_phase": "ui",
+        "complexity_band": "light",
+        "confidence": 0.8,
+        "effort": "med",
+        "product_mode": "power",
+        "has_last_assistant": true,
+        "has_new_traceback": false,
+        "stream": false
+      },
+      "expect": {
+        "interactive": true
+      }
+    },
+    {
+      "id": "I2",
+      "kind": "interactive_gate",
+      "given": {
+        "user_q": "спроектируй модуль биллинга",
+        "classify_phase": "implement",
+        "complexity_band": "med",
+        "confidence": 0.7,
+        "effort": "med",
+        "product_mode": "power",
+        "design_lexicon": true,
+        "has_last_assistant": true,
+        "stream": true
+      },
+      "expect": {
+        "interactive": false,
+        "path": "FULL",
+        "design_lexicon": true
+      }
+    },
+    {
+      "id": "I3",
+      "kind": "interactive_gate",
+      "given": {
+        "user_q": "x",
+        "user_chars": 900,
+        "classify_phase": "implement",
+        "complexity_band": "med",
+        "confidence": 0.55,
+        "effort": "med",
+        "product_mode": "power",
+        "stream": true,
+        "has_last_assistant": false
+      },
+      "expect": {
+        "interactive": false
+      }
+    }
+  ]
+}

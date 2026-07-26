@@ -1,0 +1,92 @@
+[
+  {
+    "label": "fusion_power_full",
+    "ok": true,
+    "status": 200,
+    "latency_s": 147.44,
+    "path": "FULL",
+    "leader": "claude-opus-4-8",
+    "panel": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro",
+      "gemini-3.1-pro"
+    ],
+    "billing": {
+      "currency": "RUB",
+      "charged_rub": 6.3454,
+      "markup": 1.5,
+      "balance_left_rub": 840.21,
+      "key_spent_rub": 37.3491,
+      "key_budget_rub": 0.0,
+      "path": "FULL",
+      "policy_path": "FULL",
+      "routed_by": "forced_full",
+      "trace_id": "8467e6f3839143a1",
+      "alerts": {
+        "low_balance": false,
+        "monthly_budget": false,
+        "monthly_budget_warning": false
+      }
+    },
+    "score": {
+      "bytes": 15119,
+      "has_doctype": true,
+      "sections": 4,
+      "forms": 1,
+      "services_hint": 5,
+      "cta": true,
+      "phone": true,
+      "google_fonts": true,
+      "broken_md_links": false,
+      "purple_risk": false,
+      "media": true,
+      "heroish": true,
+      "live_link": true
+    },
+    "publish_url": "https://zeuscode.ru/go/site-1805/",
+    "html_path": "_bmad-output/implementation-artifacts/bakeoff-sto-2026-07-23/rerun-20260723-020557/fusion_power_full.html"
+  },
+  {
+    "label": "solo_gemini31pro",
+    "ok": true,
+    "status": 200,
+    "latency_s": 25.64,
+    "path": null,
+    "leader": null,
+    "panel": null,
+    "billing": {
+      "currency": "RUB",
+      "charged_rub": 1.7678,
+      "markup": 1.5,
+      "balance_left_rub": 837.71,
+      "key_spent_rub": 39.1169,
+      "key_budget_rub": 0.0,
+      "path": null,
+      "policy_path": null,
+      "routed_by": null,
+      "trace_id": null,
+      "alerts": {
+        "low_balance": false,
+        "monthly_budget": false,
+        "monthly_budget_warning": false
+      }
+    },
+    "score": {
+      "bytes": 12413,
+      "has_doctype": true,
+      "sections": 3,
+      "forms": 1,
+      "services_hint": 6,
+      "cta": true,
+      "phone": true,
+      "google_fonts": true,
+      "broken_md_links": false,
+      "purple_risk": false,
+      "media": true,
+      "heroish": true,
+      "live_link": true
+    },
+    "publish_url": "https://zeuscode.ru/go/site-391b/",
+    "html_path": "_bmad-output/implementation-artifacts/bakeoff-sto-2026-07-23/rerun-20260723-020557/solo_gemini31pro.html"
+  }
+]

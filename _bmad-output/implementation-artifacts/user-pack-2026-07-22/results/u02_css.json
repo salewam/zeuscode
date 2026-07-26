@@ -1,0 +1,101 @@
+{
+  "cid": "u02_css",
+  "prompt": "Сделай CSS: кнопка primary, синий фон, белый текст, hover чуть темнее. Только код.",
+  "zeus": {
+    "mode": "simple"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "```css\n.button-primary {\n  background-color: #0066cc;\n  color: white;\n  padding: 10px 20px;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n  font-size: 16px;\n  transition: background-color 0.2s;\n}\n\n.button-primary:hover {\n  background-color: #0052a3;\n}\n```\n\nHTML для использования:\n```html\n<button class=\"button-primary\">Нажми меня</button>\n```",
+  "answer_excerpt": "```css\n.button-primary {\n  background-color: #0066cc;\n  color: white;\n  padding: 10px 20px;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n  font-size: 16px;\n  transition: background-color 0.2s;\n}\n\n.button-primary:hover {\n  background-color: #0052a3;\n}\n```\n\nHTML для использования:\n```html\n<button class=\"button-primary\">Нажми меня</button>\n```",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "simple",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "claude-haiku-4-5",
+    "panel": [
+      "deepseek-v4-flash",
+      "gemini-3-pro",
+      "claude-haiku-4-5"
+    ],
+    "trace_id": "43b3b19a18634510",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "claude-haiku-4-5",
+        "model_id": "claude-haiku-4-5",
+        "billable_state": "completed",
+        "prompt_tokens": 78,
+        "completion_tokens": 151,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "```css\n.button-primary {\n  background-color: #0066cc;\n  color: white;\n  padding: 10px 20px;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n  font-size: 16px;\n  transition: background-color 0.2s;\n}\n\n.button-primary:hover {\n  background-color: #0052a3;\n}\n```\n\nHTML для использования:\n```html\n<button class=\"button-primary\">Нажми меня</button>\n```",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "fast",
+      "task": "light",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "guardrails": [
+        "trivial-ui→fast",
+        "trivial-ui→fast"
+      ],
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 78,
+    "completion_tokens": 151,
+    "total_tokens": 229
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.0416,
+    "markup": 1.5,
+    "balance_left_rub": 878.95,
+    "key_spent_rub": 0.075,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "43b3b19a18634510",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "claude-haiku-4-5",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "43b3b19a18634510",
+  "escalate_from": "CASCADE",
+  "latency_s": 15.552,
+  "ok": true
+}

@@ -113,7 +113,7 @@ async def create_key(
     out = _key_dict(key, raw=raw)
     out["warning"] = (
         "ВАЖНО: ключ ZeusCode не работает с официальным OpenAI напрямую. "
-        f"В IDE укажи Base URL = {public_v1_base_url()} и этот ключ."
+        f"В любом OpenAI-compatible клиенте укажи Base URL = {public_v1_base_url()} и этот ключ."
     )
     return out
 

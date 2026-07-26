@@ -1,0 +1,7 @@
+{
+  "id": "F2",
+  "bucket": "chitchat",
+  "prompt": "hello how are you",
+  "expected_path": "FAST",
+  "expect_code_fence": false
+}

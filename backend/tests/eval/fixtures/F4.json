@@ -1,0 +1,7 @@
+{
+  "id": "F4",
+  "bucket": "ui_trivial",
+  "prompt": "поменяй цвет кнопки на красный",
+  "expected_path": "FAST",
+  "expect_code_fence": false
+}

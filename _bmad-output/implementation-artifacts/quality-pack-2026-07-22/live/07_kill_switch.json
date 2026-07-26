@@ -1,0 +1,21 @@
+{
+  "cid": "07_kill_switch",
+  "prompt": "Сделай полный архитектурный разбор микросервисов биллинга.",
+  "stream": false,
+  "onestack": {},
+  "raw_error": "Fusion fast: нет ответа (deepseek-v4-flash: cancelled)",
+  "answer_excerpt": "",
+  "usage": null,
+  "credits_consumed": null,
+  "onestack_billing": null,
+  "http_status": 502,
+  "latency_s": 10.009,
+  "path": null,
+  "policy_path": null,
+  "leader": null,
+  "routed_by": null,
+  "trace_id": null,
+  "escalate_from": null,
+  "human_stub": "fail",
+  "why": "http 502: Fusion fast: нет ответа (deepseek-v4-flash: cancelled)"
+}

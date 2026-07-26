@@ -1,0 +1,7 @@
+{
+  "id": "F12",
+  "bucket": "debug",
+  "prompt": "почему падает TypeError в auth middleware",
+  "expected_path": "FULL",
+  "expect_code_fence": true
+}

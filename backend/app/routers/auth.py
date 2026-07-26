@@ -79,15 +79,44 @@ async def login(body: LoginIn, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(401, "Invalid email or password")
+    try:
+        from app.kie_credits import sync_user_balance_from_kie
+
+        await sync_user_balance_from_kie(user)
+        await db.commit()
+        await db.refresh(user)
+    except Exception:  # noqa: BLE001
+        pass
     token = create_access_token(user.id, user.email)
-    return TokenOut(access_token=token, balance_rub=user.balance_usd)
+    return TokenOut(access_token=token, balance_rub=round(float(user.balance_usd or 0), 4))
 
 
 @router.get("/me")
-async def me(user: User = Depends(get_current_user)):
+async def me(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    bal_meta: dict = {"credits": None, "synced": False}
+    try:
+        from app.kie_credits import sync_user_balance_from_kie
+
+        bal_meta = await sync_user_balance_from_kie(user)
+        await db.commit()
+        await db.refresh(user)
+    except Exception:  # noqa: BLE001
+        pass
+    from app.fusion import DEFAULT_PRODUCT_MODE, normalize_product_mode, parse_fusion_models_json
+    from app.fusion.metrics import normalize_effort
+
+    credits = bal_meta.get("credits", bal_meta.get("kie_credits"))
+    synced = bool(bal_meta.get("synced") or bal_meta.get("kie_synced"))
     return {
         "id": user.id,
         "email": user.email,
-        "balance_rub": round(user.balance_usd, 4),
+        "balance_rub": round(float(user.balance_usd or 0), 4),
         "model_family": getattr(user, "model_family", None) or "",
+        "fusion_pref": normalize_product_mode(getattr(user, "fusion_pref", None))
+        or DEFAULT_PRODUCT_MODE,
+        "fusion_models": parse_fusion_models_json(getattr(user, "fusion_models", None)),
+        "fusion_effort": normalize_effort(getattr(user, "fusion_effort", None)),
+        "fusion_kill_switch": bool(getattr(user, "fusion_kill_switch", 0)),
+        "credits": credits,
+        "synced": synced,
     }

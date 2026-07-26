@@ -1,0 +1,117 @@
+[
+  {
+    "label": "fusion_ui_crew",
+    "ok": true,
+    "status": 200,
+    "latency_s": 553.91,
+    "routed_by": "ui_author_critics_web",
+    "ui_crew": {
+      "author": "gemini-3.1-pro",
+      "critics": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 968,
+        "deepseek-v4-pro": 840,
+        "gemini-3.1-pro": 860
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "browser,duckduckgo_html,jina",
+        "queries": [
+          "автосервис сайт запись онлайн",
+          "car repair shop website book appointment",
+          "best auto repair shop website design examples"
+        ],
+        "refs_used": [
+          "https://www.abcp.ru/carservice",
+          "https://part-kom.ru/service-booking",
+          "https://fitauto.ru/"
+        ],
+        "browser_used": 2,
+        "browser_live_used": 2,
+        "browser_available": true,
+        "live_refs": [
+          "https://www.abcp.ru/carservice",
+          "https://part-kom.ru/service-booking",
+          "https://fitauto.ru/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Add a compact sub-hero trust bar under the CTA (адрес Каширское шоссе, часы работы, телефон-ссылка, «гарантия 2 года») — refs fitauto/abcp all lead with trust/contact; right now the address only lives in the title tag.",
+          "Give each of the 6 service cards a price-from label (напр. «от 900 ₽») and est. time — ref part-kom booking flow shows work type selection, so pricing/time raises conversion and density.",
+          "Upgrade the booking form beyond alert-only: add a native date/time picker + service <select> matching the 6 services, inline validation, and a success state that replaces the form (refs abcp/part-kom center the date/time/work-type choice).",
+          "Add a scroll-spy active state on nav links plus smooth-scroll — cheap polish that reads as crafted.",
+          "Introduce a subtle amber count-up or icon micro-motion on the services section entering viewport to hit the 2-3 motion target beyond fadeIn/pulseGlow.",
+          "Add a footer with map embed / directions to Каширское шоссе, working hours, соцсети — refs close with contacts block; site currently seems to end abruptly.",
+          "Layer a faint animated garage texture (subtle grain or slow gradient shift) on hero to avoid flat gradient over one unsplash photo, matching brief's 'атмосфера бокса'.",
+          "Интегрируйте модуль онлайн-записи с выбором даты/времени и типа услуги, по аналогии с ABCP.ru – это повысит конверсию и доверие.",
+          "Добавьте видео-фон в hero с реальной работой бокса (или анимированный слайд-шоу) для полного погружения в атмосферу.",
+          "Добавьте hamburger-меню для мобильных, скрывающее ссылки за иконкой, и реализуйте плавное открытие/закрытие.",
+          "Сделайте все трёхколоночные сетки (услуги, отзывы) одноколоночными на экранах до 768px.",
+          "Уменьшите размер заголовка hero до 2.2–2.5rem на мобильных, отрегулируйте отступы, чтобы не закрывать изображение."
+        ],
+        "must_fix": [
+          "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px",
+          "No mobile nav: .nav-links show desktop links with margin-left:30px that will wrap/overflow at ~390px. Add a hamburger toggle with a stacked menu drawer, hide desktop links under @media (max-width:768px).",
+          "Hero h1 is 5rem fixed — at 390px 'МОТОРХАУС' will overflow/scroll horizontally. Use clamp(2.2rem, 9vw, 5rem) and reduce hero padding; verify no horizontal scroll.",
+          "Services and reviews grids are hard-coded repeat(3,1fr) with no visible mobile breakpoint in shown CSS — must collapse to 1 column at ≤768px or cards become unreadably narrow.",
+          "pulseGlow infinite on the primary CTA is distracting and drains battery on mobile; limit iterations or pause via prefers-reduced-motion.",
+          "Add a sticky bottom 'Записаться' / phone CTA on mobile (≥44px tap target) that does NOT overlap the booking form when it's in view.",
+          "Полная HTML-разметка не предоставлена – автор ограничился CSS; сайт не загружается. Исправьте, предоставив полный код с body.",
+          "Отсутствуют медиа-запросы (@media) – на телефоне всё сломано. Добавьте адаптивность с брейкпоинтами min-width: 320px, 480px, 768px."
+        ],
+        "praise": [
+          "Strong asphalt+amber palette with layered gradient hero overlay — on-brief atmosphere and no indigo/Inter clichés.",
+          "Montserrat/Open Sans pairing and uppercase headings give a proper garage identity.",
+          "Service card hover (lift + amber underline + radial glow) and FAQ accordion are tasteful, real interactions.",
+          "Цветовая гамма «асфальт/янтарь» отлично отражает бренд, нет запрещённых indigo/Inter.",
+          "Использованы шрифты Montserrat и Open Sans — хорошо читаются и создают индустриальное настроение.",
+          "Градиентное затемнение hero с радиальным акцентом создаёт объём и «атмосферу бокса».",
+          "Эффект наведения на карточки услуг с золотистой границей и подъёмом – приятный и современный.",
+          "Логотип с акцентом на amber привлекателен и запоминается."
+        ],
+        "mobile_gaps": [
+          "Mobile nav: hamburger or compact menu; desktop links must not wrap/overflow on ~390px"
+        ]
+      }
+    },
+    "leader": "gemini-3.1-pro",
+    "task_kind": "ui",
+    "path": "FULL",
+    "metrics": {
+      "bytes": 36230,
+      "has_html_close": true,
+      "has_media": true,
+      "has_form": true,
+      "has_nav": true,
+      "sections": 5,
+      "live_link": null
+    },
+    "error": null
+  },
+  {
+    "label": "solo_opus",
+    "ok": false,
+    "status": 500,
+    "latency_s": 111.64,
+    "routed_by": null,
+    "ui_crew": null,
+    "leader": null,
+    "task_kind": null,
+    "path": null,
+    "metrics": {
+      "bytes": 0,
+      "has_html_close": false,
+      "has_media": false,
+      "has_form": false,
+      "has_nav": false,
+      "sections": 0,
+      "live_link": null
+    },
+    "error": "{\"detail\":\"Upstream error 500: {\\\"type\\\": \\\"error\\\", \\\"error\\\": {\\\"type\\\": \\\"api_error\\\", \\\"message\\\": \\\"Server exception, please try again later\\\"}}\"}"
+  }
+]

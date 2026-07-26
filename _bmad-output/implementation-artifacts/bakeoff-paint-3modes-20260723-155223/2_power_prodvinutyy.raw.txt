@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МоторХаус | Автосервис и Малярный цех на Каширском шоссе</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+        :root {
+            --color-bg: #1a1a1a;
+            --color-bg-alt: #242424;
+            --color-primary: #d97706; /* Amber/Ochre */
+            --color-primary-hover: #b45309;
+            --color-text: #f3f4f6;
+            --color-text-muted: #9ca3af;
+            --font-headings: 'Oswald', sans-serif;
+            --font-body: 'Montserrat', sans-serif;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-headings);
+            text-transform: uppercase;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header & Nav */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+
+        .logo {
+            font-family: var(--font-headings);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-primary);
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--color-primary);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: var(--color-text);
+            transition: var(--transition);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=1920') center/cover no-repeat;
+            padding-top: 80px;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            animation: fadeUp 1s ease-out;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .hero h1 span {
+            color: var(--color-primary);
+        }
+
+        .hero p {
+            font-size: clamp(1.1rem, 2vw, 1.4rem);
+            margin-bottom: 40px;
+            color: #d1d5db;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--color-primary);
+            color: #fff;
+            padding: 16px 32px;
+            font-family: var(--font-headings);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: var(--color-primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Sections General */
+        section {
+            padding: 100px 0;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            text-align: center;
+            margin-bottom: 60px;
+            color: #fff;
+        }
+
+        .section-title span {
+            color: var(--color-primary);
+        }
+
+        /* Services */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: var(--color-bg-alt);
+            padding: 40px 30px;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+        }
+
+        .service-card:hover {
+            border-bottom-color: var(--color-primary);
+            transform: translateY(-5px);
+        }
+
+        .service-icon {
+            font-size: 40px;
+            color: var(--color-primary);
+            margin-bottom: 20px;
+        }
+
+        .service-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .service-card p {
+            color: var(--color-text-muted);
+            font-size: 14px;
+        }
+
+        /* Paint Shop */
+        .paint-shop {
+            background: var(--color-bg-alt);
+        }
+
+        .paint-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .paint-text h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: var(--color-primary);
+        }
+
+        .paint-text ul {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .paint-text li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .paint-text li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--color-primary);
+            font-weight: bold;
+        }
+
+        .paint-image {
+            width: 100%;
+            height: 400px;
+            background: url('https://images.unsplash.com/photo-1632733711679-529326f6db12?auto=format&fit=crop&q=80&w=800') center/cover;
+            border: 4px solid #333;
+        }
+
+        /* Advantages */
+        .adv-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            text-align: center;
+        }
+
+        .adv-item h4 {
+            font-size: 20px;
+            margin: 15px 0 10px;
+            color: var(--color-primary);
+        }
+
+        /* Reviews */
+        .reviews {
+            background: var(--color-bg-alt);
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .review-card {
+            background: var(--color-bg);
+            padding: 30px;
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .review-text {
+            font-style: italic;
+            margin-bottom: 20px;
+            color: var(--color-text-muted);
+        }
+
+        .review-author {
+            font-weight: bold;
+            font-family: var(--font-headings);
+        }
+
+        /* FAQ */
+        .faq-item {
+            background: var(--color-bg-alt);
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .faq-question {
+            padding: 20px;
+            font-family: var(--font-headings);
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            color: var(--color-text-muted);
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 0 20px 20px;
+            max-height: 200px;
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 24px;
+            color: var(--color-primary);
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-question::after {
+            transform: rotate(45deg);
+        }
+
+        /* Contact & Form */
+        .contact-section {
+            background: linear-gradient(to right, var(--color-bg) 50%, var(--color-bg-alt) 50%);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .contact-info h3 {
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .info-item span {
+            color: var(--color-primary);
+            display: block;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .booking-form {
+            background: var(--color-bg-alt);
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            background: var(--color-bg);
+            border: 1px solid #333;
+            color: #fff;
+            font-family: var(--font-body);
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        select.form-control {
+            appearance: none;
+        }
+
+        .form-success {
+            display: none;
+            background: rgba(217, 119, 6, 0.1);
+            border: 1px solid var(--color-primary);
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--color-primary);
+        }
+
+        /* Footer */
+        footer {
+            background: #111;
+            padding: 30px 0;
+            text-align: center;
+            border-top: 1px solid #222;
+        }
+
+        /* Mobile Sticky CTA */
+        .mobile-cta {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--color-primary);
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            font-family: var(--font-headings);
+            font-size: 18px;
+            z-index: 999;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Media Queries */
+        @media (max-width: 992px) {
+            .contact-section {
+                background: var(--color-bg);
+            }
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+            .booking-form {
+                padding: 0;
+            }
+            .adv-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 80px;
+                left: 0;
+                width: 100%;
+                background: var(--color-bg);
+                flex-direction: column;
+                padding: 20px;
+                text-align: center;
+                border-bottom: 1px solid #333;
+            }
+            .nav-links.active {
+                display: flex;
+            }
+            .hamburger {
+                display: flex;
+            }
+            .paint-content {
+                grid-template-columns: 1fr;
+            }
+            .paint-image {
+                height: 300px;
+            }
+            .mobile-cta {
+                display: block;
+            }
+            body {
+                padding-bottom: 60px; /* Space for sticky CTA */
+            }
+        }
+
+        @media (max-width: 480px) {
+            section {
+                padding: 60px 0;
+            }
+            .form-control {
+                font-size: 16px; /* Prevent iOS zoom */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container header-inner">
+            <div class="logo">МОТОРХАУС</div>
+            <nav class="nav-links">
+                <a href="#services">Услуги</a>
+                <a href="#paint">Малярный цех</a>
+                <a href="#advantages">О нас</a>
+                <a href="#reviews">Отзывы</a>
+                <a href="#contacts">Контакты</a>
+            </nav>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>АВТОСЕРВИС <span>МОТОРХАУС</span></h1>
+                <p>Полный цикл обслуживания и профессиональный малярный цех на Каширском шоссе. Восстанавливаем геометрию, цвет и вашу уверенность на дороге.</p>
+                <a href="#contacts" class="btn">ЗАПИСАТЬСЯ НА ОСМОТР</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="container reveal">
+        <h2 class="section-title">НАШИ <span>УСЛУГИ</span></h2>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">⚙️</div>
+                <h3>Слесарные работы и ТО</h3>
+                <p>Регламентное обслуживание, замена масла, ремонт ходовой части и тормозных систем с использованием качественных запчастей.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💻</div>
+                <h3>Компьютерная диагностика</h3>
+                <p>Чтение и сброс ошибок, адаптация электронных блоков, глубокий анализ работы двигателя и АКПП.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🎨</div>
+                <h3>Малярные работы</h3>
+                <p>Полная и подетальная покраска в профессиональной камере. Точный подбор цвета, работа с премиальными материалами.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🔨</div>
+                <h3>Кузовной ремонт</h3>
+                <p>Удаление вмятин, восстановление геометрии кузова на стапеле, локальный ремонт пластика и бамперов.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">✨</div>
+                <h3>Полировка и детейлинг</h3>
+                <p>Восстановительная полировка кузова, нанесение керамики и жидкого стекла, предпродажная подготовка.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🛞</div>
+                <h3>Шиномонтаж</h3>
+                <p>Сезонная переобувка, точная балансировка, ремонт проколов и порезов, правка литых дисков.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="paint" class="paint-shop reveal">
+        <div class="container">
+            <h2 class="section-title">ПРОФЕССИОНАЛЬНЫЙ <span>МАЛЯРНЫЙ ЦЕХ</span></h2>
+            <div class="paint-content">
+                <div class="paint-text">
+                    <h3>Идеальное ЛКП без компромиссов</h3>
+                    <p>Мы не красим "в гараже". Наш малярный участок оборудован итальянской покрасочно-сушильной камерой, обеспечивающей отсутствие пыли и правильный температурный режим запекания лака.</p>
+                    <ul>
+                        <li>Компьютерный подбор эмали с гарантией совпадения 100%</li>
+                        <li>Используем только премиум-материалы (Standox, 3M, SATA)</li>
+                        <li>Точное соблюдение технологии подготовки и сушки</li>
+                        <li>Гарантия на лакокрасочное покрытие - 1 год</li>
+                        <li>Строгое соблюдение согласованных сроков</li>
+                    </ul>
+                </div>
+                <div class="paint-image"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="advantages" class="container reveal">
+        <h2 class="section-title">ПОЧЕМУ ВЫБИРАЮТ <span>НАС</span></h2>
+        <div class="adv-grid">
+            <div class="adv-item">
+                <div style="font-size: 50px;">📋</div>
+                <h4>Честная смета</h4>
+                <p>Сумма не меняется в процессе ремонта. Все скрытые дефекты согласовываем до начала работ.</p>
+            </div>
+            <div class="adv-item">
+                <div style="font-size: 50px;">🛡️</div>
+                <h4>Гарантия качества</h4>
+                <p>Официальная документальная гарантия на все виды слесарных и кузовных работ.</p>
+            </div>
+            <div class="adv-item">
+                <div style="font-size: 50px;">☕</div>
+                <h4>Комфортное ожидание</h4>
+                <p>Уютная клиентская зона с Wi-Fi, кофемашиной и видеонаблюдением за ремзоной.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="reviews" class="reviews reveal">
+        <div class="container">
+            <h2 class="section-title">ОТЗЫВЫ <span>КЛИЕНТОВ</span></h2>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <p class="review-text">"Красил передний бампер и крыло на Mazda 6. В цвет попали идеально, переходов не видно вообще. Отдали машину ровно в тот день, как и обещали."</p>
+                    <p class="review-author">— Алексей С.</p>
+                </div>
+                <div class="review-card">
+                    <p class="review-text">"Обслуживаю здесь свой Тигуан уже второй год. Делают быстро, цены адекватные, лишнего не навязывают. Ребята в ремзоне толковые."</p>
+                    <p class="review-author">— Михаил В.</p>
+                </div>
+                <div class="review-card">
+                    <p class="review-text">"После небольшого ДТП нужно было вытянуть телевизор и покрасить капот. Сделали отлично, зазоры как с завода. Рекомендую!"</p>
+                    <p class="review-author">— Дмитрий К.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container reveal">
+        <h2 class="section-title">ЧАСТЫЕ <span>ВОПРОСЫ</span></h2>
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question">Сколько времени занимает покраска одной детали?</div>
+                <div class="faq-answer">В среднем покраска одной детали занимает 2-3 дня. Это время необходимо для качественной подготовки, грунтовки, покраски, сушки в камере и финишной полировки.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Можно ли присутствовать в ремзоне?</div>
+                <div class="faq-answer">Да, вы можете присутствовать рядом с автомобилем при соблюдении техники безопасности и в сопровождении мастера-приемщика. Также у нас есть панорамное окно из зоны ожидания.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Вы даете гарантию на запчасти?</div>
+                <div class="faq-answer">Мы предоставляем гарантию как на выполненные работы, так и на запчасти, если они приобретены через наш стол заказов.</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contacts" class="contact-section reveal">
+        <div class="container contact-grid">
+            <div class="contact-info">
+                <h3>ЖДЕМ ВАС В <span>МОТОРХАУС</span></h3>
+                <div class="info-item">
+                    <span>Адрес</span>
+                    Москва, Каширское шоссе, 41 (съезд с дублера)
+                </div>
+                <div class="info-item">
+                    <span>Телефон</span>
+                    +7 (495) 123-45-67
+                </div>
+                <div class="info-item">
+                    <span>Режим работы</span>
+                    Ежедневно с 09:00 до 21:00
+                </div>
+            </div>
+            <div class="booking-form">
+                <form id="leadForm">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Ваше имя" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" class="form-control" placeholder="Телефон" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Марка и модель авто" required>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" required>
+                            <option value="" disabled selected>Выберите услугу</option>
+                            <option value="to">Слесарный ремонт / ТО</option>
+                            <option value="paint">Покраска / Малярный цех</option>
+                            <option value="body">Кузовной ремонт</option>
+                            <option value="diag">Диагностика</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="datetime-local" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">ЗАПИСАТЬСЯ</button>
+                </form>
+                <div class="form-success" id="formSuccess">
+                    <h4>Спасибо за заявку!</h4>
+                    <p>Мастер свяжется с вами в течение 10 минут для подтверждения времени.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Автосервис «МоторХаус». Все права защищены.</p>
+        </div>
+    </footer>
+
+    <a href="#contacts" class="mobile-cta">ЗАПИСАТЬСЯ НА РЕМОНТ</a>
+
+    <script>
+        // Hamburger Menu
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // FAQ Accordion
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                faqItems.forEach(faq => faq.classList.remove('active'));
+                if (!isActive) item.classList.add('active');
+            });
+        });
+
+        // Scroll Reveal
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal(); // Trigger on load
+
+        // Form Submit
+        const form = document.getElementById('leadForm');
+        const successMsg = document.getElementById('formSuccess');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            form.style.display = 'none';
+            successMsg.style.display = 'block';
+        });
+
+        // Hide mobile CTA when reaching contact section
+        const mobileCta = document.querySelector('.mobile-cta');
+        const contactSection = document.getElementById('contacts');
+
+        window.addEventListener('scroll', () => {
+            if (window.innerWidth <= 768) {
+                const contactTop = contactSection.getBoundingClientRect().top;
+                if (contactTop < window.innerHeight) {
+                    mobileCta.style.display = 'none';
+                } else {
+                    mobileCta.style.display = 'block';
+                }
+            }
+        });
+    </script>
+<a class="zeus-badge" href="https://zeuscode.ru" target="_blank" rel="noopener noreferrer">Сделано на ZeusCode</a>
+<style id="zeus-badge-css">
+.zeus-badge{
+  position:fixed;right:14px;bottom:12px;z-index:2147483646;
+  font:500 11px/1.25 system-ui,-apple-system,Segoe UI,sans-serif;
+  letter-spacing:.02em;text-decoration:none;
+  color:rgba(120,120,120,.42);pointer-events:auto;
+  transition:color .2s ease,opacity .2s ease;
+}
+.zeus-badge:hover{color:rgba(120,120,120,.78)}
+</style>
+</body>
+</html>
+
+---
+🔗 Живая ссылка: https://zeuscode.ru/go/site-7168/

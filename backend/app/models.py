@@ -17,12 +17,28 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
+    telegram_id: Mapped[int | None] = mapped_column(Integer, unique=True, index=True, nullable=True)
+    telegram_username: Mapped[str] = mapped_column(String(120), default="", index=True)
+    telegram_first_name: Mapped[str] = mapped_column(String(120), default="")
+    telegram_last_seen_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     balance_usd: Mapped[float] = mapped_column(Float, default=0.0)  # stores RUB
     low_balance_alert: Mapped[int] = mapped_column(Integer, default=1)
     low_balance_threshold_rub: Mapped[float] = mapped_column(Float, default=50.0)
     monthly_budget_rub: Mapped[float] = mapped_column(Float, default=0.0)  # 0 = off
     # "" = all models; "gemini" = Gemini family only (catalog + API + Studio)
     model_family: Mapped[str] = mapped_column(String(40), default="")
+    # Fusion product mode: simple | power | custom (TG / cabinet / Cursor pref)
+    fusion_pref: Mapped[str] = mapped_column(String(20), default="power")
+    # JSON list of model ids when fusion_pref=custom, e.g. ["deepseek-chat","gemini-3.1-pro",…]
+    fusion_models: Mapped[str] = mapped_column(Text, default="")
+    # Effort level: low | normal | high | max (FR5 / FR23); zeus.effort overrides
+    fusion_effort: Mapped[str] = mapped_column(String(20), default="normal")
+    # Kill-Switch: 1 → force FAST Path (AD-9); zeus.kill_switch may also set per-request
+    fusion_kill_switch: Mapped[int] = mapped_column(Integer, default=0)
+    # TG Mini App onboarding «Первый результат» completed
+    onboarding_done: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     api_keys: Mapped[list["ApiKey"]] = relationship(back_populates="user")
@@ -153,3 +169,64 @@ class Artifact(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     project: Mapped[Project] = relationship(back_populates="artifacts")
+
+
+class FusionStickySession(Base):
+    """Sticky Leader/stack only (AD-7). Path is never authoritative here."""
+
+    __tablename__ = "fusion_sticky_sessions"
+
+    session_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    leader: Mapped[str] = mapped_column(String(120), default="")
+    stack_json: Mapped[str] = mapped_column(Text, default="[]")
+    phase_meta_json: Mapped[str] = mapped_column(Text, default="{}")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class FusionFeedbackEvent(Base):
+    """👍/👎/regen ingest with routing context — no Elo writeback (FR24)."""
+
+    __tablename__ = "fusion_feedback_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    trace_id: Mapped[str] = mapped_column(String(64), index=True, default="")
+    event: Mapped[str] = mapped_column(String(20), default="")  # up | down | regen
+    path: Mapped[str] = mapped_column(String(20), default="")
+    phase: Mapped[str] = mapped_column(String(40), default="")
+    leader: Mapped[str] = mapped_column(String(120), default="")
+    routed_by: Mapped[str] = mapped_column(String(80), default="")
+    model_ids_json: Mapped[str] = mapped_column(Text, default="[]")
+    meta_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ProductUsageEvent(Base):
+    """Product analytics: every API/chat request people make (for owner insights)."""
+
+    __tablename__ = "product_usage_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    api_key_id: Mapped[int | None] = mapped_column(ForeignKey("api_keys.id"), nullable=True, index=True)
+    key_prefix: Mapped[str] = mapped_column(String(24), default="")
+    event: Mapped[str] = mapped_column(String(40), default="chat_request", index=True)
+    source: Mapped[str] = mapped_column(String(40), default="api")  # api|tg|cabinet
+    model: Mapped[str] = mapped_column(String(120), default="")
+    stream: Mapped[int] = mapped_column(Integer, default=0)
+    session_id: Mapped[str] = mapped_column(String(128), default="", index=True)
+    prompt_preview: Mapped[str] = mapped_column(Text, default="")
+    path: Mapped[str] = mapped_column(String(20), default="")
+    policy_path: Mapped[str] = mapped_column(String(20), default="")
+    leader: Mapped[str] = mapped_column(String(120), default="")
+    routed_by: Mapped[str] = mapped_column(String(80), default="")
+    trace_id: Mapped[str] = mapped_column(String(64), default="", index=True)
+    status_code: Mapped[int] = mapped_column(Integer, default=0)
+    latency_ms: Mapped[int] = mapped_column(Integer, default=0)
+    prompt_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    completion_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_rub: Mapped[float] = mapped_column(Float, default=0.0)
+    error: Mapped[str] = mapped_column(Text, default="")
+    meta_json: Mapped[str] = mapped_column(Text, default="{}")

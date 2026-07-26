@@ -1,0 +1,106 @@
+[
+  {
+    "label": "fusion_ui_crew",
+    "ok": true,
+    "status": 200,
+    "latency_s": 333.4,
+    "routed_by": "ui_author_critics_web",
+    "ui_crew": {
+      "author": "gemini-3.1-pro",
+      "critics": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro"
+      ],
+      "power_scores": {
+        "claude-opus-4-8": 980,
+        "deepseek-v4-pro": 850,
+        "gemini-3.1-pro": 880
+      },
+      "web": {
+        "ok": true,
+        "degraded": false,
+        "backend": "duckduckgo_html,jina",
+        "queries": [
+          "best auto repair shop website design examples",
+          "best car service landing page UX 2025 2026",
+          "автосервис сайт дизайн примеры лучшие"
+        ],
+        "refs_used": [
+          "https://colorlib.com/wp/auto-repair-website-examples/",
+          "https://www.webcitz.com/blog/best-auto-repair-websites/",
+          "https://www.repairshopwebsites.com/portfolio/"
+        ]
+      },
+      "critique_merged": {
+        "upgrades": [
+          "Add a trust bar under the hero (WebCitz emphasizes trust signals): years on Каширское шоссе, кол-во отремонтированных авто, гарантия 2 года, ASE/дилер-аналог сертификаты — реальные цифры снимают 'mechanic anxiety'.",
+          "Replace emoji service icons (⚡⚙️🔧) with inline SVG line-icons in amber — emoji render inconsistently across OS and cheapen a 'premium box' brand.",
+          "Show transparent pricing 'от N ₽' + примерное время on each of the 6 service cards; refs stress 'Digital Transparency' and clear cost expectations before booking.",
+          "Make the booking form actually submit: preventDefault + fetch/mailto fallback + inline success state ('Заявка принята, перезвоним за 15 мин'), not an alert — brief asks for a working form.",
+          "Add form fields the shop needs: марка/модель авто, дата+время (date/time inputs) and a required consent checkbox (152-ФЗ) — matches real appointment scheduling UX.",
+          "Add a sticky mobile call/booking bar (fixed bottom CTA with phone) — mobile-first booking is the #1 point in both refs.",
+          "Deepen hero atmosphere: layer a subtle radial amber glow + faint diagonal asphalt texture/noise over the photo, and add a soft parallax or scan-line to avoid a flat overlay.",
+          "Add a photo strip / 'до-после' gallery of the box and real work (Digital Vehicle Inspection showcase from ref) — currently no real shop imagery beyond hero.",
+          "Add scroll-reveal animation for service/review cards (IntersectionObserver) to hit the '2-3 motions' brief cleanly instead of relying only on hover.",
+          "Add star ratings + review source (Яндекс/2ГИС) and avatar initials to reviews for credibility; italic quote alone reads generic.",
+          "Добавить шестую услугу (например, «Кузовной ремонт и покраска») в сетку услуг, чтобы строго соответствовать брифингу по количеству — сейчас видно только 5.",
+          "Реализовать работающую отправку формы записи: интегрировать сервис типа Formspree или добавить JavaScript для валидации и асинхронной отправки с подтверждением, имитируя полноценную систему бронирования (аналогично примерам с онлайн-записью на WebCitz)."
+        ],
+        "must_fix": [
+          "HTML is truncated — services grid, reviews, FAQ, booking form and footer must be completed and all tags closed, or the page won't render.",
+          "The header nav has no anchor to #booking and the mobile header stacks logo+nav+phone eating vertical space — add a hamburger or compact mobile header so the hero is visible on phones.",
+          "Booking form currently has no JS handler shown; ensure it does not just alert() and includes required-field validation.",
+          "FAQ-аккордеон полностью статичен: нет JavaScript для переключения ответов, клик по вопросу не приводит к раскрытию — нарушает интерактивность.",
+          "Не хватает шестой услуги: бриф требует 6 услуг с нормальным описанием, в коде представлено только 5 карточек в сетке.",
+          "Форма записи не работает: отсутствует обработчик отправки и валидация — только визуальный скелет, нет реального действия при нажатии кнопки.",
+          "На мобильных устройствах телефонный номер скрыт (header-contacts display:none), что критично для автосервиса — оставьте хотя бы кнопку с номером для звонка.",
+          "Hero-изображение может не передавать атмосферу именно рабочего бокса МоторХаус: желательно использовать локальную фотографию или более детализированный гаражный фон с инструментами."
+        ],
+        "praise": [
+          "Strong asphalt+amber palette with Oswald/Montserrat — correctly avoids indigo/Inter clichés.",
+          "Brand-first hero with large МоторХаус wordmark and amber accent, smooth slideUpFade intro.",
+          "Solid interaction details: scrolled header blur, card lift on hover, animated FAQ accordion, amber sweep on buttons.",
+          "Брутальная асфальтово-янтарная цветовая гамма и отказ от Indigo/Inter — айдентика выдержана, шрифты Oswald и Montserrat создают мужской, технический характер.",
+          "Полноэкранный hero с наложением градиента и анимацией подъёма текста сразу задаёт кинематографичное настроение гаражного бокса.",
+          "Карточки услуг с hover-эффектом подъёма и акцентной янтарной полосой выглядят современно и тактильно.",
+          "Чёткая одностраничная структура из логичных блоков: услуги → отзывы → FAQ → запись, что хорошо для конверсии.",
+          "Наличие адаптивного кода через медиа-запросы и базовое сжатие элементов на мобильных — забота о пользователе с телефона."
+        ]
+      }
+    },
+    "leader": "gemini-3.1-pro",
+    "task_kind": "ui",
+    "path": "FULL",
+    "metrics": {
+      "bytes": 33660,
+      "has_html_close": true,
+      "has_media": true,
+      "has_form": true,
+      "has_nav": true,
+      "sections": 6,
+      "live_link": null
+    },
+    "error": null
+  },
+  {
+    "label": "solo_opus",
+    "ok": false,
+    "status": 500,
+    "latency_s": 111.43,
+    "routed_by": null,
+    "ui_crew": null,
+    "leader": null,
+    "task_kind": null,
+    "path": null,
+    "metrics": {
+      "bytes": 0,
+      "has_html_close": false,
+      "has_media": false,
+      "has_form": false,
+      "has_nav": false,
+      "sections": 0,
+      "live_link": null
+    },
+    "error": "{\"detail\":\"Upstream error 500: {\\\"type\\\": \\\"error\\\", \\\"error\\\": {\\\"type\\\": \\\"api_error\\\", \\\"message\\\": \\\"Server exception, please try again later\\\"}}\"}"
+  }
+]

@@ -1,0 +1,97 @@
+{
+  "cid": "u04_python",
+  "prompt": "Напиши функцию `chunk_list(items, size)` на Python + короткий пример использования.",
+  "zeus": {
+    "mode": "power"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "```python\ndef chunk_list(items, size):\n    return [items[i:i + size] for i in range(0, len(items), size)]\n\n# Пример использования:\nmy_list = [1, 2, 3, 4, 5, 6, 7, 8]\nchunked = chunk_list(my_list, 3)\n\nprint(chunked)\n# Вывод: [[1, 2, 3], [4, 5, 6], [7, 8]]\n```\n\n**Как это работает:**\nФункция использует генератор списков (list comprehension) и функцию `range` с шагом, равным заданному размеру `size`. На каждой итерации она берет срез исходного списка от текущего индекса `i` до `i + size`. Если элементов в конце остается меньше размера `size`, срез автоматически берет только оставшиеся элементы.",
+  "answer_excerpt": "```python\ndef chunk_list(items, size):\n    return [items[i:i + size] for i in range(0, len(items), size)]\n\n# Пример использования:\nmy_list = [1, 2, 3, 4, 5, 6, 7, 8]\nchunked = chunk_list(my_list, 3)\n\nprint(chunked)\n# Вывод: [[1, 2, 3], [4, 5, 6], [7, 8]]\n```\n\n**Как это работает:**\nФункция использует генератор списков (list comprehension) и функцию `range` с шагом, равным заданному размеру `size`. На каждой итерации она берет срез исходного списка от текущего индекса `i` до `i + size`. Если элеме",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "power",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "3f86bb54a4da4c8f",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 52,
+        "completion_tokens": 209,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "```python\ndef chunk_list(items, size):\n    return [items[i:i + size] for i in range(0, len(items), size)]\n\n# Пример использования:\nmy_list = [1, 2, 3, 4, 5, 6, 7, 8]\nchunked = chunk_list(my_list, 3)\n\nprint(chunked)\n# Вывод: [[1, 2, 3], [4, 5, 6], [7, 8]]\n```\n\n**Как это работает:**\nФункция использует генератор списков (list comprehension) и функцию `range` с шагом, равным заданному размеру `size`. На каждой итерации она берет срез исходного списка от текущего индекса `i` до `i + size`. Если элементов в конце остается меньше размера `size`, срез автоматически берет только оставшиеся элементы.",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "code",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.403,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 52,
+    "completion_tokens": 209,
+    "total_tokens": 261
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.1071,
+    "markup": 1.5,
+    "balance_left_rub": 878.69,
+    "key_spent_rub": 0.2429,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "3f86bb54a4da4c8f",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "3f86bb54a4da4c8f",
+  "escalate_from": "CASCADE",
+  "latency_s": 11.475,
+  "ok": true
+}

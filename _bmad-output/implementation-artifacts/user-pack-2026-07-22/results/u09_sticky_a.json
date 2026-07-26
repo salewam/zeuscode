@@ -1,0 +1,98 @@
+{
+  "cid": "u09_sticky_a",
+  "prompt": "Проект называется NovaBoard. Мы пишем kanban на FastAPI. Подтверди название проекта.",
+  "zeus": {
+    "mode": "power",
+    "session_id": "userpack-sess-20260722"
+  },
+  "http_status": 200,
+  "detail": null,
+  "answer": "Название проекта **NovaBoard** подтверждаю. Это Kanban-доска на FastAPI. Готов приступить к задачам.",
+  "answer_excerpt": "Название проекта **NovaBoard** подтверждаю. Это Kanban-доска на FastAPI. Готов приступить к задачам.",
+  "onestack": {
+    "mode": "fusion-cascade",
+    "fusion_mode": "fast",
+    "stack_size": "fast",
+    "product_mode": "power",
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "escalate_from": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "phase": "implement",
+    "complexity": "med",
+    "task_kind": "light",
+    "leader": "gemini-3.1-pro",
+    "panel": [
+      "deepseek-v4-pro",
+      "claude-opus-4-8",
+      "gemini-3.1-pro"
+    ],
+    "trace_id": "8abb61738da941bf",
+    "early_exit": null,
+    "disaster": false,
+    "anti_bias_fail": false,
+    "release_blocked": false,
+    "branches": [
+      {
+        "model": "gemini-3.1-pro",
+        "model_id": "gemini-3.1-pro",
+        "billable_state": "completed",
+        "prompt_tokens": 51,
+        "completion_tokens": 27,
+        "role": "agent"
+      }
+    ],
+    "answer_only": "Название проекта **NovaBoard** подтверждаю. Это Kanban-доска на FastAPI. Готов приступить к задачам.",
+    "thinking_visible": true,
+    "epic3": {},
+    "classifier": {
+      "stack": "full",
+      "task": "code",
+      "confidence": 0.0,
+      "source": "regex-timeout",
+      "model": "deepseek-v4-flash",
+      "latency_s": 2.404,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "classify_failed": true,
+      "failed": true,
+      "classify_phase": "implement",
+      "complexity_band": "med",
+      "policy_path": "CASCADE",
+      "path": "CASCADE",
+      "epic2_routed_by": "classify_fallback_cascade",
+      "mode_ignored": false
+    }
+  },
+  "usage": {
+    "prompt_tokens": 51,
+    "completion_tokens": 27,
+    "total_tokens": 78
+  },
+  "credits_consumed": null,
+  "onestack_billing": {
+    "currency": "RUB",
+    "charged_rub": 0.017,
+    "markup": 1.5,
+    "balance_left_rub": 878.0,
+    "key_spent_rub": 0.7373,
+    "key_budget_rub": 0.0,
+    "path": "CASCADE",
+    "policy_path": "CASCADE",
+    "routed_by": "cascade_escalate_stronger",
+    "trace_id": "8abb61738da941bf",
+    "alerts": {
+      "low_balance": false,
+      "monthly_budget": false,
+      "monthly_budget_warning": false
+    }
+  },
+  "path": "CASCADE",
+  "policy_path": "CASCADE",
+  "leader": "gemini-3.1-pro",
+  "routed_by": "cascade_escalate_stronger",
+  "trace_id": "8abb61738da941bf",
+  "escalate_from": "CASCADE",
+  "latency_s": 10.353,
+  "ok": true
+}

@@ -1,0 +1,7 @@
+{
+  "id": "B19",
+  "bucket": "chitchat",
+  "prompt": "привет 19",
+  "expected_path": "FAST",
+  "expect_code_fence": false
+}
