@@ -106,6 +106,39 @@ def normalize_tool_choice(tool_choice: Any, tools: list[dict[str, Any]] | None =
     return "auto"
 
 
+def _sanitize_tool_arguments_json(raw: str) -> str:
+    """Fix glued JSON from some upstreams: ``{}{"command":"ls"}`` → valid object.
+
+    mini-swe / OpenAI clients fail with ``Extra data: line 1 column 3`` on this.
+    """
+    s = (raw or "").strip()
+    if not s:
+        return "{}"
+    # Fast path: empty object glued to the real payload.
+    if s.startswith("{}{"):
+        s = s[2:].lstrip()
+    try:
+        json.loads(s)
+        return s
+    except json.JSONDecodeError:
+        pass
+    try:
+        dec = json.JSONDecoder()
+        obj, idx = dec.raw_decode(s)
+        rest = s[idx:].lstrip()
+        if rest.startswith("{"):
+            obj2, _ = dec.raw_decode(rest)
+            if isinstance(obj2, dict) and obj2:
+                return json.dumps(obj2, ensure_ascii=False)
+            if isinstance(obj, dict) and not obj and isinstance(obj2, dict):
+                return json.dumps(obj2, ensure_ascii=False)
+        if isinstance(obj, dict):
+            return json.dumps(obj, ensure_ascii=False)
+    except Exception:  # noqa: BLE001
+        pass
+    return s
+
+
 def normalize_tool_calls(tool_calls: Any) -> list[dict[str, Any]]:
     """Repair assistant.tool_calls so type/function are never null."""
     out: list[dict[str, Any]] = []
@@ -126,7 +159,7 @@ def normalize_tool_calls(tool_calls: Any) -> list[dict[str, Any]]:
         elif args is None:
             args_s = "{}"
         else:
-            args_s = str(args)
+            args_s = _sanitize_tool_arguments_json(str(args))
         out.append(
             {
                 "id": str(tc.get("id") or f"call_{i}_{name}"),
@@ -135,6 +168,95 @@ def normalize_tool_calls(tool_calls: Any) -> list[dict[str, Any]]:
             }
         )
     return out
+
+
+def _tool_parameter_schemas(tools: Any | None) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    for t in normalize_openai_tools(tools):
+        fn = t.get("function") if isinstance(t.get("function"), dict) else {}
+        name = str((fn or {}).get("name") or "").strip()
+        params = (fn or {}).get("parameters")
+        if name and isinstance(params, dict):
+            out[name] = params
+    return out
+
+
+def _default_missing_required_boolean(prop_name: str, prop_schema: dict[str, Any]) -> bool:
+    default = prop_schema.get("default")
+    if isinstance(default, bool):
+        return default
+    # Cline submit_and_exit and similar completion tools expect verified=true.
+    if prop_name in ("verified", "confirm", "confirmed", "success"):
+        return True
+    return False
+
+
+def repair_tool_call_arguments(
+    tool_calls: Any,
+    tools: Any | None,
+) -> list[dict[str, Any]]:
+    """Fill missing *required* boolean args (models often omit verified on submit_and_exit)."""
+    schemas = _tool_parameter_schemas(tools)
+    if not schemas:
+        return normalize_tool_calls(tool_calls)
+
+    out: list[dict[str, Any]] = []
+    for tc in normalize_tool_calls(tool_calls):
+        fn = tc.get("function") if isinstance(tc.get("function"), dict) else {}
+        name = str((fn or {}).get("name") or "").strip()
+        schema = schemas.get(name)
+        if not schema:
+            out.append(tc)
+            continue
+        props = schema.get("properties")
+        if not isinstance(props, dict):
+            out.append(tc)
+            continue
+        required = schema.get("required")
+        if not isinstance(required, list):
+            out.append(tc)
+            continue
+
+        args = _parse_args((fn or {}).get("arguments"))
+        changed = False
+        for key in required:
+            if not isinstance(key, str) or key in args:
+                continue
+            prop = props.get(key)
+            if not isinstance(prop, dict):
+                continue
+            if prop.get("type") != "boolean":
+                continue
+            args[key] = _default_missing_required_boolean(key, prop)
+            changed = True
+        if changed:
+            tc = dict(tc)
+            tc["function"] = dict(fn)
+            tc["function"]["arguments"] = json.dumps(args, ensure_ascii=False)
+        out.append(tc)
+    return out
+
+
+def repair_completion_tool_calls(
+    data: dict[str, Any],
+    tools: Any | None,
+) -> dict[str, Any]:
+    """Patch assistant tool_calls in a chat.completion before returning to clients."""
+    if not isinstance(data, dict):
+        return data
+    choices = data.get("choices")
+    if not isinstance(choices, list):
+        return data
+    for choice in choices:
+        if not isinstance(choice, dict):
+            continue
+        msg = choice.get("message")
+        if not isinstance(msg, dict):
+            continue
+        tcs = msg.get("tool_calls")
+        if isinstance(tcs, list) and tcs:
+            msg["tool_calls"] = repair_tool_call_arguments(tcs, tools)
+    return data
 
 
 def prepare_agent_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -178,6 +300,21 @@ def prepare_agent_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any
     return out or [{"role": "user", "content": "Привет"}]
 
 
+# Kie gemini-3.1-pro rejects null/""/whitespace-only text parts on tool turns.
+# OpenAI allows assistant content=null with tool_calls; Kie needs a visible placeholder.
+_KIE_EMPTY_CONTENT_PLACEHOLDER = "."
+
+
+def _kie_gemini_safe_content(content: Any, *, as_parts: bool) -> Any:
+    """Ensure Gemini/Kie never sees null or blank message content."""
+    text = _plain(content)
+    if not text.strip():
+        text = _KIE_EMPTY_CONTENT_PLACEHOLDER
+    if as_parts:
+        return [{"type": "text", "text": text}]
+    return text
+
+
 def normalize_openai_compat_messages(
     messages: list[dict[str, Any]], *, as_parts: bool = True
 ) -> list[dict[str, Any]]:
@@ -192,13 +329,14 @@ def normalize_openai_compat_messages(
         item: dict[str, Any] = {"role": role}
         if m.get("tool_calls"):
             item["tool_calls"] = m["tool_calls"]
-        if content is None:
+        if as_parts:
+            # Always emit non-empty text for Kie Gemini (incl. tool_calls turns).
+            item["content"] = _kie_gemini_safe_content(content, as_parts=True)
+        elif content is None and m.get("tool_calls"):
+            # Plain OpenAI-chat: null content is legal with tool_calls.
             item["content"] = None
-        elif as_parts and role in ("user", "system", "assistant") and not m.get("tool_calls"):
-            text = _plain(content)
-            item["content"] = [{"type": "text", "text": text}]
         else:
-            item["content"] = content if isinstance(content, str) or content is None else _plain(content)
+            item["content"] = _plain(content)
         out.append(item)
     return out
 
@@ -222,8 +360,9 @@ def _parse_args(raw: Any) -> dict[str, Any]:
     if isinstance(raw, dict):
         return raw
     if isinstance(raw, str):
+        cleaned = _sanitize_tool_arguments_json(raw)
         try:
-            val = json.loads(raw)
+            val = json.loads(cleaned)
             return val if isinstance(val, dict) else {"value": val}
         except Exception:  # noqa: BLE001
             return {"raw": raw}

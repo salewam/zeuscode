@@ -49,6 +49,49 @@ def test_gemini_payload_forces_non_stream_parts():
     assert "thinkingFlag" not in payload
 
 
+def test_gemini_tool_history_never_sends_null_or_empty_content():
+    """Kie gemini-3.1-pro: null/\"\" assistant content → 400 Message content is null."""
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "bash",
+                "description": "run",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"command": {"type": "string"}},
+                    "required": ["command"],
+                },
+            },
+        }
+    ]
+    payload = build_gemini_payload(
+        [
+            {"role": "user", "content": "write a file"},
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": "c1",
+                        "type": "function",
+                        "function": {
+                            "name": "bash",
+                            "arguments": '{"command":"mkdir -p notes"}',
+                        },
+                    }
+                ],
+            },
+            {"role": "tool", "tool_call_id": "c1", "content": "(no output)"},
+        ],
+        tools=tools,
+        tool_choice="auto",
+    )
+    asst = next(m for m in payload["messages"] if m.get("role") == "assistant")
+    assert asst.get("tool_calls")
+    assert asst["content"] == [{"type": "text", "text": "."}]
+
+
 def test_openai_chat_payload_no_claude_flags():
     payload = build_openai_chat_payload([{"role": "user", "content": "hi"}])
     assert payload["stream"] is False

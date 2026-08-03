@@ -1,7 +1,7 @@
 {
-  "fetched_at": "2026-07-13T17:58:54.109911+00:00",
+  "fetched_at": "2026-07-29T11:18:44.981907+00:00",
   "source": "kie+polza",
-  "polza_synced_at": "2026-07-13T17:58:54.109927+00:00",
+  "polza_synced_at": "2026-07-29T11:18:44.981921+00:00",
   "models_n": 92,
   "models": [
     {
@@ -33,8 +33,8 @@
           "credits": "55"
         }
       ],
-      "input_rub": 49.0752,
-      "output_rub": 243.8424,
+      "input_rub": 50.2464,
+      "output_rub": 249.6618,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-haiku-4.5"
     },
@@ -67,8 +67,8 @@
           "credits": "285"
         }
       ],
-      "input_rub": 243.8424,
-      "output_rub": 1219.212,
+      "input_rub": 249.6618,
+      "output_rub": 1248.309,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-opus-4.6"
     },
@@ -101,9 +101,9 @@
           "credits": "1430"
         }
       ],
-      "input_rub": 138.024,
-      "output_rub": 138.024,
-      "cache_input_rub": 138.024,
+      "input_rub": 533.868,
+      "output_rub": 2669.34,
+      "cache_input_rub": 53.3868,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-opus-4.7"
     },
@@ -136,9 +136,9 @@
           "credits": "400"
         }
       ],
-      "input_rub": 138.024,
-      "output_rub": 138.024,
-      "cache_input_rub": 138.024,
+      "input_rub": 587.2548,
+      "output_rub": 2936.274,
+      "cache_input_rub": 58.7255,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-opus-4.8"
     },
@@ -171,8 +171,8 @@
           "credits": "170"
         }
       ],
-      "input_rub": 145.692,
-      "output_rub": 731.5272,
+      "input_rub": 149.169,
+      "output_rub": 748.9854,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-sonnet-4.6"
     },
@@ -205,9 +205,9 @@
           "credits": "800"
         }
       ],
-      "input_rub": 1019.844,
-      "output_rub": 5099.22,
-      "cache_input_rub": 101.9844,
+      "input_rub": 1067.736,
+      "output_rub": 5338.68,
+      "cache_input_rub": 106.7736,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-fable-5"
     },
@@ -240,8 +240,8 @@
           "credits": "285"
         }
       ],
-      "input_rub": 243.8424,
-      "output_rub": 1219.212,
+      "input_rub": 249.6618,
+      "output_rub": 1248.309,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-opus-4.5"
     },
@@ -274,8 +274,8 @@
           "credits": "170 "
         }
       ],
-      "input_rub": 145.692,
-      "output_rub": 731.5272,
+      "input_rub": 149.169,
+      "output_rub": 748.9854,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-sonnet-4.5"
     },
@@ -308,9 +308,9 @@
           "credits": "170"
         }
       ],
-      "input_rub": 203.9688,
-      "output_rub": 1019.844,
-      "cache_input_rub": 20.3969,
+      "input_rub": 213.5472,
+      "output_rub": 1067.736,
+      "cache_input_rub": 21.3547,
       "pricing_source": "polza.ai",
       "polza_id": "anthropic/claude-sonnet-5"
     },
@@ -343,8 +343,8 @@
           "credits": "76"
         }
       ],
-      "input_rub": 52.4491,
-      "output_rub": 414.072,
+      "input_rub": 53.7008,
+      "output_rub": 423.954,
       "pricing_source": "polza.ai",
       "polza_id": "google/gemini-2.5-pro"
     },
@@ -377,8 +377,8 @@
           "credits": "18"
         }
       ],
-      "input_rub": 12.4222,
-      "output_rub": 103.518,
+      "input_rub": 12.7186,
+      "output_rub": 105.9885,
       "pricing_source": "polza.ai",
       "polza_id": "google/gemini-2.5-flash"
     },
@@ -411,9 +411,9 @@
           "credits": "30"
         }
       ],
-      "input_rub": 50.9922,
-      "output_rub": 305.9532,
-      "cache_input_rub": 5.0992,
+      "input_rub": 53.3868,
+      "output_rub": 320.3208,
+      "cache_input_rub": 5.3387,
       "pricing_source": "polza.ai",
       "polza_id": "google/gemini-3-flash-preview"
     },
@@ -446,8 +446,8 @@
           "credits": "100"
         }
       ],
-      "input_rub": 76.68,
-      "output_rub": 536.76,
+      "input_rub": 78.51,
+      "output_rub": 549.57,
       "pricing_source": "polza.ai",
       "polza_id": "google/gemini-3-pro-preview"
     },
@@ -481,8 +481,8 @@
         }
       ],
       "path": "gemini-3.1-pro",
-      "input_rub": 69.012,
-      "output_rub": 483.084,
+      "input_rub": 70.659,
+      "output_rub": 494.613,
       "pricing_source": "polza.ai",
       "polza_id": "google/gemini-3.1-pro-preview"
     },
@@ -516,9 +516,9 @@
         }
       ],
       "path": "gemini-3-5-flash-openai",
-      "input_rub": 152.9766,
-      "output_rub": 917.8596,
-      "cache_input_rub": 15.2977,
+      "input_rub": 160.1604,
+      "output_rub": 960.9624,
+      "cache_input_rub": 16.016,
       "pricing_source": "polza.ai",
       "polza_id": "google/gemini-3.5-flash"
     },
@@ -552,8 +552,8 @@
         }
       ],
       "path": "gpt-5-2",
-      "input_rub": 60.7306,
-      "output_rub": 483.084,
+      "input_rub": 62.1799,
+      "output_rub": 494.613,
       "pricing_source": "polza.ai",
       "polza_id": "openai/gpt-5.2"
     },
@@ -588,8 +588,8 @@
       ],
       "path": "codex/v1/responses",
       "upstream_model": "gpt-5-4",
-      "input_rub": 97.537,
-      "output_rub": 780.6024,
+      "input_rub": 99.8647,
+      "output_rub": 799.2318,
       "pricing_source": "polza.ai",
       "polza_id": "openai/gpt-5.4"
     },
@@ -624,8 +624,8 @@
       ],
       "path": "api/v1/responses",
       "upstream_model": "gpt-5.4-codex",
-      "input_rub": 97.537,
-      "output_rub": 780.6024,
+      "input_rub": 99.8647,
+      "output_rub": 799.2318,
       "pricing_source": "polza.ai",
       "polza_id": "openai/gpt-5.4"
     },
@@ -667,9 +667,9 @@
       "path": "codex/v1/responses",
       "upstream_model": "gpt-5-5",
       "badge": "cache",
-      "input_rub": 509.922,
-      "output_rub": 3059.532,
-      "cache_input_rub": 50.9922,
+      "input_rub": 533.868,
+      "output_rub": 3203.208,
+      "cache_input_rub": 53.3868,
       "pricing_source": "polza.ai",
       "polza_id": "openai/gpt-5.5"
     },
@@ -717,9 +717,9 @@
       "path": "codex/v1/responses",
       "upstream_model": "gpt-5-6-luna",
       "badge": "cache",
-      "input_rub": 101.9844,
-      "output_rub": 611.9064,
-      "cache_input_rub": 10.1984,
+      "input_rub": 53.3868,
+      "output_rub": 320.3208,
+      "cache_input_rub": 5.3387,
       "pricing_source": "polza.ai",
       "polza_id": "openai/gpt-5.6-luna"
     },
@@ -767,9 +767,9 @@
       "path": "codex/v1/responses",
       "upstream_model": "gpt-5-6-sol",
       "badge": "cache",
-      "input_rub": 509.922,
-      "output_rub": 3059.532,
-      "cache_input_rub": 50.9922,
+      "input_rub": 533.868,
+      "output_rub": 3203.208,
+      "cache_input_rub": 53.3868,
       "pricing_source": "polza.ai",
       "polza_id": "openai/gpt-5.6-sol"
     },
@@ -817,9 +817,9 @@
       "path": "codex/v1/responses",
       "upstream_model": "gpt-5-6-terra",
       "badge": "cache",
-      "input_rub": 254.961,
-      "output_rub": 1529.766,
-      "cache_input_rub": 25.4961,
+      "input_rub": 133.467,
+      "output_rub": 800.802,
+      "cache_input_rub": 13.3467,
       "pricing_source": "polza.ai",
       "polza_id": "openai/gpt-5.6-terra"
     },
@@ -861,9 +861,9 @@
       "path": "grok/v1/responses",
       "upstream_model": "grok-4-3",
       "badge": "cache",
-      "input_rub": 127.4805,
-      "output_rub": 254.961,
-      "cache_input_rub": 20.3969,
+      "input_rub": 133.467,
+      "output_rub": 266.934,
+      "cache_input_rub": 21.3547,
       "pricing_source": "polza.ai",
       "polza_id": "x-ai/grok-4.3"
     },
@@ -905,9 +905,9 @@
       "path": "grok/v1/responses",
       "upstream_model": "grok-4-5",
       "badge": "cache",
-      "input_rub": 203.9688,
-      "output_rub": 611.9064,
-      "cache_input_rub": 50.9922,
+      "input_rub": 213.5472,
+      "output_rub": 640.6416,
+      "cache_input_rub": 32.0321,
       "pricing_source": "polza.ai",
       "polza_id": "x-ai/grok-4.5"
     },
@@ -4159,11 +4159,11 @@
     }
   ],
   "polza_stats": {
-    "matched_polza": 28,
+    "matched_polza": 24,
     "fallback_rate": 68,
     "pass_through": 138.024,
-    "polza_models": 381
+    "polza_models": 388
   },
   "raw_rows": 368,
-  "kie_fetched_at": "2026-07-13T17:52:47.397497+00:00"
+  "kie_fetched_at": "2026-07-29T11:17:32.544577+00:00"
 }

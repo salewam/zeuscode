@@ -23,15 +23,17 @@ LEXICON_ID = "lexicon_v1"
 DESIGN_LEXICON_RE = re.compile(
     r"(?i)("
     r"спроектируй|спроектировать|architecture|design the system|"
-    r"ревью\s*PR|code review|спроектируй модуль"
+    r"спроектируй модуль"
     r")"
-)
+)  # NOT code-review — that is phase=review
 
 _TRACEBACK_RE = re.compile(
     r"(?i)(traceback|exception|error:|typeerror|referenceerror|syntaxerror|"
     r"ModuleNotFoundError|ENOENT|undefined is not|cannot find module)"
 )
 _CODE_FENCE_RE = re.compile(r"```|^\s{4}\S", re.MULTILINE)
+# Глубина трейсбэка (число кадров) вместо его длины в символах
+_TRACE_FRAME_RE = re.compile(r'(?im)^\s*(File\s+"|at\s+\S+\s+\(|\s+in\s+\S+$)')
 _CHITCHAT_RE = re.compile(
     r"(?i)^\s*("
     r"привет|прив|салам|хай|хелло|hello|hi|yo|"
@@ -60,6 +62,36 @@ _DOCS_RE = re.compile(r"(?i)(документац|readme|docstring|напиши 
 _IMPLEMENT_RE = re.compile(
     r"(?i)(напиш|сделай|реализ|почин|исправ|рефактор|код|функц|класс|api|"
     r"implement|fix|build|refactor|write code|добавь|кнопк)"
+)
+_NETWORK_RESEARCH_RE = re.compile(
+    r"(?i)(https?://|web\s*search|search\s+the\s+web|browse|research|"
+    r"найд[иь]\s+(?:в\s+)?(?:интернет|сет)|поиск\s+в\s+сет|"
+    r"latest|актуальн|changelog|release\s+notes|официальн\w*\s+документац)"
+)
+_HIGH_RISK_RE = re.compile(
+    r"(?i)(\bauth\b|\boauth\b|\bjwt\b|\bpermission(?:s)?\b|\bsecurity\b|"
+    r"уязвим|безопасност|\bdatabase\b|\bpostgres\b|\bmysql\b|\bsql\b|"
+    r"\bschema\b|\bmigration\b|миграц|\bpublic\s+api\b|\bbreaking\s+change\b|"
+    r"платеж|\bbilling\b|\bsecret(?:s)?\b|\bcredential(?:s)?\b|"
+    r"нескольк\w*\s+(?:подсистем|сервис)|multi[- ]system)"
+)
+_MULTI_SYSTEM_RE = re.compile(
+    r"(?i)(нескольк\w*\s+(?:подсистем|сервис|контур)|"
+    r"multi[- ]system|cross[- ]service|across\s+(?:services|subsystems))"
+)
+# Микроправка = одна точечная косметика/переименование. Признак простоты —
+# характер правки, а НЕ длина запроса.
+_MICRO_EDIT_RE = re.compile(
+    r"(?i)("
+    r"(поменя|смени|измени|попра[вь]|замени|увелич|уменьш|сдела[йт])\w*\s+"
+    r"(цвет|размер|шрифт|отступ|паддинг|марджин|текст|надпис|подпис|"
+    r"иконк|радиус|тень|фон|бордер|высот|ширин)|"
+    r"(change|set|update|tweak|rename|swap)\s+(the\s+)?"
+    r"(color|colour|size|font|padding|margin|text|label|icon|radius|"
+    r"shadow|background|border|width|height)|"
+    r"переименуй|rename\s|опечатк|typo|"
+    r"(добавь|add)\s+(отступ|padding|margin|placeholder|alt|title|aria)"
+    r")"
 )
 # Role Routing second_signal closed set (AD-22) — any one
 _SECOND_ARCH_MIGRATE_RE = re.compile(
@@ -95,8 +127,15 @@ MOR_B: dict[ComplexityBand, float] = {"light": 0.35, "med": 0.55, "heavy": 0.80}
 
 # Ops-ordered Leader failover lists (FR-15). Empty → disaster.
 LEADER_FAILOVER: dict[ProductMode, tuple[str, ...]] = {
-    "simple": ("deepseek-v4-flash", "gemini-3-pro", "claude-haiku-4-5"),
-    "power": ("claude-opus-4-8", "deepseek-v4-pro", "gemini-3.1-pro"),
+    "simple": ("gpt-5.4-mini", "deepseek-v4-pro", "claude-haiku-4-5"),
+    "power": (
+        "claude-opus-4-6",
+        "gpt-5.4-mini",
+        "deepseek-v4-pro",
+        "gpt-5.3-codex-spark",
+        "grok-4.3",
+        "claude-haiku-4-5",
+    ),
     "custom": (),  # filled from selected ready models at resolve time
 }
 
@@ -178,6 +217,120 @@ class ClassifyResult:
     task_kind: str = "general"
 
 
+def detect_adaptive_signals(
+    *,
+    user_q: str,
+    messages: list[dict[str, Any]] | None = None,
+    zeus: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Cheap turn/risk signals used by the stateful ZeusCode crew."""
+    z = zeus if isinstance(zeus, dict) else {}
+    rows = [m for m in (messages or []) if isinstance(m, dict)]
+    last_user = max(
+        (i for i, m in enumerate(rows) if str(m.get("role") or "").lower() == "user"),
+        default=0,
+    )
+    suffix = rows[last_user:]
+    has_tool_result = any(
+        str(m.get("role") or "").lower() in ("tool", "function") for m in suffix
+    )
+    has_tool_call = any(
+        str(m.get("role") or "").lower() == "assistant" and bool(m.get("tool_calls"))
+        for m in suffix
+    )
+    # Only the newest observation batch may raise a red flag. Scanning the whole
+    # transcript made one early failure pin the analyst to every later turn.
+    last_assistant = max(
+        (
+            i
+            for i, m in enumerate(rows)
+            if str(m.get("role") or "").lower() == "assistant"
+        ),
+        default=-1,
+    )
+    latest_batch = rows[max(last_user, last_assistant + 1) :]
+    tool_outputs = "\n".join(
+        str(m.get("content") or "")
+        for m in latest_batch
+        if str(m.get("role") or "").lower() in ("tool", "function")
+    )
+    return_codes = [
+        int(value)
+        for value in re.findall(
+            r"(?i)(?:<returncode>|(?:exit|return)_?code\s*[=:]\s*)(-?\d+)",
+            tool_outputs,
+        )
+    ]
+    tool_failed = any(code != 0 for code in return_codes) or bool(
+        not return_codes
+        and re.search(
+            r"(?i)(?:^|\n)\s*(?:traceback\s*(?:\(|:)|"
+            r"(?:fatal|uncaught)\s+error\b|<exception>|FAILED\b|"
+            r"\d+\s+failed(?:,|\s|$)|ERRORS?\s*=+)",
+            tool_outputs,
+        )
+    )
+    # The analyst is a failure specialist: healthy output and warnings inside a
+    # source listing are not a reason to spend a model on this turn.
+    significant_tool_output = tool_failed or bool(
+        re.search(
+            r"(?im)(?:^|\n)\s*(?:traceback\s*(?:\(|:)|FAILED\b|"
+            r"\d+\s+failed(?:,|\s|$)|"
+            r"(?:build|compilation)\s+failed)",
+            tool_outputs,
+        )
+    )
+    exec_meta = z.get("exec") if isinstance(z.get("exec"), dict) else {}
+    from .verify import machine_signals_from_client
+
+    machine = machine_signals_from_client(z)
+    exec_failed = tool_failed or any(
+        machine.get(key) is True
+        for key in (
+            "tests_failed",
+            "build_failed",
+            "compile_failed",
+            "command_exit_nonzero",
+            "ui_broken",
+        )
+    )
+    if exec_failed:
+        turn_kind = "exec_feedback"
+    elif has_tool_result:
+        turn_kind = "tool_loop"
+    else:
+        turn_kind = "bootstrap"
+    q = user_q or ""
+    return {
+        "turn_kind": turn_kind,
+        "has_tool_result": has_tool_result,
+        "has_tool_call": has_tool_call,
+        "has_exec": bool(exec_meta),
+        "exec_failed": exec_failed,
+        "tool_failed": tool_failed,
+        "significant_tool_output": significant_tool_output,
+        "network_research": bool(
+            z.get("research") is True
+            or z.get("force_research")
+            or _NETWORK_RESEARCH_RE.search(q)
+        ),
+        "high_risk": bool(_HIGH_RISK_RE.search(q)),
+        "multi_file": bool(_SECOND_MULTIFILE_RE.search(q)),
+        "multi_system": bool(_MULTI_SYSTEM_RE.search(q)),
+        "risk_profile": (
+            "security"
+            if re.search(r"(?i)(auth|oauth|jwt|security|уязвим|безопасност|secret)", q)
+            else "data"
+            if re.search(r"(?i)(database|postgres|mysql|sql|schema|migration|миграц)", q)
+            else "api"
+            if re.search(r"(?i)(public\s+api|breaking\s+change)", q)
+            else "systems"
+            if _MULTI_SYSTEM_RE.search(q)
+            else ""
+        ),
+    }
+
+
 def detect_second_signal(user_q: str, *, messages: list[dict[str, Any]] | None = None) -> bool:
     """Closed set (AD-22): architecture/migrate · multi-file · landing · explicit heavy."""
     q = user_q or ""
@@ -252,7 +405,7 @@ class PolicyDecision:
 class CascadeEscalateDecision:
     """FR-8 escalate map after Mini-Verifier fail."""
 
-    action: Literal["stronger_leader", "full", "stop_disaster"]
+    action: Literal["stronger_leader", "full", "stop_disaster", "keep"]
     routed_by: str
     allow_full: bool
 
@@ -262,8 +415,8 @@ class CustomPanelPlan:
     """FR-34 custom panel shape."""
 
     path_hint: PathName  # FAST-equivalent for 1 model
-    models: list[str]  # ready models only, ≤3
-    roles: list[str]  # A / A,B / A,B,C
+    models: list[str]  # ready models only, ≤ FUSION_MAX_PANEL
+    roles: list[str]  # A / A,B / A..E
 
 
 def epic2_policy_enabled() -> bool:
@@ -396,16 +549,16 @@ def classify_local(
             if m.get("role") == "assistant":
                 last_assistant = str(m.get("content") or "")
 
-    # Phase
+    # Phase — review BEFORE plan/design (code review ≠ architecture)
     phase: ClassifyPhase = "implement"
     if not q or _CHITCHAT_RE.match(q):
         phase = "chat"
     elif has_trace or _DEBUG_RE.search(q):
         phase = "debug"
-    elif design or _PLAN_RE.search(q):
-        phase = "plan"
     elif _REVIEW_RE.search(q):
         phase = "review"
+    elif design or _PLAN_RE.search(q):
+        phase = "plan"
     elif _TEST_RE.search(q):
         phase = "test"
     elif _DOCS_RE.search(q):
@@ -414,36 +567,43 @@ def classify_local(
         phase = "ui"
     elif _IMPLEMENT_RE.search(q) or has_code:
         phase = "implement"
-    elif len(q) <= 80:
-        phase = "chat"
 
-    # Complexity
+    # Complexity — только по сигналам. Короткий запрос ≠ простая задача
+    # («перепиши auth на JWT» — 24 символа и heavy), длинный ≠ сложная
+    # (объём контекста учитывается отдельно, через ctx_chars/size).
+    second = detect_second_signal(q, messages=messages)
+    micro = bool(_MICRO_EDIT_RE.search(q))
+    deep_trace = has_trace and len(_TRACE_FRAME_RE.findall(q)) >= 3
+
     band: ComplexityBand = "med"
     conf = 0.7
     if phase == "chat" and (not q or _CHITCHAT_RE.match(q)):
         band, conf = "light", 0.95
-    elif phase == "ui" and len(q) < 160 and not has_trace:
-        band, conf = "light", 0.85
-    elif phase in ("plan", "review") or design:
+    elif phase == "plan" or design:
         band, conf = "heavy", 0.85
+    elif second:
+        band, conf = "heavy", 0.8
+    elif phase == "ui" and micro and not has_trace:
+        band, conf = "light", 0.85
+    elif phase == "review":
+        # Focused code-review — med, not auto-FULL v1
+        band, conf = "med", 0.85
     elif phase == "debug" or has_trace:
         band, conf = "med", 0.8
-        if has_trace and len(q) > 400:
+        if deep_trace:
             band = "heavy"
-    elif phase == "implement" and len(q) < 120 and not has_code:
+    elif micro and not has_code:
         band, conf = "light", 0.75
-    elif len(q) >= 900 or (has_code and len(q) > 600):
-        band, conf = "heavy", 0.7
     else:
         band, conf = "med", 0.65
 
-    if last_assistant and len(q) < 280 and phase == "implement":
+    # Follow-up без явных сигналов — ниже уверенность, эскалация решит
+    if last_assistant and phase == "implement" and not second and not micro:
         conf = min(conf, 0.65)
 
     ctx_chars = len(q)
     if messages:
         ctx_chars = sum(len(str(m.get("content") or "")) for m in messages)
-    second = detect_second_signal(q, messages=messages)
     size, task_kind = derive_size_and_task(
         phase=phase,
         band=band,
@@ -917,11 +1077,27 @@ def cascade_escalate_action(
     phase: ClassifyPhase,
     stronger_already_tried: bool = False,
 ) -> CascadeEscalateDecision:
-    """Deterministic FR-8 map after Mini-Verifier fail."""
+    """Deterministic FR-8 map after Mini-Verifier fail.
+
+    Power fixed-crew (default): no cheap→strong ladder — keep answer; Judge later.
+    """
     if kill_switch:
         return CascadeEscalateDecision(
             action="stronger_leader",
             routed_by="cascade_escalate_stronger",
+            allow_full=False,
+        )
+    # Power: fixed role models — Mini fail does not hop to a stronger doer.
+    try:
+        from app.config import get_settings
+
+        fixed = bool(getattr(get_settings(), "FUSION_POWER_FIXED_CREW", True))
+    except Exception:  # noqa: BLE001
+        fixed = True
+    if product_mode == "power" and fixed:
+        return CascadeEscalateDecision(
+            action="keep",
+            routed_by="cascade_fixed_no_escalate",
             allow_full=False,
         )
     if product_mode == "simple":
@@ -931,7 +1107,7 @@ def cascade_escalate_action(
             allow_full=False,
         )
     if complexity == "heavy" or phase in ("plan", "review", "debug"):
-        if product_mode in ("power", "custom"):
+        if product_mode == "custom":
             return CascadeEscalateDecision(
                 action="full",
                 routed_by="cascade_escalate_full",
@@ -942,7 +1118,7 @@ def cascade_escalate_action(
             routed_by="cascade_escalate_stronger",
             allow_full=False,
         )
-    if complexity == "med" and product_mode in ("power", "custom"):
+    if complexity == "med" and product_mode == "custom":
         if stronger_already_tried:
             return CascadeEscalateDecision(
                 action="full",
@@ -954,7 +1130,7 @@ def cascade_escalate_action(
             routed_by="cascade_escalate_stronger",
             allow_full=True,
         )
-    # light → stronger once → stop
+    # light → stronger once → stop (simple/custom legacy)
     return CascadeEscalateDecision(
         action="stronger_leader",
         routed_by="cascade_escalate_stronger",
@@ -1036,7 +1212,13 @@ def resolve_custom_panel(
     *,
     ready: list[str] | None = None,
 ) -> CustomPanelPlan:
-    """1→FAST-eq; 2→A+B; 3→A/B/C; dead models excluded."""
+    """1→FAST-eq; 2→A+B; 3+→FULL panel; dead models excluded. Cap = FUSION_MAX_PANEL."""
+    try:
+        from app.fusion.roles import max_panel_size
+
+        cap = max_panel_size()
+    except Exception:  # noqa: BLE001
+        cap = 3
     ready_set = set(ready) if ready is not None else None
     models: list[str] = []
     for mid in selected or []:
@@ -1047,7 +1229,7 @@ def resolve_custom_panel(
             continue
         if m not in models:
             models.append(m)
-        if len(models) >= 3:
+        if len(models) >= cap:
             break
 
     n = len(models)
@@ -1059,7 +1241,8 @@ def resolve_custom_panel(
         )
     if n == 2:
         return CustomPanelPlan(path_hint="CASCADE", models=models, roles=["A", "B"])
-    return CustomPanelPlan(path_hint="FULL", models=models[:3], roles=["A", "B", "C"])
+    labels = ["A", "B", "C", "D", "E", "F", "G"][:n]
+    return CustomPanelPlan(path_hint="FULL", models=models, roles=labels)
 
 
 def soft_resolve_for_monolith(

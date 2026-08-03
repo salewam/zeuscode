@@ -10,10 +10,10 @@ from typing import Any
 
 import httpx
 
-from app.kie_sync import KIE_MODELS_PATH, load_kie_models
+from app.a6_sync import A6_MODELS_PATH, load_a6_models
 
 POLZA_MODELS_URL = "https://polza.ai/api/v1/models"
-# Pass-through rate Polza uses for Gemini 2.5 Flash vs our Kie USD basis
+# Pass-through rate for Gemini Flash-class USD → RUB display
 POLZA_PASS_THROUGH = 138.024  # 12.42216 / 0.09
 
 # Our id → Polza id (when names differ)
@@ -151,28 +151,34 @@ def apply_polza_to_models(
 
 
 async def sync_polza_prices() -> dict[str, Any]:
-    """Write Polza RUB prices into kie_models.json and return stats."""
-    models = load_kie_models()
+    """Write Polza RUB prices into a6_models.json and return stats."""
+    models = load_a6_models()
     if not models:
-        return {"ok": False, "error": "kie catalog empty — sync Kie first"}
+        return {"ok": False, "error": "a6 catalog empty — sync A6 first"}
     polza_rows = await fetch_polza_models()
     priced, stats = apply_polza_to_models(models, polza_rows)
+    # Keep A6 routing fields after Polza price overlay.
+    for row in priced:
+        row["adapter"] = "a6"
+        row["ready"] = True
+        row["source"] = "a6"
+        row.setdefault("upstream_model", row.get("id"))
+        row["a6_model"] = row.get("id")
     payload = {
-        "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "source": "kie+polza",
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+        "source": "a6+polza",
         "polza_synced_at": datetime.now(timezone.utc).isoformat(),
+        "n": len(priced),
         "models_n": len(priced),
         "models": priced,
         "polza_stats": stats,
     }
-    # preserve raw_rows count if file exists
-    if KIE_MODELS_PATH.exists():
+    if A6_MODELS_PATH.exists():
         try:
-            old = json.loads(KIE_MODELS_PATH.read_text(encoding="utf-8"))
-            payload["raw_rows"] = old.get("raw_rows")
-            payload["kie_fetched_at"] = old.get("fetched_at")
+            old = json.loads(A6_MODELS_PATH.read_text(encoding="utf-8"))
+            payload["synced_at"] = old.get("synced_at") or payload["synced_at"]
         except Exception:
             pass
-    KIE_MODELS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    KIE_MODELS_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    A6_MODELS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    A6_MODELS_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True, **stats, "models_n": len(priced)}

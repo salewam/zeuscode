@@ -1,0 +1,372 @@
+{
+  "mode": "live",
+  "suite_id": "zeuscode_power_v1_fullcrew",
+  "created_at": "2026-07-26T23:14:32.254368+00:00",
+  "n_runs_per_case": 2,
+  "n_total_runs": 12,
+  "pass_rate": 0.333,
+  "p50_latency_s": 47.894,
+  "p95_latency_s": 249.827,
+  "mean_rub": 5.0104,
+  "total_rub": 60.1248,
+  "escalate_rate": 0.0,
+  "gate_checks": {
+    "min_pass_rate": false,
+    "max_p95_latency_s": false,
+    "max_escalate_rate": true,
+    "max_mean_rub_per_case": true
+  },
+  "pass": false,
+  "cases": [
+    {
+      "case_id": "P01_chitchat",
+      "bucket": "light",
+      "pass_rate": 0.0,
+      "p50_latency_s": 80.123,
+      "p95_latency_s": 86.561,
+      "mean_rub": 2.9582,
+      "mean_branches": 8.0
+    },
+    {
+      "case_id": "P02_trivial_ui",
+      "bucket": "light",
+      "pass_rate": 0.0,
+      "p50_latency_s": 251.081,
+      "p95_latency_s": 262.368,
+      "mean_rub": 16.4047,
+      "mean_branches": 7.0
+    },
+    {
+      "case_id": "P03_code_fix",
+      "bucket": "code",
+      "pass_rate": 0.0,
+      "p50_latency_s": 132.966,
+      "p95_latency_s": 152.141,
+      "mean_rub": 9.8773,
+      "mean_branches": 9.0
+    },
+    {
+      "case_id": "P04_ui_landing",
+      "bucket": "ui",
+      "pass_rate": 0.0,
+      "p50_latency_s": 11.649,
+      "p95_latency_s": 11.921,
+      "mean_rub": 0.2862,
+      "mean_branches": 2.0
+    },
+    {
+      "case_id": "P05_architecture",
+      "bucket": "heavy",
+      "pass_rate": 1.0,
+      "p50_latency_s": 17.613,
+      "p95_latency_s": 22.118,
+      "mean_rub": 0.307,
+      "mean_branches": 2.0
+    },
+    {
+      "case_id": "P06_review",
+      "bucket": "heavy",
+      "pass_rate": 1.0,
+      "p50_latency_s": 15.772,
+      "p95_latency_s": 22.113,
+      "mean_rub": 0.2291,
+      "mean_branches": 2.0
+    }
+  ],
+  "buckets": [
+    {
+      "bucket": "light",
+      "n": 4,
+      "pass_rate": 0.0,
+      "p50_latency_s": 162.908,
+      "p95_latency_s": 259.86,
+      "mean_rub": 9.6815
+    },
+    {
+      "bucket": "code",
+      "n": 2,
+      "pass_rate": 0.0,
+      "p50_latency_s": 132.966,
+      "p95_latency_s": 152.141,
+      "mean_rub": 9.8773
+    },
+    {
+      "bucket": "ui",
+      "n": 2,
+      "pass_rate": 0.0,
+      "p50_latency_s": 11.649,
+      "p95_latency_s": 11.921,
+      "mean_rub": 0.2862
+    },
+    {
+      "bucket": "heavy",
+      "n": 4,
+      "pass_rate": 1.0,
+      "p50_latency_s": 17.613,
+      "p95_latency_s": 22.787,
+      "mean_rub": 0.268
+    }
+  ],
+  "full_crew": true,
+  "power_crew": [
+    "claude-opus-4-8",
+    "gpt-5.4",
+    "deepseek-v4-pro",
+    "gemini-3.1-pro",
+    "deepseek-v4-flash"
+  ],
+  "runs_compact": [
+    {
+      "case_id": "P01_chitchat",
+      "run": 1,
+      "pass": false,
+      "latency_s": 87.276,
+      "rub": 3.4008,
+      "path": "FULL",
+      "routed_by": "forced_full",
+      "branch_n": 8,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P01_chitchat",
+      "run": 2,
+      "pass": false,
+      "latency_s": 72.97,
+      "rub": 2.5157,
+      "path": "FULL",
+      "routed_by": "forced_full",
+      "branch_n": 8,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P02_trivial_ui",
+      "run": 1,
+      "pass": false,
+      "latency_s": 263.622,
+      "rub": 16.6896,
+      "path": "FULL",
+      "routed_by": "ui_author_critics_web",
+      "branch_n": 7,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P02_trivial_ui",
+      "run": 2,
+      "pass": false,
+      "latency_s": 238.54,
+      "rub": 16.1198,
+      "path": "FULL",
+      "routed_by": "ui_author_critics_web",
+      "branch_n": 7,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P03_code_fix",
+      "run": 1,
+      "pass": false,
+      "latency_s": 154.272,
+      "rub": 10.9318,
+      "path": "FULL",
+      "routed_by": "forced_full",
+      "branch_n": 9,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P03_code_fix",
+      "run": 2,
+      "pass": false,
+      "latency_s": 111.661,
+      "rub": 8.8227,
+      "path": "FULL",
+      "routed_by": "forced_full",
+      "branch_n": 9,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P04_ui_landing",
+      "run": 1,
+      "pass": false,
+      "latency_s": 11.348,
+      "rub": 0.268,
+      "path": "FAST",
+      "routed_by": "clarifier_ask",
+      "branch_n": 2,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": false,
+        "latency": true,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": false
+      }
+    },
+    {
+      "case_id": "P04_ui_landing",
+      "run": 2,
+      "pass": false,
+      "latency_s": 11.951,
+      "rub": 0.3044,
+      "path": "FAST",
+      "routed_by": "clarifier_ask",
+      "branch_n": 2,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": false,
+        "latency": true,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": false
+      }
+    },
+    {
+      "case_id": "P05_architecture",
+      "run": 1,
+      "pass": true,
+      "latency_s": 12.609,
+      "rub": 0.365,
+      "path": "FAST",
+      "routed_by": "clarifier_ask",
+      "branch_n": 2,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": true,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P05_architecture",
+      "run": 2,
+      "pass": true,
+      "latency_s": 22.618,
+      "rub": 0.2489,
+      "path": "FAST",
+      "routed_by": "clarifier_ask",
+      "branch_n": 2,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": true,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P06_review",
+      "run": 1,
+      "pass": true,
+      "latency_s": 22.817,
+      "rub": 0.2192,
+      "path": "FAST",
+      "routed_by": "clarifier_ask",
+      "branch_n": 2,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": true,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P06_review",
+      "run": 2,
+      "pass": true,
+      "latency_s": 8.727,
+      "rub": 0.2389,
+      "path": "FAST",
+      "routed_by": "clarifier_ask",
+      "branch_n": 2,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": true,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "must_contain": true
+      }
+    }
+  ]
+}

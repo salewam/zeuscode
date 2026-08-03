@@ -1,0 +1,516 @@
+{
+  "mode": "live",
+  "suite_id": "zeuscode_power_v1",
+  "created_at": "2026-07-27T00:15:29.400202+00:00",
+  "n_runs_per_case": 3,
+  "n_total_runs": 18,
+  "pass_rate": 0.056,
+  "p50_latency_s": 103.318,
+  "p95_latency_s": 180.005,
+  "mean_rub": 2.8891,
+  "total_rub": 52.0037,
+  "escalate_rate": 0.0,
+  "gate_checks": {
+    "min_pass_rate": false,
+    "max_p95_latency_s": true,
+    "max_escalate_rate": true,
+    "max_mean_rub_per_case": true
+  },
+  "pass": false,
+  "cases": [
+    {
+      "case_id": "P01_chitchat",
+      "bucket": "light",
+      "pass_rate": 0.333,
+      "p50_latency_s": 45.014,
+      "p95_latency_s": 49.1,
+      "mean_rub": 0.9245,
+      "mean_branches": 2.33
+    },
+    {
+      "case_id": "P02_trivial_ui",
+      "bucket": "light",
+      "pass_rate": 0.0,
+      "p50_latency_s": 80.56,
+      "p95_latency_s": 84.649,
+      "mean_rub": 3.9848,
+      "mean_branches": 3.0
+    },
+    {
+      "case_id": "P03_code_fix",
+      "bucket": "code",
+      "pass_rate": 0.0,
+      "p50_latency_s": 90.496,
+      "p95_latency_s": 91.308,
+      "mean_rub": 3.6918,
+      "mean_branches": 4.0
+    },
+    {
+      "case_id": "P04_ui_landing",
+      "bucket": "ui",
+      "pass_rate": 0.0,
+      "p50_latency_s": 180.004,
+      "p95_latency_s": 180.005,
+      "mean_rub": 3.231,
+      "mean_branches": 1.67
+    },
+    {
+      "case_id": "P05_architecture",
+      "bucket": "heavy",
+      "pass_rate": 0.0,
+      "p50_latency_s": 180.003,
+      "p95_latency_s": 180.005,
+      "mean_rub": 0.0,
+      "mean_branches": 0.0
+    },
+    {
+      "case_id": "P06_review",
+      "bucket": "heavy",
+      "pass_rate": 0.0,
+      "p50_latency_s": 180.003,
+      "p95_latency_s": 180.003,
+      "mean_rub": 5.5025,
+      "mean_branches": 1.67
+    }
+  ],
+  "buckets": [
+    {
+      "bucket": "light",
+      "n": 6,
+      "pass_rate": 0.167,
+      "p50_latency_s": 61.898,
+      "p95_latency_s": 83.967,
+      "mean_rub": 2.4546
+    },
+    {
+      "bucket": "code",
+      "n": 3,
+      "pass_rate": 0.0,
+      "p50_latency_s": 90.496,
+      "p95_latency_s": 91.308,
+      "mean_rub": 3.6918
+    },
+    {
+      "bucket": "ui",
+      "n": 3,
+      "pass_rate": 0.0,
+      "p50_latency_s": 180.004,
+      "p95_latency_s": 180.005,
+      "mean_rub": 3.231
+    },
+    {
+      "bucket": "heavy",
+      "n": 6,
+      "pass_rate": 0.0,
+      "p50_latency_s": 180.003,
+      "p95_latency_s": 180.005,
+      "mean_rub": 2.7513
+    }
+  ],
+  "full_crew": false,
+  "power_crew": [
+    "claude-opus-4-8",
+    "gpt-5.4",
+    "deepseek-v4-pro",
+    "gemini-3.1-pro",
+    "deepseek-v4-flash"
+  ],
+  "runs_compact": [
+    {
+      "case_id": "P01_chitchat",
+      "run": 1,
+      "pass": false,
+      "latency_s": 45.014,
+      "rub": 1.4719,
+      "path": "CASCADE",
+      "routed_by": "cascade_fixed_no_escalate",
+      "branch_n": 3,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P01_chitchat",
+      "run": 2,
+      "pass": true,
+      "latency_s": 18.833,
+      "rub": 0.0048,
+      "path": "CASCADE",
+      "routed_by": "policy_cascade_mini_pass",
+      "branch_n": 1,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": true,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P01_chitchat",
+      "run": 3,
+      "pass": false,
+      "latency_s": 49.554,
+      "rub": 1.2968,
+      "path": "CASCADE",
+      "routed_by": "cascade_fixed_no_escalate",
+      "branch_n": 3,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P02_trivial_ui",
+      "run": 1,
+      "pass": false,
+      "latency_s": 80.56,
+      "rub": 4.4643,
+      "path": "CASCADE",
+      "routed_by": "cascade_fixed_no_escalate",
+      "branch_n": 3,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P02_trivial_ui",
+      "run": 2,
+      "pass": false,
+      "latency_s": 85.103,
+      "rub": 4.7471,
+      "path": "CASCADE",
+      "routed_by": "cascade_fixed_no_escalate",
+      "branch_n": 3,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P02_trivial_ui",
+      "run": 3,
+      "pass": false,
+      "latency_s": 74.242,
+      "rub": 2.7429,
+      "path": "CASCADE",
+      "routed_by": "cascade_fixed_no_escalate",
+      "branch_n": 3,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P03_code_fix",
+      "run": 1,
+      "pass": false,
+      "latency_s": 61.737,
+      "rub": 1.8841,
+      "path": "CASCADE",
+      "routed_by": "cascade_fixed_no_escalate",
+      "branch_n": 4,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": true,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P03_code_fix",
+      "run": 2,
+      "pass": false,
+      "latency_s": 90.496,
+      "rub": 4.6674,
+      "path": "CASCADE",
+      "routed_by": "cascade_fixed_no_escalate",
+      "branch_n": 4,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P03_code_fix",
+      "run": 3,
+      "pass": false,
+      "latency_s": 91.398,
+      "rub": 4.5239,
+      "path": "CASCADE",
+      "routed_by": "cascade_fixed_no_escalate",
+      "branch_n": 4,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P04_ui_landing",
+      "run": 1,
+      "pass": false,
+      "latency_s": 180.005,
+      "rub": 0.0,
+      "path": null,
+      "routed_by": "",
+      "branch_n": 0,
+      "checks": {
+        "http_200": false,
+        "non_empty": false,
+        "min_chars": false,
+        "code_fence": false,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": false
+      }
+    },
+    {
+      "case_id": "P04_ui_landing",
+      "run": 2,
+      "pass": false,
+      "latency_s": 115.238,
+      "rub": 9.693,
+      "path": "CASCADE",
+      "routed_by": "fallback_single_curator",
+      "branch_n": 5,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": false,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P04_ui_landing",
+      "run": 3,
+      "pass": false,
+      "latency_s": 180.004,
+      "rub": 0.0,
+      "path": null,
+      "routed_by": "",
+      "branch_n": 0,
+      "checks": {
+        "http_200": false,
+        "non_empty": false,
+        "min_chars": false,
+        "code_fence": false,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": false
+      }
+    },
+    {
+      "case_id": "P05_architecture",
+      "run": 1,
+      "pass": false,
+      "latency_s": 180.005,
+      "rub": 0.0,
+      "path": null,
+      "routed_by": "",
+      "branch_n": 0,
+      "checks": {
+        "http_200": false,
+        "non_empty": false,
+        "min_chars": false,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": false
+      }
+    },
+    {
+      "case_id": "P05_architecture",
+      "run": 2,
+      "pass": false,
+      "latency_s": 180.003,
+      "rub": 0.0,
+      "path": null,
+      "routed_by": "",
+      "branch_n": 0,
+      "checks": {
+        "http_200": false,
+        "non_empty": false,
+        "min_chars": false,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": false
+      }
+    },
+    {
+      "case_id": "P05_architecture",
+      "run": 3,
+      "pass": false,
+      "latency_s": 180.002,
+      "rub": 0.0,
+      "path": null,
+      "routed_by": "",
+      "branch_n": 0,
+      "checks": {
+        "http_200": false,
+        "non_empty": false,
+        "min_chars": false,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": false
+      }
+    },
+    {
+      "case_id": "P06_review",
+      "run": 1,
+      "pass": false,
+      "latency_s": 180.003,
+      "rub": 0.0,
+      "path": null,
+      "routed_by": "",
+      "branch_n": 0,
+      "checks": {
+        "http_200": false,
+        "non_empty": false,
+        "min_chars": false,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": false
+      }
+    },
+    {
+      "case_id": "P06_review",
+      "run": 2,
+      "pass": false,
+      "latency_s": 179.185,
+      "rub": 16.5075,
+      "path": "CASCADE",
+      "routed_by": "fallback_single_curator",
+      "branch_n": 5,
+      "checks": {
+        "http_200": true,
+        "non_empty": true,
+        "min_chars": true,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": true
+      }
+    },
+    {
+      "case_id": "P06_review",
+      "run": 3,
+      "pass": false,
+      "latency_s": 180.003,
+      "rub": 0.0,
+      "path": null,
+      "routed_by": "",
+      "branch_n": 0,
+      "checks": {
+        "http_200": false,
+        "non_empty": false,
+        "min_chars": false,
+        "code_fence": true,
+        "latency": false,
+        "max_branches": true,
+        "forbid_escalate": true,
+        "forbid_models": true,
+        "no_clarifier": true,
+        "must_contain": false
+      }
+    }
+  ]
+}

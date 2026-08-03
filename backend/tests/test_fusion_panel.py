@@ -10,10 +10,12 @@ import pytest
 from app.fusion.panel import (
     LiveBranch,
     PanelDiversityError,
+    _agent_max_tokens,
     adapt_prompt_for_family,
     assert_panel_diversity,
     billable_for_branch,
     build_satellite_brief,
+    execute_cascade,
     execute_full,
     execute_race,
     extract_brief_parts,
@@ -442,3 +444,94 @@ def test_aspect_bundle_must_fail_property():
 
     ok = asyncio.run(_run())
     assert ok.all_passed or not ok.must_fail
+
+
+def test_agent_max_tokens_cascade_clamped():
+    assert _agent_max_tokens(path="CASCADE") <= 8192
+    assert _agent_max_tokens(path="FAST") <= 8192
+    assert _agent_max_tokens(path="FULL") >= _agent_max_tokens(path="CASCADE")
+    assert _agent_max_tokens() >= _agent_max_tokens(path="CASCADE")
+
+
+def test_cascade_starts_with_doer_not_opus():
+    """Light: flash only — full ready stack must not be walked even if Mini fails."""
+    called: list[str] = []
+
+    async def mini(*, answer, user_q, model=None):
+        return _Mini(good_enough=False, confidence=0.1, passed=False)
+
+    async def up(model, messages, **kwargs):
+        called.append(model)
+        return {
+            "ok": True,
+            "text": f"ok from {model} with enough characters here",
+            "prompt_tokens": 5,
+            "completion_tokens": 5,
+        }
+
+    async def _run():
+        return await execute_cascade(
+            panel=["deepseek-v4-flash"],
+            leader="deepseek-v4-flash",
+            messages=[{"role": "user", "content": "привет"}],
+            user_q="привет",
+            product_mode="power",
+            complexity="light",
+            ready=[
+                "claude-opus-4-6",
+                "gpt-5.4",
+                "deepseek-v4-pro",
+                "gemini-3.1-pro",
+                "deepseek-v4-flash",
+            ],
+            mini_model="deepseek-v4-flash",
+            mini_verify_fn=mini,
+            upstream_call=up,
+            adapt_prompts=False,
+        )
+
+    out = asyncio.run(_run())
+    assert called == ["deepseek-v4-flash"]
+    assert "claude-opus-4-6" not in called
+    assert out.leader == "deepseek-v4-flash"
+    assert out.answer.startswith("ok from deepseek-v4-flash")
+
+
+def test_cascade_failover_skips_dead_doer_to_pro():
+    """Med code: empty/500 on flash → next in execute panel (pro), not Opus-first."""
+
+    async def mini(*, answer, user_q, model=None):
+        return _Mini(good_enough=True, confidence=0.9, passed=True)
+
+    async def up(model, messages, **kwargs):
+        if model == "deepseek-v4-flash":
+            return {"ok": False, "text": "", "error": "500", "prompt_tokens": 0, "completion_tokens": 0}
+        return {
+            "ok": True,
+            "text": f"recovered by {model} with enough text body here",
+            "prompt_tokens": 8,
+            "completion_tokens": 8,
+        }
+
+    async def _run():
+        return await execute_cascade(
+            panel=["deepseek-v4-flash", "deepseek-v4-pro"],
+            leader="deepseek-v4-flash",
+            messages=[{"role": "user", "content": "hi"}],
+            user_q="hi",
+            product_mode="power",
+            complexity="med",
+            ready=["deepseek-v4-flash", "deepseek-v4-pro"],
+            mini_verify_fn=mini,
+            upstream_call=up,
+            adapt_prompts=False,
+        )
+
+    out = asyncio.run(_run())
+    assert out.disaster is not True
+    assert out.leader == "deepseek-v4-pro"
+    assert "recovered by deepseek-v4-pro" in out.answer
+    models = [b.model_id for b in out.live]
+    assert models[0] == "deepseek-v4-flash"
+    assert "deepseek-v4-pro" in models
+    assert "claude-opus-4-6" not in models

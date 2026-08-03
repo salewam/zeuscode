@@ -13,7 +13,7 @@ from typing import Any, Literal
 
 from .model_power import power_score
 
-ClarifyPhase = Literal["ask", "confirm", "done", "skip"]
+ClarifyPhase = Literal["ask", "confirm", "plan", "done", "skip"]
 
 _JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
 _SKIP_RE = re.compile(
@@ -22,12 +22,23 @@ _SKIP_RE = re.compile(
 _YES_RE = re.compile(
     r"(?i)^\s*(да|yes|ok|ок|утверждаю|утверждено|согласен|погнали|делай|go)\s*[.!]?\s*$",
 )
+_SKIP_PLAN_RE = re.compile(
+    r"(?i)^\s*(без\s+плана|skip\s*plan|сразу\s+в\s+код)",
+)
+# Concrete ask → skip auto-clarify (bench: architecture/review already clear)
+_CONCRETE_RE = re.compile(
+    r"(?i)("
+    r"```|traceback|importerror|typeerror|auth\.py|\.py\b|\.tsx?\b|"
+    r"почини|исправь|рефактор|миграц|спроектируй|архитект|"
+    r"code\s*review|ревью|race|лок|lock|atomic|"
+    r"html\+?css|<!doctype|минимальн(ый|ый\s+html)|"
+    r"acceptance|критер(ий|ии)\s+готов|юнит.?тест"
+    r")"
+)
 
 _GEMINI_PREFS = (
     "gemini-3.1-pro",
     "gemini-3-pro",
-    "gemini-3-flash",
-    "gemini-2.5-flash",
     "gemini-2.5-pro",
 )
 
@@ -54,6 +65,14 @@ _REVISE_SYSTEM = (
     "Ответ — ТОЛЬКО JSON с phase=confirm, spec_summary и enriched_prompt."
 )
 
+_PLAN_SYSTEM = (
+    "Ты Zeus Architect (plan mode). По утверждённому ТЗ дай короткий план разработки. "
+    "НЕ пиши код. Ответ — ТОЛЬКО JSON:\n"
+    '{"phase":"plan","dev_plan":"маркированный план 4–7 шагов",'
+    '"enriched_prompt":"полный промпт = ТЗ + план для разработчика"}\n'
+    "dev_plan — для человека. enriched_prompt — для пайплайна."
+)
+
 
 @dataclass
 class ClarifierState:
@@ -63,6 +82,7 @@ class ClarifierState:
     answers: str = ""
     spec_summary: str = ""
     enriched_prompt: str = ""
+    dev_plan: str = ""
     clarifier_model: str | None = None
     revision_count: int = 0
     session_id: str | None = None
@@ -75,7 +95,7 @@ class ClarifierState:
         if not isinstance(raw, dict):
             return ClarifierState()
         phase = str(raw.get("phase") or "ask")
-        if phase not in ("ask", "confirm", "done", "skip"):
+        if phase not in ("ask", "confirm", "plan", "done", "skip"):
             phase = "ask"
         qs = raw.get("questions") or []
         if not isinstance(qs, list):
@@ -87,6 +107,7 @@ class ClarifierState:
             answers=str(raw.get("answers") or "")[:8000],
             spec_summary=str(raw.get("spec_summary") or "")[:4000],
             enriched_prompt=str(raw.get("enriched_prompt") or "")[:12000],
+            dev_plan=str(raw.get("dev_plan") or "")[:4000],
             clarifier_model=(str(raw.get("clarifier_model") or "").strip() or None),
             revision_count=max(0, int(raw.get("revision_count") or 0)),
             session_id=(str(raw.get("session_id") or "").strip() or None),
@@ -133,6 +154,19 @@ def pick_clarifier_model(
     return ready[0]
 
 
+def _query_is_vague(user_q: str) -> bool:
+    """True only for short/ambiguous asks — concrete tasks go straight to doers."""
+    q = (user_q or "").strip()
+    if not q:
+        return False
+    if len(q) >= 180:
+        return False
+    if _CONCRETE_RE.search(q):
+        return False
+    # One-word / tiny blurbs are vague; longer structured asks are not
+    return len(q) < 90
+
+
 def should_run_clarifier(
     *,
     product_mode: str,
@@ -143,7 +177,11 @@ def should_run_clarifier(
     user_q: str,
     state: ClarifierState | None = None,
 ) -> bool:
-    """When to engage clarifier (plan defaults)."""
+    """When to engage clarifier.
+
+    Bench lesson: auto-clarify on every large/second_signal stole FULL crew.
+    Now: mid-flow / explicit flag / vague large only. Concrete prompts → doers.
+    """
     z = zeus if isinstance(zeus, dict) else {}
     if kill_switch:
         return False
@@ -156,12 +194,22 @@ def should_run_clarifier(
         "no",
     ):
         return False
+    # Forced full/fast path (bench --full-crew) never pauses for interview
+    _mode = str(z.get("mode") or "").lower()
+    if _mode in ("full", "fast") and not (
+        state and state.phase in ("ask", "confirm", "plan")
+    ):
+        return False
     if state and state.phase in ("done", "skip"):
         return False
-    if _SKIP_RE.search(user_q or ""):
+    if _SKIP_RE.search(user_q or "") and not (
+        state and state.phase in ("ask", "confirm", "plan") and (state.questions or state.spec_summary)
+    ):
         return False
     # Already mid-flow
-    if state and state.phase in ("ask", "confirm") and (state.questions or state.spec_summary):
+    if state and state.phase in ("ask", "confirm", "plan") and (
+        state.questions or state.spec_summary or state.dev_plan
+    ):
         return True
     if z.get("clarify") is True or str(z.get("clarify") or "").lower() in (
         "1",
@@ -170,9 +218,11 @@ def should_run_clarifier(
         "yes",
     ):
         return True
-    if (size or "").lower() == "large":
-        return True
-    if second_signal:
+    # Never auto on small — parasites stole clear light/code turns
+    if (size or "").lower() == "small" and not second_signal:
+        return False
+    # Auto only when heavy AND vague (e.g. «сделай лендинг» без деталей)
+    if ((size or "").lower() == "large" or second_signal) and _query_is_vague(user_q):
         return True
     return False
 
@@ -232,7 +282,16 @@ def format_confirm_message(spec: str) -> str:
     body = (spec or "").strip() or "— (пустое ТЗ)"
     return (
         f"Собрал ТЗ:\n\n{body}\n\n"
-        "Пиши **да**, чтобы начать разработку, или пришли правки."
+        "Пиши **да**, чтобы перейти к плану, или пришли правки."
+    )
+
+
+def format_plan_message(plan: str) -> str:
+    body = (plan or "").strip() or "— (пустой план)"
+    return (
+        f"План разработки:\n\n{body}\n\n"
+        "Пиши **да** / **делай**, чтобы начать код, "
+        "правки к плану — текстом, или **без плана** чтобы сразу в разработку."
     )
 
 
@@ -241,13 +300,17 @@ def build_enriched_fallback(
     goal: str,
     answers: str,
     spec: str,
+    plan: str = "",
 ) -> str:
-    return (
-        f"## Утверждённое ТЗ (Clarifier)\n{spec.strip()}\n\n"
-        f"## Исходная задача\n{goal.strip()}\n\n"
-        f"## Ответы на уточнения\n{answers.strip()}\n\n"
-        "Реализуй по ТЗ полностью."
-    )
+    parts = [
+        f"## Утверждённое ТЗ (Clarifier)\n{spec.strip()}\n",
+        f"## Исходная задача\n{goal.strip()}\n",
+        f"## Ответы на уточнения\n{answers.strip()}\n",
+    ]
+    if (plan or "").strip():
+        parts.append(f"## План разработки\n{plan.strip()}\n")
+    parts.append("Реализуй по ТЗ и плану полностью.")
+    return "\n".join(parts)
 
 
 async def _call_model(
@@ -313,6 +376,112 @@ def _heuristic_confirm(goal: str, answers: str) -> dict[str, Any]:
         "spec_summary": spec,
         "enriched_prompt": enriched,
     }
+
+
+def _heuristic_plan(goal: str, spec: str, answers: str) -> dict[str, Any]:
+    plan = (
+        f"1) Уточнить структуру под «{goal[:80]}»\n"
+        "2) Собрать каркас (страницы/модули)\n"
+        "3) Реализовать ключевые экраны/логику\n"
+        "4) Проверить критерии приёмки из ТЗ\n"
+        "5) Сдать цельный рабочий результат"
+    )
+    enriched = build_enriched_fallback(
+        goal=goal, answers=answers, spec=spec, plan=plan
+    )
+    return {"phase": "plan", "dev_plan": plan, "enriched_prompt": enriched}
+
+
+def _finalize_done(
+    st: ClarifierState,
+    *,
+    model: str | None,
+    meta: dict[str, Any],
+) -> ClarifierTurnResult:
+    if not st.enriched_prompt:
+        st.enriched_prompt = build_enriched_fallback(
+            goal=st.original_goal,
+            answers=st.answers,
+            spec=st.spec_summary,
+            plan=st.dev_plan,
+        )
+    elif st.dev_plan and "## План разработки" not in st.enriched_prompt:
+        st.enriched_prompt = (
+            f"{st.enriched_prompt.rstrip()}\n\n## План разработки\n{st.dev_plan.strip()}"
+        )
+    st.phase = "done"
+    from .plan_artifact import build_plan_artifact
+
+    out_meta = dict(meta or {})
+    if st.dev_plan:
+        out_meta["plan_artifact"] = build_plan_artifact(
+            content=st.dev_plan,
+            spec_summary=st.spec_summary,
+            title=st.original_goal or "plan",
+            source="clarifier",
+            original_goal=st.original_goal,
+        )
+    return ClarifierTurnResult(
+        halt=False,
+        phase="done",
+        user_text=st.enriched_prompt,
+        state=st,
+        model_id=model,
+        meta=out_meta,
+    )
+
+
+async def _enter_plan_phase(
+    st: ClarifierState,
+    *,
+    model: str | None,
+    upstream_call: Any | None,
+) -> ClarifierTurnResult:
+    goal = st.original_goal
+    if _heuristic() or not model:
+        data = _heuristic_plan(goal, st.spec_summary, st.answers)
+        pt, ct = 0, 10
+    else:
+        raw, pt, ct = await _call_model(
+            model_id=model,
+            system=_PLAN_SYSTEM,
+            user=(
+                f"Исходная задача:\n{goal[:2000]}\n\n"
+                f"ТЗ:\n{st.spec_summary[:2500]}\n\n"
+                f"Ответы:\n{st.answers[:2000]}"
+            ),
+            upstream_call=upstream_call,
+        )
+        data = _extract_json(raw) or _heuristic_plan(goal, st.spec_summary, st.answers)
+    st.dev_plan = str(data.get("dev_plan") or "").strip() or _heuristic_plan(
+        goal, st.spec_summary, st.answers
+    )["dev_plan"]
+    st.enriched_prompt = str(data.get("enriched_prompt") or "").strip() or build_enriched_fallback(
+        goal=goal,
+        answers=st.answers,
+        spec=st.spec_summary,
+        plan=st.dev_plan,
+    )
+    st.phase = "plan"
+    from .plan_artifact import build_plan_artifact
+
+    art = build_plan_artifact(
+        content=st.dev_plan,
+        spec_summary=st.spec_summary,
+        title=st.original_goal or "plan",
+        source="clarifier",
+        original_goal=st.original_goal,
+    )
+    return ClarifierTurnResult(
+        halt=True,
+        phase="plan",
+        user_text=format_plan_message(st.dev_plan),
+        state=st,
+        model_id=model,
+        prompt_tokens=pt,
+        completion_tokens=ct,
+        meta={"brief_approved": True, "plan_ready": True, "plan_artifact": art},
+    )
 
 
 async def run_clarifier_turn(
@@ -411,41 +580,24 @@ async def run_clarifier_turn(
             completion_tokens=ct,
         )
 
-    # --- CONFIRM: yes → done; else revise ---
+    # --- CONFIRM: yes → plan; else revise ---
     if st.phase == "confirm":
         if is_approval(text):
-            st.phase = "done"
-            if not st.enriched_prompt:
-                st.enriched_prompt = build_enriched_fallback(
-                    goal=st.original_goal,
-                    answers=st.answers,
-                    spec=st.spec_summary,
-                )
-            return ClarifierTurnResult(
-                halt=False,
-                phase="done",
-                user_text=st.enriched_prompt,
-                state=st,
-                model_id=model,
-                meta={"brief_approved": True},
+            return await _enter_plan_phase(
+                st, model=model, upstream_call=upstream_call
             )
 
         # Revisions
         st.revision_count += 1
         if st.revision_count > MAX_CONFIRM_REVISIONS:
-            # Force proceed with current spec
-            st.phase = "done"
             st.enriched_prompt = build_enriched_fallback(
                 goal=st.original_goal,
                 answers=f"{st.answers}\n\nПравки (учтены частично):\n{text}",
                 spec=st.spec_summary + f"\n— Правки: {text[:500]}",
             )
-            return ClarifierTurnResult(
-                halt=False,
-                phase="done",
-                user_text=st.enriched_prompt,
-                state=st,
-                model_id=model,
+            return _finalize_done(
+                st,
+                model=model,
                 meta={"brief_approved": True, "forced_after_revisions": True},
             )
 
@@ -479,6 +631,58 @@ async def run_clarifier_turn(
             prompt_tokens=pt,
             completion_tokens=ct,
             meta={"revision": st.revision_count},
+        )
+
+    # --- PLAN: yes/skip → done; else revise plan ---
+    if st.phase == "plan":
+        if is_approval(text) or _SKIP_PLAN_RE.search(text):
+            skipped = bool(_SKIP_PLAN_RE.search(text))
+            if skipped and not st.dev_plan:
+                st.dev_plan = ""
+            return _finalize_done(
+                st,
+                model=model,
+                meta={
+                    "brief_approved": True,
+                    "plan_approved": not skipped,
+                    "plan_skipped": skipped,
+                },
+            )
+
+        st.revision_count += 1
+        if st.revision_count > MAX_CONFIRM_REVISIONS:
+            st.dev_plan = (st.dev_plan or "") + f"\n— Правки к плану: {text[:400]}"
+            st.enriched_prompt = build_enriched_fallback(
+                goal=st.original_goal,
+                answers=st.answers,
+                spec=st.spec_summary,
+                plan=st.dev_plan,
+            )
+            return _finalize_done(
+                st,
+                model=model,
+                meta={
+                    "brief_approved": True,
+                    "plan_approved": True,
+                    "forced_after_revisions": True,
+                },
+            )
+
+        # Treat non-yes as plan edits
+        st.dev_plan = f"{st.dev_plan}\n— Уточнение: {text[:500]}".strip()
+        st.enriched_prompt = build_enriched_fallback(
+            goal=st.original_goal,
+            answers=st.answers,
+            spec=st.spec_summary,
+            plan=st.dev_plan,
+        )
+        return ClarifierTurnResult(
+            halt=True,
+            phase="plan",
+            user_text=format_plan_message(st.dev_plan),
+            state=st,
+            model_id=model,
+            meta={"plan_revision": st.revision_count},
         )
 
     # done/skip passthrough

@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
+import os
 import re
 import time
 import uuid
@@ -20,15 +23,20 @@ from .verify import (
 
 # Role presets (B10) — presence required even if some adapters ignore temp.
 ROLE_TEMPERATURE: dict[str, float] = {"A": 0.2, "B": 0.55, "C": 0.85}
-def _agent_max_tokens() -> int:
-    """No tiny per-role caps — agents must be able to finish the task."""
+def _agent_max_tokens(*, path: str | None = None) -> int:
+    """FULL/RACE keep high ceiling; CASCADE/FAST use tighter small cap."""
     try:
         from app.config import get_settings
 
-        n = int(getattr(get_settings(), "FUSION_AGENT_MAX_TOKENS", 65536) or 65536)
+        settings = get_settings()
+        full = int(getattr(settings, "FUSION_AGENT_MAX_TOKENS", 65536) or 65536)
+        small = int(getattr(settings, "FUSION_SMALL_MAX_TOKENS", 8192) or 8192)
     except Exception:  # noqa: BLE001
-        n = 65536
-    return max(1024, n)
+        full, small = 65536, 8192
+    p = (path or "").strip().upper()
+    if p in ("CASCADE", "FAST"):
+        return max(1024, min(full, small))
+    return max(1024, full)
 
 
 # Kept for imports/tests; values resolved at call-time via _agent_max_tokens().
@@ -429,30 +437,231 @@ def race_both_fail_terminal(
     )
 
 
+def _extract_tool_calls(data: dict[str, Any] | None) -> list[dict[str, Any]]:
+    try:
+        msg = ((data or {}).get("choices") or [{}])[0].get("message") or {}
+        tcs = msg.get("tool_calls")
+        return list(tcs) if isinstance(tcs, list) else []
+    except (IndexError, TypeError, AttributeError):
+        return []
+
+
 async def _default_upstream(
     model: str,
     messages: list[dict[str, Any]],
     *,
     temperature: float | None = None,
     max_tokens: int | None = None,
+    tools: list[Any] | None = None,
+    tool_choice: Any | None = None,
+    prompt_cache_key: str | None = None,
 ) -> dict[str, Any]:
     from app import upstream
 
-    data = await upstream.chat_completions(
-        model=model,
-        messages=messages,
-        stream=False,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
+    kw: dict[str, Any] = {
+        "model": model,
+        "messages": messages,
+        "stream": False,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    if tools:
+        kw["tools"] = tools
+        if tool_choice is not None:
+            kw["tool_choice"] = tool_choice
+    if prompt_cache_key:
+        kw["prompt_cache_key"] = prompt_cache_key
+    data = await upstream.chat_completions(**kw)
     text = upstream.extract_text(data)
     pt, ct = upstream.extract_usage(data)
+    tool_calls = _extract_tool_calls(data)
     return {
         "ok": True,
         "text": text,
         "prompt_tokens": pt,
         "completion_tokens": ct,
+        "cached_tokens": upstream.extract_cached_tokens(data),
         "raw": data,
+        "tool_calls": tool_calls,
+    }
+
+
+def _stable_prefix_messages(
+    messages: list[dict[str, Any]],
+    *,
+    plan: str,
+    fresh_note: str,
+) -> list[dict[str, Any]]:
+    """Order the doer turn so the provider prompt cache can hit.
+
+    A tool loop is append-only, so the transcript itself is already a stable
+    prefix. Anything volatile placed above it re-prices every earlier token,
+    so the rarely-changing plan sits just under the client system prompt and
+    this turn's note goes last.
+    """
+    out = list(messages)
+    plan = (plan or "").strip()
+    if plan:
+        lead = 0
+        while lead < len(out) and str(out[lead].get("role") or "") == "system":
+            lead += 1
+        out.insert(
+            lead,
+            {
+                "role": "system",
+                "content": (
+                    "ZeusCode Task Card (durable contract; use client tools for hands):\n"
+                    f"{plan[:6000]}"
+                ),
+            },
+        )
+    note = (fresh_note or "").strip()
+    if note:
+        # A trailing system turn is legal after tool results and never merges
+        # into a neighbour, so every earlier message stays byte-identical
+        # between turns. Folding the note into the last user message instead
+        # would rewrite that message and break the shared prefix.
+        out.append(
+            {
+                "role": "system",
+                "content": f"[ZeusCode crew · this turn]\n{note[:4000]}",
+            }
+        )
+    return out
+
+
+def _stable_prefix_bytes(messages: list[dict[str, Any]]) -> bytes:
+    """Canonical bytes for the provider-reusable portion of a doer prompt."""
+    anchor: list[dict[str, Any]] = []
+    for message in messages:
+        role = str(message.get("role") or "").lower()
+        content = str(message.get("content") or "")
+        if role in ("tool", "function") or (
+            role == "assistant" and bool(message.get("tool_calls"))
+        ) or (
+            role == "system" and content.startswith("[ZeusCode crew · this turn]")
+        ):
+            break
+        anchor.append(message)
+    return json.dumps(
+        anchor,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+
+def _compress_tool_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Compress oversized tool bodies deterministically, preserving error tails."""
+    from app.fusion.context_compress import compress_tool_log
+
+    out: list[dict[str, Any]] = []
+    for raw in messages:
+        item = dict(raw)
+        if str(item.get("role") or "").lower() in ("tool", "function"):
+            content = item.get("content")
+            if isinstance(content, str):
+                item["content"] = compress_tool_log(
+                    content, max_chars=6000, error_tail_chars=3200
+                )
+        out.append(item)
+    return out
+
+
+async def run_hands_doer(
+    *,
+    model_id: str,
+    messages: list[dict[str, Any]],
+    crew_answer: str,
+    fresh_note: str = "",
+    tools: list[Any],
+    tool_choice: Any | None = None,
+    require_tool_call: bool = False,
+    cancel_event: CancelFlag = None,
+    upstream_call: UpstreamCall | None = None,
+) -> dict[str, Any]:
+    """Final doer call with client tools after the crew produced a plan/answer.
+
+    ``require_tool_call`` is for clients already inside a tool loop: prose is
+    not a protocol-legal reply there, so one forced retry beats handing the
+    agent a message it cannot parse.
+    """
+    from app.openai_tools import prepare_agent_messages
+
+    if _cancelled(cancel_event) or not tools or not model_id:
+        return {
+            "text": "",
+            "tool_calls": [],
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "cached_tokens": 0,
+            "ok": False,
+        }
+    agent_msgs = _stable_prefix_messages(
+        prepare_agent_messages(_compress_tool_messages(list(messages or []))),
+        plan=crew_answer,
+        fresh_note=fresh_note,
+    )
+    prefix_bytes = _stable_prefix_bytes(agent_msgs)
+    prefix_sha256 = hashlib.sha256(prefix_bytes).hexdigest()
+    call = upstream_call or _default_upstream
+
+    async def _invoke(*, with_tools: bool, force: bool = False) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {
+            "temperature": 0.2,
+            "max_tokens": _agent_max_tokens(),
+            "prompt_cache_key": f"zeus-task-{prefix_sha256[:48]}",
+        }
+        if with_tools:
+            kwargs["tools"] = tools
+            kwargs["tool_choice"] = "required" if force else tool_choice
+        try:
+            timeout_s = max(
+                5.0, min(120.0, float(os.environ.get("ZEUS_HANDS_DOER_TIMEOUT_S") or 45.0))
+            )
+        except (TypeError, ValueError):
+            timeout_s = 45.0
+        return await asyncio.wait_for(
+            call(model_id, agent_msgs, **kwargs),
+            timeout=timeout_s,
+        )
+
+    def _calls_of(payload: dict[str, Any] | None) -> list[Any]:
+        found = list((payload or {}).get("tool_calls") or [])
+        if found:
+            return found
+        raw = (payload or {}).get("raw") if isinstance(payload, dict) else None
+        return _extract_tool_calls(raw)
+
+    data = await _invoke(with_tools=True, force=require_tool_call)
+    text = str((data or {}).get("text") or "")
+    tcs = _calls_of(data)
+    prompt_tokens = int((data or {}).get("prompt_tokens") or 0)
+    completion_tokens = int((data or {}).get("completion_tokens") or 0)
+    cached_tokens = int((data or {}).get("cached_tokens") or 0)
+    forced = False
+
+    if require_tool_call:
+        forced = True
+        if not tcs:
+            # The first call already used tool_choice=required. Retrying would
+            # hide an extra billable branch and can still return invalid prose.
+            text = ""
+    if _cancelled(cancel_event):
+        text = ""
+        tcs = []
+
+    return {
+        "text": text,
+        "tool_calls": tcs,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "cached_tokens": cached_tokens,
+        "forced_tool_call": forced,
+        "ok": bool(tcs) if require_tool_call else bool(text.strip() or tcs),
+        "model_id": model_id,
+        "cache_prefix_sha256": prefix_sha256,
+        "cache_prefix_bytes": len(prefix_bytes),
     }
 
 
@@ -715,7 +924,7 @@ async def execute_fallback_single(
         is_leader=True,
         upstream_call=upstream_call,
         temperature=0.2,
-        max_tokens=_agent_max_tokens(),
+        max_tokens=_agent_max_tokens(path="CASCADE"),
         cancel_event=cancel_event,
     )
     branch.meta = {
@@ -762,31 +971,67 @@ async def execute_cascade(
     ready: list[str] | None = None,
     upstream_call: UpstreamCall | None = None,
     mini_verify_fn: MiniVerifyFn | None = None,
+    mini_model: str | None = None,
     cancel_event: CancelFlag = None,
     adapt_prompts: bool = True,
 ) -> ExecuteOutcome:
-    """CASCADE: cheap-first + Mini-Verifier; FR-8 escalate; FR-15 Leader failover."""
-    from app.fusion.policy import (
-        cascade_escalate_action,
-        leader_failover_chain,
-        next_leader_failover,
-    )
+    """CASCADE: execute-leader first + Mini-Verifier; FR-8 escalate; FR-15 failover.
+
+    Panel is doer-first (role routing). On empty/500 → next in failover chain
+    (Opus flakiness must not block cheaper doers that already sit first).
+    """
+    from app.fusion.policy import cascade_escalate_action, leader_failover_chain
     from app.fusion.verify import run_mini_verifier
 
     pm = product_mode if product_mode in ("simple", "power", "custom") else "power"
     cx = complexity if complexity in ("light", "med", "heavy") else "med"
-    mini_model = pick_mini_model_from_panel(panel)
+    mini_model = (mini_model or "").strip() or pick_mini_model_from_panel(panel)
     ph = phase if phase in (
         "chat", "ui", "docs", "test", "implement", "debug", "plan", "review"
     ) else "implement"
-    cheap = panel[-1] if len(panel) > 1 else (panel[0] if panel else leader)
-    start = cheap or leader
-    chain = leader_failover_chain(
-        product_mode=pm,  # type: ignore[arg-type]
-        ready=ready or list(panel),
-        custom_order=list(panel) if pm == "custom" else None,
-        start=start,
+    # Role-routing: leader = doer (panel[0]). Legacy strength-first used panel[-1].
+    ready_list = list(ready or panel or [])
+    start = (
+        leader
+        if leader and leader in ready_list
+        else (panel[0] if panel else leader)
     )
+    # Custom: preserve user panel order (FR-15). Power/simple: start → ascending power
+    # (ops LEADER_FAILOVER is strong-first and would leave flash with no next).
+    if pm == "custom":
+        order = list(panel) if panel else list(ready_list)
+        if start and start in order:
+            chain = [start] + [m for m in order if m != start]
+        else:
+            chain = leader_failover_chain(
+                product_mode=pm,  # type: ignore[arg-type]
+                ready=ready_list,
+                custom_order=order,
+                start=start,
+            )
+    elif start and start in ready_list:
+        try:
+            from app.fusion.model_power import power_score as _ps
+
+            rest = sorted(
+                (m for m in ready_list if m != start),
+                key=lambda m: (_ps(m), ready_list.index(m) if m in ready_list else 0),
+            )
+            chain = [start, *rest]
+        except Exception:  # noqa: BLE001
+            chain = leader_failover_chain(
+                product_mode=pm,  # type: ignore[arg-type]
+                ready=ready_list,
+                custom_order=None,
+                start=start,
+            )
+    else:
+        chain = leader_failover_chain(
+            product_mode=pm,  # type: ignore[arg-type]
+            ready=ready_list,
+            custom_order=None,
+            start=start,
+        )
     if not chain:
         return ExecuteOutcome(
             path="CASCADE",
@@ -800,6 +1045,11 @@ async def execute_cascade(
             complexity=cx,
             phase=ph,
         )
+    # Light: never walk the full power stack — one doer (+ optional panel backup)
+    if cx == "light":
+        lead0 = chain[0]
+        backup = next((m for m in chain[1:] if m in (panel or [])), None)
+        chain = [lead0, backup] if backup and backup != lead0 else [lead0]
 
     live: list[LiveBranch] = []
     stronger_tried = False
@@ -809,6 +1059,12 @@ async def execute_cascade(
     final_leader = current
     routed_by = "policy_cascade_mini_pass"
     escalate_from: str | None = None
+
+    def _next_in_chain(cur: str | None) -> str | None:
+        if not cur or cur not in chain:
+            return chain[0] if chain else None
+        i = chain.index(cur)
+        return chain[i + 1] if i + 1 < len(chain) else None
 
     while current and steps < 6:
         steps += 1
@@ -828,18 +1084,13 @@ async def execute_cascade(
             is_leader=current == leader,
             upstream_call=upstream_call,
             temperature=0.2,
-            max_tokens=_agent_max_tokens(),
+            max_tokens=_agent_max_tokens(path="CASCADE"),
             cancel_event=cancel_event,
         )
         live.append(branch)
 
         if not branch.ok or not (branch.text or "").strip():
-            nxt = next_leader_failover(
-                current,
-                product_mode=pm,  # type: ignore[arg-type]
-                ready=ready or list(panel),
-                custom_order=list(panel) if pm == "custom" else None,
-            )
+            nxt = _next_in_chain(current)
             if not nxt:
                 return ExecuteOutcome(
                     path="CASCADE",
@@ -912,6 +1163,11 @@ async def execute_cascade(
         )
         escalate_from = "CASCADE"
         routed_by = esc.routed_by
+        if esc.action == "keep":
+            # Power fixed crew: accept current answer; Judge/soft-stop later.
+            final_answer = branch.text
+            final_leader = current
+            break
         if esc.action == "full" and esc.allow_full:
             return ExecuteOutcome(
                 path="FULL",
@@ -937,12 +1193,7 @@ async def execute_cascade(
                 meta={"hand_off_full": True},
             )
 
-        nxt = next_leader_failover(
-            current,
-            product_mode=pm,  # type: ignore[arg-type]
-            ready=ready or list(panel),
-            custom_order=list(panel) if pm == "custom" else None,
-        )
+        nxt = _next_in_chain(current)
         if not nxt:
             final_answer = branch.text
             final_leader = current
@@ -1193,9 +1444,15 @@ async def execute_race(
 def _assign_roles(panel: list[str], leader: str) -> list[tuple[str, str, bool]]:
     """Return list of (role, model_id, is_leader)."""
     ordered = [leader] + [m for m in panel if m != leader]
-    roles = ["A", "B", "C"]
+    roles = ["A", "B", "C", "D", "E", "F", "G"]
+    try:
+        from app.fusion.roles import max_panel_size
+
+        cap = max_panel_size()
+    except Exception:  # noqa: BLE001
+        cap = 5
     out: list[tuple[str, str, bool]] = []
-    for i, mid in enumerate(ordered[:3]):
+    for i, mid in enumerate(ordered[:cap]):
         out.append((roles[i], mid, mid == leader))
     return out
 
@@ -1218,7 +1475,13 @@ async def execute_full(
     include_security_aspect: bool = False,
 ) -> ExecuteOutcome:
     """FULL Panel: Brief, diversity, Aspects→τ→rank-then-fuse Judge (FR-10/12/13/31)."""
-    panel = list(panel)[:3]
+    try:
+        from app.fusion.roles import max_panel_size
+
+        _cap = max_panel_size()
+    except Exception:  # noqa: BLE001
+        _cap = 5
+    panel = list(panel)[:_cap]
     if leader not in panel and panel:
         leader = panel[0]
     families = assert_panel_diversity(panel, ops_exception=ops_diversity_exception)
@@ -1563,7 +1826,13 @@ def outcome_to_completion(
     anti_bias = bool((outcome.meta or {}).get("anti_bias_fail"))
     if outcome.judge is not None:
         anti_bias = anti_bias or bool(getattr(outcome.judge, "anti_bias_fail", False))
-    curator = rr.get("curator_model") or outcome.leader
+    # AD-32: leader = who executed; curator = Soft-Stop/Judge (may differ on small)
+    exec_lead = (
+        rr.get("execute_leader")
+        or outcome.leader
+        or rr.get("curator_model")
+    )
+    curator = rr.get("curator_model") or exec_lead
     onestack = {
         "mode": f"fusion-{str(outcome.path).lower()}",
         "fusion_mode": "full" if outcome.path in {"FULL", "RACE"} else "fast",
@@ -1576,7 +1845,7 @@ def outcome_to_completion(
         "phase": outcome.phase,
         "complexity": outcome.complexity,
         "task_kind": rr.get("task_kind") or task_kind,
-        "leader": curator,
+        "leader": exec_lead,
         "panel": panel,
         "trace_id": outcome.trace_id,
         "early_exit": outcome.early_exit,
@@ -1613,6 +1882,13 @@ def outcome_to_completion(
         ),
         "log_report": rr.get("log_report", "N/A"),
         "soft_stop_model": rr.get("soft_stop_model"),
+        "turn_kind": rr.get("turn_kind") or "bootstrap",
+        "crew_size": int(rr.get("crew_size") or 2),
+        "crew_tier": rr.get("crew_tier") or "compact",
+        "active_roles": list(rr.get("active_roles") or []),
+        "crew_reason": rr.get("crew_reason") or "",
+        "crew_budgets": dict(rr.get("crew_budgets") or {}),
+        "crew_state": dict(rr.get("crew_state") or {}),
     }
     fr = FusionResult(
         path=outcome.path,
@@ -1620,7 +1896,7 @@ def outcome_to_completion(
         routed_by=outcome.routed_by,
         phase=outcome.phase,
         complexity=outcome.complexity,
-        leader=curator,
+        leader=exec_lead,
         branches=list(outcome.branches),
         answer=answer,
         trace_id=outcome.trace_id,
@@ -1638,6 +1914,14 @@ def outcome_to_completion(
         escalate_count=int(onestack.get("escalate_count") or 0),
         soft_stop=bool(onestack.get("soft_stop")),
     )
+    tool_calls = list((outcome.meta or {}).get("tool_calls") or [])
+    message: dict[str, Any] = {
+        "role": "assistant",
+        "content": answer if answer else (None if tool_calls else ""),
+    }
+    if tool_calls:
+        message["tool_calls"] = tool_calls
+    finish_reason = "tool_calls" if tool_calls else "stop"
     data = {
         "id": f"chatcmpl-fusion-{uuid.uuid4().hex[:12]}",
         "object": "chat.completion",
@@ -1646,8 +1930,8 @@ def outcome_to_completion(
         "choices": [
             {
                 "index": 0,
-                "message": {"role": "assistant", "content": answer},
-                "finish_reason": "stop",
+                "message": message,
+                "finish_reason": finish_reason,
             }
         ],
         "usage": {

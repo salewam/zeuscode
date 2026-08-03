@@ -11,7 +11,7 @@ from app.fusion.roles import resolve_roles
 from app.fusion.verify import run_trusted_verify_loop
 
 
-def test_fallback_trigger_large_2nd_no_strong():
+def test_weak_stack_architecture_still_crew_v1():
     rr = resolve_roles(
         product_mode="custom",
         task_kind="architecture",
@@ -26,14 +26,11 @@ def test_fallback_trigger_large_2nd_no_strong():
         kill_switch=False,
         roles=rr,
     )
-    assert d.pipeline == "fallback_single"
-    assert d.reason == "large_2nd_no_strong"
-    assert len(d.doer_panel) == 1
-    assert d.doer_panel[0] == rr.curator_model
-    assert d.curator_model == max(rr.stack, key=power_score)
+    assert d.pipeline == "v1"
+    assert d.reason == "always_crew"
 
 
-def test_fallback_not_when_strong_present():
+def test_strong_architecture_always_crew_v1():
     rr = resolve_roles(product_mode="power", task_kind="architecture")
     assert rr.has_strong
     d = pick_pipeline(
@@ -44,9 +41,10 @@ def test_fallback_not_when_strong_present():
         roles=rr,
     )
     assert d.pipeline == "v1"
+    assert d.reason == "always_crew"
 
 
-def test_fallback_clamps_panel_to_one_no_full():
+def test_crew_v1_clamps_to_full_with_curator_panel():
     rr = resolve_roles(
         product_mode="custom",
         task_kind="architecture",
@@ -59,15 +57,16 @@ def test_fallback_clamps_panel_to_one_no_full():
         kill_switch=False,
         roles=rr,
     )
+    assert d.pipeline == "v1"
     path, panel, leader = apply_small_path_clamps(
         serving_path="FULL",
         panel=list(rr.stack),
-        leader=rr.curator_model,
+        leader=d.execute_leader or rr.curator_model,
         decision=d,
     )
-    assert path == "CASCADE"
-    assert len(panel) == 1
-    assert panel[0] == leader == d.curator_model
+    assert path == "FULL"
+    assert panel
+    assert panel[0] == leader
 
 
 def test_execute_fallback_single_one_llm_no_brief():
@@ -149,10 +148,9 @@ def test_onestack_fallback_curator_equals_leader():
         gate="GREEN",
         gate_reasons=["mini_pass"],
     )
-    assert os_["pipeline"] == "fallback_single"
+    assert os_["pipeline"] == "v1"
     assert os_["curator_model"] == rr.curator_model
-    assert os_["leader"] == rr.curator_model
-    assert os_["curator_model"] == os_["leader"]
+    assert os_["leader"] == (d.execute_leader or rr.curator_model)
 
 
 def test_fallback_then_tv_verify_still_applies():
@@ -193,8 +191,8 @@ def test_fallback_empty_curator_disaster():
     assert out.routed_by == "fallback_single_disaster"
 
 
-def test_unhealthy_strong_model_triggers_fallback_not_v1():
-    """B1: dead opus must not count as has_strong (AD-23)."""
+def test_unhealthy_strong_model_still_crew_without_dead_opus():
+    """B1: dead opus must not count as has_strong (AD-23); crew still v1."""
     rr = resolve_roles(
         product_mode="custom",
         task_kind="architecture",
@@ -210,7 +208,7 @@ def test_unhealthy_strong_model_triggers_fallback_not_v1():
         kill_switch=False,
         roles=rr,
     )
-    assert d.pipeline == "fallback_single"
+    assert d.pipeline == "v1"
     assert d.curator_model == "deepseek-v4-flash"
     assert "claude-opus-4-8" not in d.doer_panel
 

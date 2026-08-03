@@ -265,8 +265,8 @@ def test_studio_pytest_fail_soft_stop_when_no_escalate_budget():
 # --- Story 5.3: Eval SM-1/2/3/6/9 (FR-16 explicitly out) ---
 
 
-def test_sm1_light_trivia_stays_small_no_v1():
-    """SM-1 intent: light/ui trivia → pipeline=small, not v1."""
+def test_sm1_ui_always_crew_v1():
+    """SM-1: ui/code work → fixed crew pipeline=v1."""
     rr = resolve_roles(product_mode="power", task_kind="ui")
     d = pick_pipeline(
         size="small",
@@ -275,10 +275,9 @@ def test_sm1_light_trivia_stays_small_no_v1():
         kill_switch=False,
         roles=rr,
     )
-    assert d.pipeline == "small"
-    assert d.pipeline != "v1"
-    # GREEN-first path: doer panel ≤2 (cheap)
-    assert len(d.doer_panel) <= 2
+    assert d.pipeline == "v1"
+    assert d.reason == "always_crew"
+    assert len(d.doer_panel) >= 1
 
 
 def test_sm2_traceback_log_influences_gate():
@@ -321,10 +320,9 @@ def test_sm3_escalate_never_exceeds_two():
         os.environ.pop("ZEUS_FUSION_JUDGE_FIX_HEURISTIC", None)
 
 
-def test_sm6_zero_v1_without_second_signal():
-    """SM-6: share of large with pipeline=v1 without 2nd signal = 0."""
+def test_sm6_always_crew_even_without_second_signal():
+    """SM-6: crew v1 is default; second_signal no longer gates pipeline."""
     rr = resolve_roles(product_mode="power", task_kind="architecture")
-    # Matrix of large without second_signal — never v1
     for mode in ("power", "custom", "simple"):
         d = pick_pipeline(
             size="large",
@@ -333,8 +331,7 @@ def test_sm6_zero_v1_without_second_signal():
             kill_switch=False,
             roles=rr,
         )
-        assert d.pipeline != "v1", f"mode={mode} leaked v1 without 2nd"
-    # Eligible → v1 + Brief≤3 contract
+        assert d.pipeline == "v1", f"mode={mode} must be crew v1"
     d_ok = pick_pipeline(
         size="large",
         second_signal=True,
@@ -416,8 +413,8 @@ def test_sm6_soft_stop_nonempty_after_v1_style_answer():
     assert len(out.answer.strip()) > 20
 
 
-def test_sm9_small_llm_call_ceiling():
-    """SM-9: small path doer-LLM ≤2 (orientir ≤4 total including verify)."""
+def test_sm9_crew_panel_and_v1_call_ceiling():
+    """SM-9: crew panel bounded; v1 happy-path soft ceiling ≤9 (FR-18.9)."""
     rr = resolve_roles(product_mode="power", task_kind="light")
     d = pick_pipeline(
         size="small",
@@ -426,9 +423,8 @@ def test_sm9_small_llm_call_ceiling():
         kill_switch=False,
         roles=rr,
     )
-    assert d.pipeline == "small"
-    assert len(d.doer_panel) <= 2
-    # Pipeline v1 happy-path soft ceiling remains ≤9 (FR-18.9) — not small
+    assert d.pipeline == "v1"
+    assert len(d.doer_panel) <= 3
     assert V1_HAPPY_PATH_MAX_CALLS == 9
 
 

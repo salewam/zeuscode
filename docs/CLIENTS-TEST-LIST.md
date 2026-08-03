@@ -13,12 +13,36 @@ ZeusCode даёт **мозг по API**. Клиент на компе даёт *
 |-----|----------------|
 | **TG Mini App** | ключ, Base URL, режим «Модели» (Пользовательский / Продвинутый / Набор), копирование, онбординг, rotate ключа |
 | **Клиент** | подключение, чат, stream, tools, файлы, консоль, git, спец-протокол клиента |
-| **Логи Zeus** | нет 401/502 лавиной, нет `Tool type or function is null`, модель и запрос видны |
+| **Логи Zeus** | нет 401/502 лавиной, нет `Tool type or function is null` / `Message content is null`, модель и запрос видны |
 
 Не путаем:
 - режим нейронок выбирается в **миниаппе**, в клиенте почти всегда model = `zeuscode` (или id соло-модели);
-- Studio / скиллы сайта — **не** этот прогон;
+- Studio / скиллы сайта Zeus — **не** этот прогон (кроме случая, когда клиент сам зовёт свой skill/plugin);
 - «нет доступа к консоли» = сломались tools у клиента, не «консоль Zeus».
+
+---
+
+## Как тестируем (только по-человечески)
+
+**Главный режим = руками как юзер.** Авто-curl / `opencode run --auto` — только вспомогательный smoke, не зачёт полного прогона.
+
+| Уровень | Что это | Когда зачёт |
+|---------|---------|-------------|
+| **H0 Онбординг** | Миниапп → copy URL/ключ → вставить в клиент → выбрать model | без этого дальше не идём |
+| **H1 Живой агент** | TUI/IDE, апрувы permissions глазами, многошаговый диалог | обязателен для агентов |
+| **H2 Мини-проект** | «сделай фичу в playground» end-to-end | обязателен для агентов |
+| **H3 Skills/plugins** | вызвать skill/команду клиента, если есть | если клиент умеет |
+| **A0 API smoke** | curl / одноразовый CLI | доп. диагностика, не замена H1–H2 |
+
+Правила:
+1. Не ставить **Полный ☑**, пока не пройдены **H0 + H1 + H2 + HM** (все 3 режима из TG) — для чат-only: H0 + чат/stream + HM.
+2. Писать в отчёт: что кликнул, какой режим TG, что ответил клиент, что на диске, что в `journalctl -u zeuscode`.
+3. Если авто-smoke зелёный, а H1 красный — статус **FAIL (human)**, не PASS.
+4. **Три режима TG обязательны отдельно** (не «проверил один — значит все»):
+   - **Пользовательский** (`simple`)
+   - **Продвинутый** (`power`)
+   - **Набор** (`custom`, сам отметил 2–3 модели)
+   Режим ставится **только во вкладке «Модели» миниаппа**. В клиенте model остаётся `zeuscode` / `zeuscode/zeuscode`.
 
 ### Что люди уже ломали (обязательно повторить)
 
@@ -40,15 +64,15 @@ ZeusCode даёт **мозг по API**. Клиент на компе даёт *
 
 | # | Название | id | Тип | Блоки | Smoke | Полный | Статус | Дата | Заметки |
 |---|----------|-----|-----|-------|-------|--------|--------|------|---------|
-| 1 | OpenCode | `opencode` | CLI агент | 1–7, 9–11 | ☐ | ☐ | installed | 2026-07-26 | v1.18.5 на сервере · ключ `zeus_jzWQphq…` · playground готов · API smoke OK |
-| 2 | Codex | `codex` | CLI · responses | 1–7, **8.1**, 9–11 | ☐ | ☐ | pending | | очередь #2 · болел у Глеба |
-| 3 | Cline | `cline` | VS Code агент | 1–7, 9–11 | ☐ | ☐ | pending | | очередь #3 · болел у Глеба |
-| 4 | Kilo Code | `kilo` | VS Code / JB | 1–7, 9–11 | ☐ | ☐ | pending | | |
-| 5 | Claude Code | `claude` | CLI · Anthropic | 1–7, **8.2**, 9–11 | ☐ | ☐ | pending | | base **без** `/v1` |
-| 6 | Continue | `continue` | VS Code чат/агент | 1–7, 9–11 | ☐ | ☐ | pending | | |
-| 7 | Aider | `aider` | CLI git | 1–7, **8.5**, 9–11 | ☐ | ☐ | pending | | model `openai/zeuscode` |
-| 8 | OmniRoute | `omniroute` | gateway | 1–4, **8.3**, 10–11 | ☐ | ☐ | pending | | |
-| 9 | Goose | `goose` | CLI / desktop | 1–7, 9–11 | ☐ | ☐ | pending | | |
+| 1 | OpenCode | `opencode` | CLI агент | 1–7, 9–11 | ☑ A0 | ☑ FULL MATRIX · ☐ UI-only | removed | 2026-07-26 | lab done · **снят с сервера** после прогона |
+| 2 | Codex | `codex` | CLI · responses | 1–7, **8.1**, 9–11 | ☑ | ☑ checklist · ☐ TUI/UI | removed | 2026-07-26 | lab done · **снят с сервера** после прогона · report `codex-checklist-latest.md` · фикс Responses `function_call` остаётся в Zeus |
+| 3 | Cline | `cline` | CLI / VS Code агент | 1–7, 9–11 | ☑ | ☑ checklist · ☐ VS Code UI | removed | 2026-07-27 | lab done · снят с сервера · report `cline-checklist-latest.md` |
+| 4 | Kilo Code | `kilo` | VS Code / JB | 1–7, 9–11 | ☐ | ☐ | deferred | 2026-07-27 | тот же OpenAI Compatible wire что Cline — протокол покрыт |
+| 5 | Claude Code | `claude` | CLI · Anthropic | 1–7, **8.2**, 9–11 | ☑ | ☑ checklist 8/0/2 | removed | 2026-07-27 | lab done · **снят с сервера** · fix SSE tool_use в Zeus · report `claude-checklist-latest.md` |
+| 6 | Continue | `continue` | VS Code / CLI (`cn`) | 1–7, 9–11 | ☑ | ☑ checklist · ☐ VS Code UI | removed | 2026-07-27 | lab done · снят с сервера · report `continue-checklist-latest.md` |
+| 7 | Aider | `aider` | CLI git | 1–7, **8.5**, 9–11 | ☑ | ☑ full human 36/1/16 | removed | 2026-07-27 | lab done · снят · client hands policy в Zeus · report `aider-human-full-latest.md` |
+| 8 | OmniRoute | `omniroute` | gateway | 1–4, **8.3**, 10–11 | ☐ | ☐ | deferred | 2026-07-27 | Docker/RAM · отдельный хост |
+| 9 | Goose | `goose` | CLI / desktop | 1–7, 9–11 | ☑ | ☑ full human 38/1/14 | installed | 2026-07-27 | **1.44.0** · `OPENAI_HOST` без /v1 · HM+shell+stream-json+H1 pipe · **2.5 opus** Kie 502 · `goose-human-full-latest.md` |
 | 10 | Crush | `crush` | CLI TUI | 1–7, 9–11 | ☐ | ☐ | pending | | |
 | 11 | OpenHands | `openhands` | CLI / UI | 1–7, 9–11 | ☐ | ☐ | pending | | |
 | 12 | Cursor | `cursor` | IDE | 1–7, **8.4**, 9–11 | ☐ | ☐ | pending | | model именно `zeuscode` |
@@ -331,9 +355,125 @@ Cline/Cursor — с твоей Windows-машины (как у Глеба), бе
 
 | Режим | Время | Пункты |
 |-------|-------|--------|
-| **Smoke** | ~10 мин | 1.1–1.2, 2.1, 2.4, 3.1, 4.1, 5.1, 6.1, 7.1, 11 |
-| **Полный (агент)** | ~45–90 мин | все применимые 1–11 + свой 8.x |
-| **Чат-only** (LibreChat, Open WebUI) | ~20 мин | 1–4, 10–11 |
+| **A0 API smoke** | ~10 мин | 1.1–1.2, 2.1, 2.4, 3.1, 4.1, 5.1, 6.1, 7.1, 11 — **не зачёт полного** |
+| **Полный human (агент)** | ~60–120 мин | H0 + H1 + H2 + **HM (все 3 режима TG)** + H3 + блоки 1–11 + свой 8.x |
+| **Чат-only** (LibreChat, Open WebUI) | ~30–50 мин | H0 + 1–4 + **HM** + 10–11 |
+
+---
+
+## Human-сценарий: OpenCode (эталон для остальных агентов)
+
+Цель: пройти путь обычного человека от бота до работающего мини-проекта **во всех 3 режимах TG**.  
+Lab: `/opt/zeus-client-lab/playground`. Логи: `journalctl -u zeuscode -f`.
+
+### H0 — Онбординг (как новый юзер)
+
+1. Открыть TG Mini App ZeusCode → вкладка **Модели** → убедиться, что видны все три:
+   - **Пользовательский** · **Продвинутый** · **Набор**.
+2. Раздел клиента **OpenCode** → онбординг/learn как в боте.
+3. Скопировать **Base URL** и **API key** кнопками Copy (не из головы).
+4. На машине: Settings OpenCode → provider ZeusCode → вставить URL+ключ.
+5. Выбрать модель **`zeuscode/zeuscode`** (как в гайде бота) — **не** менять режим внутри OpenCode.
+6. Запустить TUI: `cd /opt/zeus-client-lab/playground && opencode`.
+7. **PASS:** модели видны, «ответь OK» даёт ответ.  
+   **FAIL:** 401 / пустой список / model id не как в гайде.
+
+### HM — Все 3 режима из TG-бота (обязательно)
+
+Режим меняешь **только в миниаппе** → Save/применить → в клиенте снова `zeuscode/zeuscode` → короткий живой запрос.  
+Полный H1/H2 достаточно один раз на основном режиме (обычно Продвинутый); на двух остальных — минимум smoke ниже.
+
+| Шаг | В миниаппе | В OpenCode (сказать) | PASS |
+|-----|------------|----------------------|------|
+| **HM.1 Пользовательский** | Модели → **Пользовательский** → сохранить | «Ответь одним словом: SIMPLE. Потом создай `notes/mode-simple.txt` с текстом simple-ok» | ответ есть + файл на диске; в логах Zeus ушёл запрос с pref/simple (не 401/502) |
+| **HM.2 Продвинутый** | Модели → **Продвинутый** → сохранить | «Ответь одним словом: POWER. Создай `notes/mode-power.txt` с текстом power-ok» | файл есть; в логах другой стек/лидер, чем на simple (или явный power path) |
+| **HM.3 Набор** | Модели → **Набор** → отметить **2–3** модели вручную → сохранить | «Ответь одним словом: CUSTOM. Создай `notes/mode-custom.txt` с текстом custom-ok» | файл есть; custom panel жив (не откатился на power молча) |
+
+Дополнительно на каждом режиме:
+- в клиенте model **не** переключать на gpt-*/claude-* — только `zeuscode/zeuscode`;
+- если руки (write) умерли только на одном режиме — это **FAIL этого режима**, не «OpenCode сломан целиком»;
+- в отчёт записать: какой режим, какие 2–3 модели в Наборе, время, есть ли `Message content is null`.
+
+**Без HM.1 + HM.2 + HM.3 полный прогон клиента = не зачёт.**
+
+### FULL MATRIX (сервер lab) — все возможности через OpenCode
+
+Гонять скриптом `/opt/zeus-client-lab/run_opencode_full_matrix.sh` (репо: `scripts/run_opencode_full_matrix.sh`).
+
+На **каждом** из 3 режимов TG (не smoke одной записи):
+
+| Пакет | Что обязательно |
+|-------|-----------------|
+| chat | `zeuscode` без tools → 200 |
+| hands | write + `.py` + `python` run + `git status` |
+| files | edit существующего + кириллица в имени + nested path |
+| shell | write через shell + nonzero exit + короткий sleep |
+
+Кросс-режим (обычно на Продвинутый):
+
+| Пакет | Что |
+|-------|-----|
+| F.delete / F.rename / F.multifile / F.patch | удаление, rename, 3 файла за раз, правка функции |
+| S.continue / S.attach | память сессии `-c`, вложение `-f` |
+| G.commit / G.fetch | commit в playground + fetch/remote |
+| SOLO.* | write через `zeuscode/gemini-2.5-flash`, `deepseek-v4-flash`, `claude-haiku-4-5` |
+| P.feature | мини-пакет `src/app_matrix` end-to-end |
+| R.stream / R.parallel / L.* | SSE, параллель, логи null |
+
+SKIP допустим только: TUI Allow, skills picker, `opencode web`, GitHub PR, клики Telegram UI.
+
+### H1 — Живой агент (без `--auto`)
+
+Делать на режиме **Продвинутый** (после HM.2). В TUI апрувы **Allow** глазами (не `--auto`):
+
+| Шаг | Сказать агенту | Проверка на диске / в UI |
+|-----|----------------|-------------------------|
+| H1.1 | «Прочитай README.md и процитируй первую строку» | цитата совпала |
+| H1.2 | «Создай `notes/human-test.txt` с текстом `hello-human`» | файл есть, содержимое верное |
+| H1.3 | «В `src/hello.py` замени hello на goodbye» | файл изменён |
+| H1.4 | «Создай `notes/кириллица.txt` с `привет`» | кириллица в имени и теле |
+| H1.5 | «Сделай `pwd && ls` в терминале» | реальный вывод, не «нет доступа» |
+| H1.6 | «`git status -sb`» | виден branch |
+| H1.7 | «`git fetch` / dry-run» | успех или понятная сеть-ошибка |
+| H1.8 | Многошагово: после H1.2 сказать «допиши в тот же файл строку DONE» | контекст + повторный write |
+
+Смотреть логи параллельно: нет `Message content is null`, нет `Tool type or function is null`, нет лавины 502.
+
+### H2 — Мини-проект (как человек «поработай»)
+
+На режиме **Продвинутый**, model `zeuscode/zeuscode`:
+
+> В этом репо сделай маленькую фичу: добавь `src/greet.py` с функцией `greet(name)` и тестом/проверкой через `python`. Потом запусти проверку в терминале и кратко скажи, что получилось.
+
+**PASS:** файлы на диске, команда реально выполнена, ответ ссылается на результат.  
+**FAIL:** застрял после первого tool, «нет доступа», пустой ответ, 502 в логах.
+
+Дополнительно (не вместо HM): коротко соло `gemini-2.5-flash` и (если баланс) одна тяжёлая — руки не только у flash.
+
+### H3 — Skills / commands OpenCode
+
+1. В TUI открыть список skills/commands клиента (то, что видит юзер).
+2. Вызвать один встроенный skill/command на playground (или `/` command, если так принято в версии).
+3. **PASS:** skill отработал без обрыва tool-loop.  
+   **SKIP:** в этой версии OpenCode skills нет / недоступны — записать версию.
+
+### Миниапп блок 12 (обязательные клики)
+
+| # | Что сделать руками | PASS |
+|---|-------------------|------|
+| 12.1 | Онбординг/learn для OpenCode открывается и совпадает с гайдом | текст/шаги ок |
+| 12.2 | Copy `base_url` + Copy `api_key` → вставка в OpenCode | клиент жив |
+| 12.3 | Переключить **все 3** режима (см. **HM**) | HM.1–HM.3 PASS |
+| 12.4 | Advisor / подсказка «куда ключ» понятна | не пустая/битая |
+| 12.5 | Rotate ключа: старый → 401, новый вставить → 200 | rotate ок |
+
+### Что НЕ считать полным прогоном OpenCode
+
+- только `opencode run --auto "…"`  
+- только curl `/v1/chat/completions`  
+- зелёный A0 при красном H1.2 (write)  
+- проверен **один** режим TG из трёх  
+- режимы переключал в клиенте, а не во вкладке «Модели»
 
 ---
 
@@ -343,11 +483,13 @@ Cline/Cursor — с твоей Windows-машины (как у Глеба), бе
 ### <Название> — YYYY-MM-DD
 - Машина: …
 - Ключ prefix: zeus_…
-- Режим miniapp: simple | power | custom
-- Smoke: PASS / FAIL
-- Полный: PASS / FAIL / partial
-- FAIL пункты: (номера + цитата ошибки + время)
-- Логи Zeus: ок / проблемы
+- HM.1 Пользовательский (simple): PASS/FAIL — заметка/лог
+- HM.2 Продвинутый (power): PASS/FAIL — заметка/лог
+- HM.3 Набор (custom, модели: …): PASS/FAIL — заметка/лог
+- Уровни: H0 / H1 / H2 / H3 / A0 — PASS|FAIL|SKIP каждый
+- Полный human: PASS / FAIL / partial
+- FAIL шаги: (HM.3 / H1.2 …) + цитата UI/лога + время
+- Логи Zeus: ок / Message content is null / Tool type null / 502
 - Фикс нужен: наш gateway / гайд бота / клиент
 ```
 

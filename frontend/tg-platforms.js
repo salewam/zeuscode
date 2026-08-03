@@ -186,14 +186,14 @@ window.ZC_PLATFORMS = {
     note: "Два пути из доки: (A) built-in openai + OPENAI_HOST · (B) custom_providers JSON. Ключ в env/keyring, не в JSON.",
     plan: [
       { t: "Установить", d: "goose-docs.ai / goose configure" },
-      { t: "Env", d: "OPENAI_API_KEY + OPENAI_HOST=…/v1" },
+      { t: "Env", d: "OPENAI_API_KEY + OPENAI_HOST=https://zeuscode.ru (без /v1)" },
       { t: "Модель", d: "GOOSE_PROVIDER=openai · GOOSE_MODEL=zeuscode" },
       { t: "Проверка", d: "goose info -v → goose session" },
       { t: "Режим", d: "TG «Модели» · не отдельные ids" },
     ],
     steps: [
       "Поставь <b>Goose</b> (<code>goose configure</code> или Desktop → Custom Provider).",
-      "Проще: <code>GOOSE_PROVIDER=openai</code>, <code>OPENAI_API_KEY=zeus_…</code>, <code>OPENAI_HOST=https://zeuscode.ru/v1</code>, <code>GOOSE_MODEL=zeuscode</code>.",
+      "Проще: <code>GOOSE_PROVIDER=openai</code>, <code>OPENAI_API_KEY=zeus_…</code>, <code>OPENAI_HOST=https://zeuscode.ru</code> (без <code>/v1</code>), <code>GOOSE_MODEL=zeuscode</code>.",
       "Либо JSON в <code>~/.config/goose/custom_providers/</code> — блок ниже.",
       "Проверка: <code>goose info -v</code> → <code>goose session</code>. Режим — в TG.",
     ],
@@ -473,9 +473,9 @@ window.ZC_PLATFORMS = {
     setupTitle: "Aider",
     yaml: true,
     configKind: "aider",
-    note: "Ключ ZeusCode один раз в env. Дефолт openai/zeuscode · любая модель: --model openai/<id>.",
+    note: "OPENAI_API_BASE = …/v1 · ключ в OPENAI_API_KEY. Запуск только с --model openai/zeuscode (без префикса openai/ Aider не подключится). Без --model Aider выберет gpt-4o.",
     plan: [
-      { t: "Установить", d: "pip install aider-install && aider-install" },
+      { t: "Установить", d: "pip install aider-install && aider-install · или pipx install aider-chat" },
       { t: "Адрес", d: "export OPENAI_API_BASE=… (наш адрес)" },
       { t: "Ключ", d: "export OPENAI_API_KEY=… (ключ ZeusCode)" },
       { t: "Запуск", d: "aider --model openai/zeuscode" },

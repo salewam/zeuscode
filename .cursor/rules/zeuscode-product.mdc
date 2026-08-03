@@ -1,0 +1,12 @@
+---
+description: Product naming and architecture stance for ZeusCode
+alwaysApply: true
+---
+
+# ZeusCode product rules
+
+- Product name in chat, docs, UI copy, and new code comments: **ZeusCode** (or Zeus).
+- Do **not** call the product "Fusion" when talking to humans. Internal package path `backend/app/fusion/` may stay until a rename sprint; when adding user-facing strings, use ZeusCode.
+- Public model id remains `zeuscode` (and mode aliases). Prefer saying "ZeusCode mode / path" over "Fusion mode".
+- ZeusCode = **brain + billing**. Client (Cursor/omp) = **hands** (files, bash, LSP). Do not port omp agent-loop onto the server.
+- Studio (site project editor / `orchestrate`) is deprecated for removal — one smart path only: ZeusCode `/v1`.

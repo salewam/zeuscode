@@ -4,25 +4,43 @@ Transport preference:
   1) unix socket → browser-daemon (same protocol as DJARVIS browser-cli)
   2) optional subprocess via JARVIS_BROWSER_CLI when socket is down
 
-Public ops used by web_tools / critics:
-  web_navigate, web_get_text, browser_fetch_text
+Public ops used by web_tools / critics / vision:
+  web_navigate, web_get_text, browser_fetch_text,
+  web_click, web_screenshot
 """
 
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import logging
 import os
 import shutil
 import socket
 import subprocess
+from pathlib import Path
 from typing import Any
 
 log = logging.getLogger("zeus.fusion.browser")
 
-_DEFAULT_SOCK = "/run/browser-daemon/daemon.sock"
-_DEFAULT_CLI = "/usr/local/bin/browser-cli.py"
+_DEFAULT_SOCK_CANDIDATES = (
+    "/run/browser-daemon/daemon.sock",
+    "/tmp/browser-daemon/daemon.sock",
+    str(Path.home() / ".cache" / "browser-daemon" / "daemon.sock"),
+)
+_DEFAULT_CLI_CANDIDATES = (
+    "/usr/local/bin/browser-cli.py",
+    str(Path(__file__).resolve().parents[4] / "DJARVIS" / "browser-service" / "browser-cli.py"),
+    str(Path.home() / "Desktop" / "Projects" / "DJARVIS" / "browser-service" / "browser-cli.py"),
+)
+
+
+def _first_existing(paths: tuple[str, ...] | list[str]) -> str:
+    for p in paths:
+        if p and os.path.exists(p):
+            return p
+    return (paths[0] if paths else "") or ""
 
 
 def _settings() -> dict[str, Any]:
@@ -30,22 +48,35 @@ def _settings() -> dict[str, Any]:
         from app.config import get_settings
 
         s = get_settings()
+        sock_cfg = (getattr(s, "WEB_BROWSER_SOCK", "") or "").strip()
+        cli_cfg = (getattr(s, "JARVIS_BROWSER_CLI", "") or "").strip()
+        sock = sock_cfg if sock_cfg and os.path.exists(sock_cfg) else _first_existing(
+            (sock_cfg, *_DEFAULT_SOCK_CANDIDATES) if sock_cfg else _DEFAULT_SOCK_CANDIDATES
+        )
+        cli = cli_cfg if cli_cfg and (os.path.isfile(cli_cfg) or shutil.which(cli_cfg)) else _first_existing(
+            (cli_cfg, *_DEFAULT_CLI_CANDIDATES) if cli_cfg else _DEFAULT_CLI_CANDIDATES
+        )
         return {
             "enabled": bool(getattr(s, "WEB_BROWSER_ENABLED", True)),
-            "sock": (getattr(s, "WEB_BROWSER_SOCK", "") or _DEFAULT_SOCK).strip(),
+            "sock": sock or sock_cfg or _DEFAULT_SOCK_CANDIDATES[0],
             "timeout": max(3.0, min(float(getattr(s, "WEB_BROWSER_TIMEOUT_S", 18) or 18), 45.0)),
-            "cli": (getattr(s, "JARVIS_BROWSER_CLI", "") or _DEFAULT_CLI).strip(),
+            "cli": cli or cli_cfg or _DEFAULT_CLI_CANDIDATES[0],
         }
     except Exception:  # noqa: BLE001
         return {
             "enabled": True,
-            "sock": _DEFAULT_SOCK,
+            "sock": _first_existing(_DEFAULT_SOCK_CANDIDATES) or _DEFAULT_SOCK_CANDIDATES[0],
             "timeout": 18.0,
-            "cli": _DEFAULT_CLI,
+            "cli": _first_existing(_DEFAULT_CLI_CANDIDATES) or _DEFAULT_CLI_CANDIDATES[0],
         }
 
 
 def browser_available() -> bool:
+    """True only if daemon socket is up, or CLI exists and is executable.
+
+    A non-executable CLI path must not count as available — research would
+    waste seconds on Permission denied browser SERP fallbacks.
+    """
     cfg = _settings()
     if not cfg["enabled"]:
         return False
@@ -55,8 +86,11 @@ def browser_available() -> bool:
             return True
     except Exception:  # noqa: BLE001
         pass
-    cli = cfg["cli"]
-    return bool(cli and (os.path.isfile(cli) or shutil.which(cli)))
+    cli = (cfg.get("cli") or "").strip()
+    if not cli:
+        return False
+    resolved = cli if os.path.isfile(cli) else (shutil.which(cli) or "")
+    return bool(resolved and os.access(resolved, os.X_OK))
 
 
 def _send_socket(cmd: str, params: dict[str, Any] | None, *, sock_path: str, timeout: float) -> dict[str, Any]:
@@ -107,6 +141,10 @@ def _send_cli(cmd: str, params: dict[str, Any] | None, *, cli: str, timeout: flo
         argv.append(str(params.get("direction") or "down"))
     elif cmd == "click-selector":
         argv.append(str(params.get("selector") or ""))
+    elif cmd in ("screenshot", "snapshot"):
+        path = str(params.get("path") or params.get("file") or "")
+        if path:
+            argv.extend(["--path", path])
     else:
         # Unsupported via cheap CLI path — critics only need navigate/get-text
         return {"success": False, "error": f"cli_unsupported:{cmd}"}
@@ -198,7 +236,7 @@ async def web_get_text(*, selector: str = "", max_chars: int = 2500) -> dict[str
 
 
 async def browser_fetch_text(url: str, *, max_chars: int = 2500) -> dict[str, Any]:
-    """Navigate once + get-text. Truncate hard. No snapshot/screenshot."""
+    """Navigate once + get-text. Truncate hard."""
     nav = await web_navigate(url)
     if not nav.get("ok"):
         return {
@@ -229,4 +267,110 @@ async def browser_fetch_text(url: str, *, max_chars: int = 2500) -> dict[str, An
         "backend": "browser",
         "final_url": gt.get("url") or nav.get("final_url") or url,
         "transport": gt.get("transport") or nav.get("transport"),
+    }
+
+
+async def web_click(selector: str) -> dict[str, Any]:
+    """Click element by CSS selector (UI verify loop)."""
+    sel = (selector or "").strip()
+    if not sel:
+        return {"ok": False, "degraded": True, "error": "empty_selector", "backend": "browser"}
+    if not browser_available():
+        return {"ok": False, "degraded": True, "error": "unavailable", "backend": "browser"}
+    res = await browser_cmd("click-selector", {"selector": sel})
+    return {
+        "ok": bool(res.get("success")),
+        "degraded": not bool(res.get("success")),
+        "selector": sel,
+        "backend": "browser",
+        "transport": res.get("_transport"),
+        "error": None if res.get("success") else str(res.get("error") or "click_failed")[:200],
+        "raw": {k: v for k, v in res.items() if k != "_transport"},
+    }
+
+
+async def web_screenshot(*, path: str = "") -> dict[str, Any]:
+    """Capture page screenshot for vision role (TZ §3.3 / H6).
+
+    DJARVIS daemon writes PNG to ``path`` and returns ``{success, path, size_bytes}``.
+    We read the file into ``image_b64`` for the vision role.
+    """
+    if not browser_available():
+        return {
+            "ok": False,
+            "degraded": True,
+            "error": "unavailable",
+            "backend": "browser",
+            "image_b64": None,
+        }
+    out_path = path or f"/tmp/zeus_shot_{os.getpid()}.png"
+    params: dict[str, Any] = {"path": out_path}
+    res = await browser_cmd("screenshot", params)
+    image = (
+        res.get("image")
+        or res.get("png")
+        or res.get("data")
+        or res.get("base64")
+        or res.get("image_b64")
+    )
+    if isinstance(image, str) and image.startswith("data:"):
+        if "," in image:
+            image = image.split(",", 1)[1]
+    file_path = str(res.get("path") or out_path or "")
+    if (not image or not isinstance(image, str)) and file_path and os.path.isfile(file_path):
+        try:
+            image = base64.b64encode(Path(file_path).read_bytes()).decode("ascii")
+        except OSError as e:
+            log.warning("screenshot read fail path=%s err=%s", file_path, e)
+    ok = bool(res.get("success") and image)
+    return {
+        "ok": ok,
+        "degraded": not ok,
+        "backend": "browser",
+        "transport": res.get("_transport"),
+        "image_b64": image if isinstance(image, str) and image else None,
+        "path": file_path or None,
+        "size_bytes": res.get("size_bytes"),
+        "error": None if ok else str(res.get("error") or "screenshot_failed")[:200],
+        "raw": {
+            k: v
+            for k, v in res.items()
+            if k not in ("_transport", "image", "png", "data", "base64", "image_b64")
+        },
+    }
+
+
+async def ui_verify_loop(
+    url: str,
+    *,
+    click_selector: str = "",
+) -> dict[str, Any]:
+    """Navigate → screenshot → optional click → screenshot again."""
+    nav = await web_navigate(url)
+    if not nav.get("ok"):
+        return {
+            "ok": False,
+            "degraded": True,
+            "error": nav.get("error") or "navigate_failed",
+            "shots": [],
+        }
+    before = await web_screenshot()
+    shots = [before]
+    clicked = None
+    if click_selector:
+        clicked = await web_click(click_selector)
+        after = await web_screenshot()
+        shots.append(after)
+    return {
+        "ok": bool(before.get("ok")),
+        "degraded": not bool(before.get("ok")),
+        "url": nav.get("final_url") or url,
+        "click": clicked,
+        "shots": shots,
+        "ui_report": {
+            "url": nav.get("final_url") or url,
+            "before_ok": bool(before.get("ok")),
+            "after_ok": bool(shots[-1].get("ok")) if len(shots) > 1 else None,
+            "clicked": bool(clicked and clicked.get("ok")) if clicked else None,
+        },
     }

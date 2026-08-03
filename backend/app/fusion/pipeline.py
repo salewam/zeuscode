@@ -1,7 +1,10 @@
-"""Pipeline enum + small-path orchestration helpers (Role Routing / AD-20..23).
+"""Pipeline enum + orchestration helpers (Role Routing / AD-20..23).
 
 ``pipeline.py`` is the sole final writer of Onestack ``pipeline``.
 ``fusion/*`` must not import ``routers.*``.
+
+Crew state selects only a named pipeline. Legacy serving-path fields are static
+compatibility metadata; kill-switch remains the emergency single-model path.
 """
 
 from __future__ import annotations
@@ -9,10 +12,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from .model_power import TEST_AUTHOR_MIN, power_score
-from .roles import RoleResolveResult, cap_doers
+from .roles import RoleResolveResult, role_execute_panel
+from .crew import CrewDecision, TurnKind
 
-PipelineName = Literal["small", "v1", "fallback_single"]
+PipelineName = Literal[
+    "v1", "tool_bootstrap", "incremental", "session_soft_stop", "fallback_single"
+]
 
 
 @dataclass
@@ -20,9 +25,10 @@ class PipelineDecision:
     pipeline: PipelineName
     size: Literal["small", "large"]
     second_signal: bool
-    serving_path_clamp: str | None = None  # e.g. force CASCADE for Mini
+    serving_path_clamp: str | None = None
     doer_panel: list[str] = field(default_factory=list)
-    curator_model: str | None = None
+    curator_model: str | None = None  # Soft-Stop / Judge / v1 architect
+    execute_leader: str | None = None
     reason: str = ""
     meta: dict[str, Any] = field(default_factory=dict)
 
@@ -35,70 +41,135 @@ def pick_pipeline(
     kill_switch: bool,
     roles: RoleResolveResult | None,
     forced_path: bool = False,
+    crew: CrewDecision | None = None,
+    tool_enabled: bool = False,
 ) -> PipelineDecision:
-    """Hard trigger rules (AD-22). Epic 1 focuses on ``small``; v1/fallback later."""
+    """Choose bootstrap or incremental execution from adaptive crew state.
+
+    AD-32: ``curator_model`` = face/Brief/Judge; ``execute_leader`` = curator on v1.
+    """
     mode = (product_mode or "power").strip().lower()
     curator = roles.curator_model if roles else None
-    stack = list(roles.stack) if roles else []
-    has_strong = bool(roles and roles.has_strong)
-
-    if kill_switch or mode == "simple":
-        panel = cap_doers(stack, curator, max_doers=2) if stack else []
-        # Keep FAST when kill or forced/legacy fast; else prefer CASCADE for Mini.
-        if kill_switch or forced_path:
-            clamp: str | None = "FAST" if kill_switch or forced_path else None
-        else:
-            clamp = "CASCADE"
-        return PipelineDecision(
-            pipeline="small",
-            size="small" if size != "large" else "large",
-            second_signal=False if kill_switch else bool(second_signal),
-            serving_path_clamp=clamp,
-            doer_panel=panel,
-            curator_model=curator,
-            reason="kill_or_simple",
-            meta={"preserve_fast": bool(forced_path or kill_switch)},
-        )
-
     large = (size or "").lower() == "large"
-    if large and second_signal and mode in ("power", "custom"):
-        if has_strong:
-            # Epic 4: intent v1 → execute_pipeline_v1 (Brief→tests→doers→merge).
-            # AD-20 / addendum K: never target RACE for Role Routing large — prefer FULL.
-            panel = cap_doers(stack, curator, max_doers=3) if stack else []
-            return PipelineDecision(
-                pipeline="v1",
-                size="large",
-                second_signal=True,
-                serving_path_clamp="FULL",
-                doer_panel=panel,
-                curator_model=curator,
-                reason="large_2nd_strong",
-                meta={"test_author_min": TEST_AUTHOR_MIN, "forbid_race": True},
-            )
-        panel = cap_doers(stack, curator, max_doers=1) if stack else []
+    tk = str((roles.meta or {}).get("task_kind") or "general") if roles else "general"
+    crew_watch = bool((roles.meta or {}).get("crew_watch")) if roles else False
+    crew_linked = bool((roles.meta or {}).get("crew_linked")) if roles else False
+
+    if kill_switch:
+        panel, exec_lead = role_execute_panel(roles, pipeline="small", max_doers=1)
         return PipelineDecision(
             pipeline="fallback_single",
-            size="large",
-            second_signal=True,
-            serving_path_clamp="CASCADE",
-            doer_panel=panel or ([curator] if curator else []),
+            size="small" if size != "large" else "large",
+            second_signal=False,
+            doer_panel=panel,
             curator_model=curator,
-            reason="large_2nd_no_strong",
+            execute_leader=exec_lead,
+            reason="kill_switch",
+            meta={
+                "emergency": True,
+                "crew_watch": False,
+                "crew_linked": False,
+                "max_doer_llms": 1,
+            },
         )
 
-    # Default cheap path
-    panel = cap_doers(stack, curator, max_doers=2) if stack else []
-    clamp = None if forced_path else "CASCADE"
+    if crew and crew.max_internal_branches <= 0:
+        return PipelineDecision(
+            pipeline="session_soft_stop",
+            size="large" if crew.crew_size >= 4 else "small",
+            second_signal=False,
+            curator_model=curator,
+            reason="session_soft_cap",
+            meta={
+                "max_internal_branches": 0,
+                "active_roles": [],
+                "crew_size": crew.crew_size,
+                "crew_tier": crew.tier,
+                "crew_watch": False,
+            },
+        )
+
+    if crew and crew.turn_kind is TurnKind.BOOTSTRAP and tool_enabled:
+        panel, exec_lead = role_execute_panel(roles, pipeline="small", max_doers=1)
+        return PipelineDecision(
+            pipeline="tool_bootstrap",
+            size="large" if crew.crew_size >= 4 else "small",
+            second_signal=bool(second_signal),
+            doer_panel=panel[:1],
+            curator_model=curator,
+            execute_leader=exec_lead or (panel[0] if panel else None),
+            reason="adaptive_tool_bootstrap",
+            meta={
+                "max_doer_llms": 1,
+                "max_internal_branches": crew.max_internal_branches,
+                "crew_watch": False,
+                "crew_linked": True,
+                "crew_size": crew.crew_size,
+                "crew_tier": crew.tier,
+                "active_roles": (
+                    ["leader", "specialist", "doer"]
+                    if crew.crew_size >= 4
+                    else ["leader", "doer"]
+                ),
+                "forbid_race": True,
+            },
+        )
+
+    if crew and crew.turn_kind in (TurnKind.TOOL_LOOP, TurnKind.EXEC_FEEDBACK):
+        panel, exec_lead = role_execute_panel(roles, pipeline="small", max_doers=1)
+        return PipelineDecision(
+            pipeline="incremental",
+            size="large" if crew.crew_size >= 4 else "small",
+            second_signal=bool(second_signal),
+            doer_panel=panel[:1],
+            curator_model=curator,
+            execute_leader=exec_lead or (panel[0] if panel else None),
+            reason=f"adaptive_{crew.turn_kind.value}",
+            meta={
+                "max_doer_llms": 1,
+                "max_internal_branches": min(3, crew.max_internal_branches),
+                "crew_watch": False,
+                "crew_linked": True,
+                "crew_size": crew.crew_size,
+                "crew_tier": crew.tier,
+                "active_roles": list(crew.active_roles),
+                "forbid_race": True,
+            },
+        )
+
+    panel, exec_lead = role_execute_panel(roles, pipeline="v1")
+    if crew is not None:
+        selected_doer = crew.role_assignments.get("doer")
+        panel = [selected_doer] if selected_doer else panel[:1]
+        exec_lead = selected_doer or exec_lead
     return PipelineDecision(
-        pipeline="small",
+        pipeline="v1",
         size="large" if large else "small",
         second_signal=bool(second_signal),
-        serving_path_clamp=clamp,
         doer_panel=panel,
         curator_model=curator,
-        reason="default_small",
-        meta={"max_doer_llms": 2, "preserve_fast": bool(forced_path)},
+        execute_leader=exec_lead or curator,
+        reason=(
+            f"adaptive_{crew.tier}_bootstrap"
+            if crew is not None
+            else "always_crew"
+        ),
+        meta={
+            "max_doer_llms": 1 if crew is not None else max(2, len(panel) if panel else 2),
+            "execute_neq_curator": bool(
+                exec_lead and curator and exec_lead != curator
+            ),
+            "crew_watch": False if crew is not None else crew_watch or (tk != "light"),
+            "crew_linked": crew_linked or (tk != "light"),
+            "soft_accept": False,
+            "product_mode": mode,
+            "task_kind": tk,
+            "forbid_race": True,
+            "crew_size": crew.crew_size if crew else 3,
+            "crew_tier": crew.tier if crew else "standard",
+            "active_roles": list(crew.active_roles) if crew else [],
+            "max_internal_branches": crew.max_internal_branches if crew else 6,
+        },
     )
 
 
@@ -109,60 +180,47 @@ def apply_small_path_clamps(
     leader: str | None,
     decision: PipelineDecision,
 ) -> tuple[str, list[str], str | None]:
-    """Clamp Path/panel for pipeline=small (no RACE/FULL / ≤2 doers)."""
+    """Compatibility helper: select the crew panel without mutating path labels."""
     path = (serving_path or "CASCADE").upper()
-    if decision.pipeline == "small":
-        preserve_forced = bool((decision.meta or {}).get("preserve_fast"))
-        if path == "RACE":
-            # AD-20: never serve RACE on RR small
-            path = decision.serving_path_clamp or "CASCADE"
-        elif path == "FULL":
-            if decision.serving_path_clamp:
-                path = decision.serving_path_clamp
-            elif not preserve_forced:
-                # Cheap small default demotes FULL → CASCADE; forced/legacy FULL kept
-                path = "CASCADE"
-        elif decision.serving_path_clamp == "FAST":
-            path = "FAST"
-        elif (
-            path == "FAST"
-            and decision.serving_path_clamp == "CASCADE"
-            and not preserve_forced
-        ):
-            # Prefer CASCADE so Mini-Verifier runs on hot small path (FR-8)
-            path = "CASCADE"
-        # forced/legacy FAST: leave Path=FAST (Mini may be skipped; AD-9 kill/legacy)
-        # Prefer decision.doer_panel even when empty — empty custom stack must not
-        # reinflate exclusive power panel via `or cap_doers(panel)` (AD-21).
+    if decision.pipeline in ("tool_bootstrap", "incremental"):
         new_panel = list(decision.doer_panel)
-        if not new_panel and decision.curator_model:
-            new_panel = cap_doers(panel, decision.curator_model, max_doers=2) if panel else [
-                decision.curator_model
-            ]
-        # Empty doer stack → clear leader too (do not keep exclusive-fill leader)
-        new_leader = decision.curator_model or (leader if new_panel else None)
+        if not new_panel and decision.execute_leader:
+            new_panel = [decision.execute_leader]
+        new_leader = (
+            decision.execute_leader
+            or (new_panel[0] if new_panel else None)
+            or (leader if new_panel else None)
+        )
         if new_leader and new_leader in new_panel:
             new_panel = [new_leader] + [m for m in new_panel if m != new_leader]
-        return path, new_panel[:2], new_leader
+        elif new_panel:
+            new_leader = new_panel[0]
+        return path, new_panel[:1], new_leader
     if decision.pipeline == "fallback_single":
-        cur = decision.curator_model or leader
+        cur = decision.execute_leader or decision.curator_model or leader
         fb_panel = list(decision.doer_panel)
         if not fb_panel and cur:
             fb_panel = [cur]
         return (
-            decision.serving_path_clamp or "CASCADE",
+            path,
             fb_panel[:1],
             cur,
         )
-    # v1: Epic 4 owns orchestrator; still enforce AD-20 — never serve RACE as RR large
-    if path == "RACE" or (decision.meta or {}).get("forbid_race"):
-        path = decision.serving_path_clamp or "FULL"
-        if path == "RACE":
-            path = "FULL"
-    new_panel = list(decision.doer_panel) or list(panel)
-    new_leader = decision.curator_model or leader
+    # v1 crew: curator-led panel; the static compatibility label passes through.
+    new_panel = list(decision.doer_panel)
+    if not new_panel and decision.execute_leader:
+        new_panel = [decision.execute_leader]
+    new_leader = (
+        decision.execute_leader
+        or decision.curator_model
+        or (new_panel[0] if new_panel else None)
+    )
+    if not new_panel:
+        return path, [], None
     if new_leader and new_leader in new_panel:
         new_panel = [new_leader] + [m for m in new_panel if m != new_leader]
+    elif new_panel:
+        new_leader = new_panel[0]
     return path, new_panel, new_leader
 
 
@@ -172,7 +230,7 @@ def write_pipeline(
     *,
     reason: str = "",
 ) -> dict[str, Any]:
-    """AD-20 sole final writer helper for ``clf_meta['pipeline']`` (incl. v1→fallback degrade)."""
+    """AD-20 sole final writer helper for ``clf_meta['pipeline']``."""
     meta = clf_meta if isinstance(clf_meta, dict) else {}
     meta["pipeline"] = pipeline
     if reason:
@@ -198,6 +256,7 @@ def stamp_role_routing_onestack(
     os_["size"] = decision.size
     os_["second_signal"] = bool(decision.second_signal)
     os_["curator_model"] = decision.curator_model
+    os_["execute_leader"] = decision.execute_leader
     os_["role_table"] = roles.role_table if roles else "v1"
     os_["roles"] = list(roles.roles) if roles else []
     os_["models_by_role"] = dict(roles.models_by_role) if roles else {}
@@ -226,13 +285,10 @@ def count_doer_llm_branches(agents: list[dict[str, Any]]) -> int:
     for a in agents or []:
         role = str(a.get("role") or "")
         if role in ("panel", "agent", "doer", "doer_logic", "doer_ui") and a.get("ok") is not False:
-            # count attempts with tokens or ok answers
-            if int(a.get("prompt_tokens") or 0) or int(a.get("completion_tokens") or 0) or a.get("ok"):
+            if (
+                int(a.get("prompt_tokens") or 0)
+                or int(a.get("completion_tokens") or 0)
+                or a.get("ok")
+            ):
                 n += 1
     return n
-
-
-def strongest_in_stack(stack: list[str]) -> str | None:
-    if not stack:
-        return None
-    return max(stack, key=power_score)

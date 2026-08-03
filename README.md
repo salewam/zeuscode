@@ -17,7 +17,7 @@ cd ultra-mode-mvp
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-# заполни .env (UPSTREAM_API_KEY, UPSTREAM_BASE_URL)
+# заполни .env (A6_API_KEY, A6_BASE_URL)
 chmod +x scripts/run_api.sh
 ./scripts/run_api.sh
 ```

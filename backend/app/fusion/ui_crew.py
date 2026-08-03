@@ -26,9 +26,20 @@ from .web_tools import format_refs_for_prompt, research_pack_for_critics
 
 log = logging.getLogger("zeus.fusion.ui_crew")
 
-_HTML_ASK_RE = re.compile(
-    r"(?i)(<!doctype|</html>|\bhtml\b|\bcss\b|лендинг|landing|одностранич|"
-    r"сайт|webpage|web\s*page|витрин|hero|вёрстк|верстк)"
+# Heavy landing/site only — NOT every CSS/color tweak (bench: P02 was 250s).
+_UI_CREW_HEAVY_RE = re.compile(
+    r"(?i)("
+    r"лендинг\s+с\s+нуля|landing\s+(page\s+)?from\s+scratch|"
+    r"сайт\s+с\s+нуля|одностраничн\w*\s+сайт|full\s+landing|"
+    r"редизайн\s+(всего\s+)?сайт|весь\s+сайт|многостранич|"
+    r"landing\s+page\s+for|сделай\s+(лендинг|сайт)\s+"
+    r")"
+)
+_UI_TRIVIAL_RE = re.compile(
+    r"(?i)("
+    r"поменяй\s+(цвет|размер|шрифт|отступ)|change\s+(the\s+)?(color|size|font)|"
+    r"кнопк\w*\s+на\s+красн|hero\s+блок|минимальн\w*\s+html"
+    r")"
 )
 
 
@@ -38,11 +49,21 @@ def is_ui_crew_task(
     user_q: str,
     phase: str | None = None,
 ) -> bool:
+    """Author+Critics+web only for heavy site builds — not trivial UI/CSS."""
+    q = user_q or ""
     tk = (task_kind or "").lower()
-    ph = (phase or "").lower()
-    if tk in ("ui", "design") or ph == "ui":
+    # Hard never: light/code/tests/review — doer_ui or doer_logic only
+    if tk in ("light", "code", "tests", "review"):
+        return False
+    if _UI_TRIVIAL_RE.search(q):
+        return False
+    if _UI_CREW_HEAVY_RE.search(q):
         return True
-    return bool(_HTML_ASK_RE.search(user_q or ""))
+    ph = (phase or "").lower()
+    # task_kind=ui alone is NOT enough (was triggering on any UI → 4min burns)
+    if (tk in ("ui", "design") or ph == "ui") and _UI_CREW_HEAVY_RE.search(q):
+        return True
+    return False
 
 
 def ui_crew_enabled() -> bool:
@@ -51,7 +72,7 @@ def ui_crew_enabled() -> bool:
 
         return bool(get_settings().FUSION_UI_CREW_ENABLED)
     except Exception:  # noqa: BLE001
-        return True
+        return False
 
 
 def _extract_json_obj(raw: str) -> dict[str, Any] | None:
@@ -558,6 +579,42 @@ async def execute_ui_crew(
 
     meta["mobile_final_gaps"] = _mobile_gaps(final)
     meta["mobile_critical_holes"] = _critical_mobile_holes(final)
+
+    # --- Live UI verify (browser-daemon + vision) ---
+    try:
+        from app.fusion.roles import pick_vision_model, resolve_stack
+        from app.fusion.ui_live_verify import run_ui_live_verify, ui_live_verify_enabled
+
+        if ui_live_verify_enabled():
+            _vmid = pick_vision_model(list(panel) or list(resolve_stack("power")))
+            _ui = await run_ui_live_verify(
+                answer=final,
+                user_q=user_q,
+                vision_model=_vmid,
+                upstream_call=upstream_call,
+            )
+            meta["ui_live"] = {
+                "ok": _ui.get("ok"),
+                "degraded": _ui.get("degraded"),
+                "skipped": _ui.get("skipped"),
+                "error": _ui.get("error"),
+                "ui_broken": _ui.get("ui_broken"),
+                "url": _ui.get("url"),
+                "ui_report": _ui.get("ui_report"),
+            }
+            # Prefix answer only when vision confirmed broken (not daemon-down)
+            if _ui.get("ui_broken") is True and not _ui.get("skipped"):
+                what = str((_ui.get("ui_report") or {}).get("what") or "UI broken on live check")
+                meta["ui_live"]["gate"] = "RED"
+                if not (final or "").lstrip().startswith("⚠️"):
+                    final = f"⚠️ Live UI check: {what[:240]}\n\n{final}"
+            elif _ui.get("skipped") or _ui.get("ui_broken") is None:
+                meta["ui_live"]["gate"] = "SKIP"
+            else:
+                meta["ui_live"]["gate"] = "GREEN" if _ui.get("ok") else "DEGRADED"
+    except Exception as e:  # noqa: BLE001
+        log.warning("ui_live_verify failed: %s", e)
+        meta["ui_live"] = {"ok": False, "error": str(e)[:200], "gate": "ERROR"}
 
     # Normalize billable on author_v1 if revise used tokens (both billable)
     for b in live:

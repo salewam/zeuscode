@@ -9,6 +9,13 @@
   const MODEL_SHOW = "ZeusCode";
   const MODEL_TECH = "zeuscode";
 
+  /** Model id as the client expects (Aider needs openai/ prefix via LiteLLM). */
+  function clientModelHint(platform) {
+    const kind = (platform && platform.configKind) || "";
+    if (kind === "aider") return "openai/zeuscode";
+    return MODEL_TECH;
+  }
+
   const FIRST_PROMPT =
     "Сделай лендинг автосервиса: витрина 3 фото, 6 услуг с ценами, " +
     "форма записи POST /api/booking, отзывы и FAQ. Асфальт/янтарь, без indigo.";
@@ -16,7 +23,12 @@
   /* Какие три нейронки в пресетах (без жаргона в подписях) */
   const PRESET = {
     simple: ["deepseek-v4-flash", "gemini-3-pro", "claude-haiku-4-5"],
-    power: ["claude-opus-4-8", "deepseek-v4-pro", "gemini-3.1-pro"],
+    power: [
+      "claude-opus-4-6",
+      "gpt-5.4",
+      "deepseek-v4-pro",
+      "gemini-3.1-pro",
+    ],
   };
 
   const state = {
@@ -206,16 +218,17 @@
     if (kind === "goose") {
       return [
         `# Goose — путь A (built-in openai, проще)`,
+        `# OPENAI_HOST = origin БЕЗ /v1 — Goose сам добавляет /v1/chat/completions`,
         `export GOOSE_PROVIDER=openai`,
         `export OPENAI_API_KEY="${k}"`,
-        `export OPENAI_HOST="${root}"`,
+        `export OPENAI_HOST="${host}"`,
         `export GOOSE_MODEL="${fusion}"`,
         ``,
         `# Путь B — ~/.config/goose/custom_providers/zeuscode.json`,
         `# {`,
         `#   "name": "zeuscode", "engine": "openai", "display_name": "ZeusCode",`,
         `#   "api_key_env": "ZEUSCODE_API_KEY",`,
-        `#   "base_url": "${root}/chat/completions",`,
+        `#   "base_url": "${root}",`,
         `#   "models": [{"name": "${fusion}", "context_limit": 128000}],`,
         `#   "supports_streaming": true, "requires_auth": true`,
         `# }`,
@@ -1078,9 +1091,13 @@
       }
       const keyReady = Boolean(state.rawKey);
       const isOpenCode = p.id === "opencode";
+      const isAider = p.configKind === "aider";
+      const modelHint = clientModelHint(p);
       const lead = isOpenCode
         ? "Скопируй JSON ниже → файл <b>opencode.json</b>. Windows: <code>C:\\Users\\&lt;имя ПК&gt;\\.config\\opencode\\</code> · Mac/Linux: <code>~/.config/opencode/</code>. В пикере выбери <b>ZeusCode</b> (<code>zeuscode/zeuscode</code>). Режим (Пользовательский / Продвинутый / Набор) — только во вкладке «Модели»."
-        : "Один ключ · одна модель <b>zeuscode</b>. Zeus сам вызывает сколько нужно нейронок. Режим — только во вкладке «Модели». Соло-id из каталога — по желанию.";
+        : isAider
+          ? "Скопируй <b>весь блок</b> ниже в терминал (export + команда). Aider не GUI: модель только как <code>--model openai/zeuscode</code> — просто <code>zeuscode</code> не работает. Без <code>--model</code> Aider уйдёт в gpt-4o."
+          : "Один ключ · одна модель <b>zeuscode</b>. Zeus сам вызывает сколько нужно нейронок. Режим — только во вкладке «Модели». Соло-id из каталога — по желанию.";
       const pathWin = "C:\\Users\\<имя ПК>\\.config\\opencode\\opencode.json";
       return `
         <h1>${escapeHtml(p.setupTitle || p.title)}</h1>
@@ -1110,9 +1127,13 @@
           }</span>
         </button>
         <button type="button" class="cred-btn" data-act="copy-model">
-          <span class="cred-btn-k">Модель в настройках</span>
-          <span class="cred-btn-v">${escapeHtml(MODEL_TECH)}</span>
-          <span class="cred-btn-h">один id · режим из вкладки «Модели»</span>
+          <span class="cred-btn-k">${isAider ? "Модель (флаг --model)" : "Модель в настройках"}</span>
+          <span class="cred-btn-v">${escapeHtml(modelHint)}</span>
+          <span class="cred-btn-h">${
+            isAider
+              ? "префикс openai/ обязателен · режим из вкладки «Модели»"
+              : "один id · режим из вкладки «Модели»"
+          }</span>
         </button>`
         }
         ${
@@ -1288,7 +1309,13 @@
               "yaml"
             );
           }
-          return copyText(MODEL_TECH, "Скопировано — вставь в настройки", "model");
+          const p = platform();
+          const hint = clientModelHint(p);
+          const msg =
+            p.configKind === "aider"
+              ? "Скопировано — aider --model …"
+              : "Скопировано — вставь в настройки";
+          return copyText(hint, msg, "model");
         }
         if (act === "copy-prompt") return copyText(FIRST_PROMPT, "Задача скопирована", "prompt");
         if (act === "copy-yaml") {

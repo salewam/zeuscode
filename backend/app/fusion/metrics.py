@@ -345,6 +345,17 @@ class _MetricsState:
     dead_models: Counter = field(default_factory=Counter)
     billing_drift: int = 0
     shadow_mismatch: int = 0
+    # TZ §5.2 — metric #1
+    empty_responses: int = 0
+    non_empty_responses: int = 0
+    disaster_total: int = 0
+    # TZ §5.1 / §6 — token profile
+    prompt_tokens_total: int = 0
+    completion_tokens_total: int = 0
+    cached_tokens_total: int = 0
+    phase_latency_s: Counter = field(default_factory=Counter)
+    phase_calls: Counter = field(default_factory=Counter)
+    finding_outcomes: Counter = field(default_factory=Counter)
     lock: threading.Lock = field(default_factory=threading.Lock)
 
 
@@ -361,6 +372,15 @@ def reset_metrics_for_tests() -> None:
         _STATE.dead_models.clear()
         _STATE.billing_drift = 0
         _STATE.shadow_mismatch = 0
+        _STATE.empty_responses = 0
+        _STATE.non_empty_responses = 0
+        _STATE.disaster_total = 0
+        _STATE.prompt_tokens_total = 0
+        _STATE.completion_tokens_total = 0
+        _STATE.cached_tokens_total = 0
+        _STATE.phase_latency_s.clear()
+        _STATE.phase_calls.clear()
+        _STATE.finding_outcomes.clear()
         _TRACE_CTX.clear()
         _TRACE_ORDER.clear()
     reset_rate_limit_for_tests()
@@ -561,9 +581,66 @@ def note_billing_drift() -> None:
     log.warning("fusion.billing_drift count=%s", _STATE.billing_drift)
 
 
+def note_response_emptiness(*, empty: bool, disaster: bool = False) -> None:
+    """TZ: empty_rate is metric #1. Disaster counted separately."""
+    with _STATE.lock:
+        if empty:
+            _STATE.empty_responses += 1
+        else:
+            _STATE.non_empty_responses += 1
+        if disaster:
+            _STATE.disaster_total += 1
+    if empty:
+        log.warning("fusion.empty_response disaster=%s", disaster)
+
+
+def note_token_profile(
+    *,
+    prompt_tokens: int = 0,
+    completion_tokens: int = 0,
+    cached_tokens: int = 0,
+) -> None:
+    with _STATE.lock:
+        _STATE.prompt_tokens_total += max(0, int(prompt_tokens or 0))
+        _STATE.completion_tokens_total += max(0, int(completion_tokens or 0))
+        _STATE.cached_tokens_total += max(0, int(cached_tokens or 0))
+
+
+def note_crew_phase(phase: str, latency_s: float) -> None:
+    name = str(phase or "unknown")[:40]
+    with _STATE.lock:
+        _STATE.phase_calls[name] += 1
+        _STATE.phase_latency_s[name] += max(0.0, float(latency_s or 0.0))
+
+
+def note_finding_outcome(outcome: str) -> None:
+    value = str(outcome or "")
+    if value not in {"accepted", "resolved", "irrelevant"}:
+        return
+    with _STATE.lock:
+        _STATE.finding_outcomes[value] += 1
+
+
+def empty_rate() -> float:
+    with _STATE.lock:
+        done = _STATE.empty_responses + _STATE.non_empty_responses
+        if done <= 0:
+            return 0.0
+        return round(100.0 * _STATE.empty_responses / done, 3)
+
+
 def snapshot_metrics() -> dict[str, Any]:
     with _STATE.lock:
         total = max(1, _STATE.requests_total)
+        answered = _STATE.empty_responses + _STATE.non_empty_responses
+        er = (
+            round(100.0 * _STATE.empty_responses / answered, 3)
+            if answered
+            else 0.0
+        )
+        prompt = _STATE.prompt_tokens_total
+        cached = _STATE.cached_tokens_total
+        cache_hit_pct = round(100.0 * cached / prompt, 3) if prompt else 0.0
         return {
             "requests_total": _STATE.requests_total,
             "path_by_phase": dict(_STATE.path_by_phase),
@@ -573,6 +650,20 @@ def snapshot_metrics() -> dict[str, Any]:
             "dead_models": dict(_STATE.dead_models),
             "billing_drift": _STATE.billing_drift,
             "shadow_mismatch": _STATE.shadow_mismatch,
+            "empty_responses": _STATE.empty_responses,
+            "non_empty_responses": _STATE.non_empty_responses,
+            "empty_rate": er,
+            "disaster_total": _STATE.disaster_total,
+            "prompt_tokens_total": prompt,
+            "completion_tokens_total": _STATE.completion_tokens_total,
+            "cached_tokens_total": cached,
+            "cache_hit_pct": cache_hit_pct,
+            "crew_phase_calls": dict(_STATE.phase_calls),
+            "crew_phase_latency_s": {
+                key: round(float(value), 4)
+                for key, value in _STATE.phase_latency_s.items()
+            },
+            "deepseek_finding_outcomes": dict(_STATE.finding_outcomes),
             "baseline_id": load_fusion_flags().baseline_id,
             "ts": time.time(),
         }
@@ -601,6 +692,12 @@ ALERT_STUBS: dict[str, dict[str, Any]] = {
         "severity": "ticket",
         "action": "mark Leader unhealthy; sticky may rotate on next pick_leader",
     },
+    "empty_rate": {
+        "signal": "empty_rate",
+        "threshold": 1.0,  # percent — TZ acceptance < 1%
+        "severity": "page",
+        "action": "A6 routing → quality; check merchant failover; never ship empty",
+    },
 }
 
 
@@ -615,4 +712,7 @@ def check_alert_stubs(snap: dict[str, Any] | None = None) -> list[dict[str, Any]
     dead_total = sum(int(v) for v in (s.get("dead_models") or {}).values())
     if dead_total >= ALERT_STUBS["dead_models"]["threshold"]:
         fired.append({"id": "dead_models", **ALERT_STUBS["dead_models"], "value": dead_total})
+    answered = int(s.get("empty_responses") or 0) + int(s.get("non_empty_responses") or 0)
+    if answered >= 20 and float(s.get("empty_rate") or 0) >= ALERT_STUBS["empty_rate"]["threshold"]:
+        fired.append({"id": "empty_rate", **ALERT_STUBS["empty_rate"], "value": s.get("empty_rate")})
     return fired

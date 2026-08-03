@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import json
+
 from app.openai_tools import (
     claude_messages_with_tools,
+    normalize_openai_compat_messages,
     normalize_openai_tools,
     normalize_tool_calls,
     openai_from_claude_content,
     openai_tools_to_claude,
     prepare_agent_messages,
+    repair_completion_tool_calls,
+    repair_tool_call_arguments,
     request_wants_tools,
 )
 from app.routers.chat import _sse_from_completion
-from app.upstream import build_claude_payload, build_gemini_payload
+from app.upstream import _normalize_gemini_messages, build_claude_payload, build_gemini_payload
 
 
 SAMPLE_TOOLS = [
@@ -115,6 +120,84 @@ def test_normalize_tool_calls_repairs_null_type():
     assert len(cleaned) == 2
 
 
+def test_normalize_tool_calls_unglues_empty_object_prefix():
+    """A6/Claude sometimes emits ``{}{"command":"ls"}`` which breaks mini-swe."""
+    glued = '{}{"command": "find /testbed -name \\\"*.py\\\" | head"}'
+    cleaned = normalize_tool_calls(
+        [{"id": "c1", "type": "function", "function": {"name": "bash", "arguments": glued}}]
+    )
+    args = json.loads(cleaned[0]["function"]["arguments"])
+    assert "command" in args
+    assert args["command"].startswith("find")
+
+
+SUBMIT_TOOL = [
+    {
+        "type": "function",
+        "function": {
+            "name": "submit_and_exit",
+            "description": "Submit and exit",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "summary": {"type": "string"},
+                    "verified": {"type": "boolean"},
+                },
+                "required": ["summary", "verified"],
+            },
+        },
+    }
+]
+
+
+def test_repair_tool_call_fills_missing_required_verified():
+    fixed = repair_tool_call_arguments(
+        [
+            {
+                "id": "call_1",
+                "type": "function",
+                "function": {
+                    "name": "submit_and_exit",
+                    "arguments": '{"summary":"Done"}',
+                },
+            }
+        ],
+        SUBMIT_TOOL,
+    )
+    import json
+
+    args = json.loads(fixed[0]["function"]["arguments"])
+    assert args["summary"] == "Done"
+    assert args["verified"] is True
+
+
+def test_repair_completion_tool_calls_in_place():
+    data = {
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "tool_calls": [
+                        {
+                            "id": "call_1",
+                            "type": "function",
+                            "function": {
+                                "name": "submit_and_exit",
+                                "arguments": '{"summary":"ok"}',
+                            },
+                        }
+                    ],
+                }
+            }
+        ]
+    }
+    repair_completion_tool_calls(data, SUBMIT_TOOL)
+    import json
+
+    args = json.loads(data["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"])
+    assert args["verified"] is True
+
+
 def test_claude_payload_converts_openai_tools():
     payload = build_claude_payload(
         "claude-opus-4-8",
@@ -212,3 +295,39 @@ def test_openai_tools_to_claude_shape():
             "input_schema": SAMPLE_TOOLS[0]["function"]["parameters"],
         }
     ]
+
+
+def test_a6_message_normalize_keeps_tool_protocol():
+    """Invariant: every chat path keeps tool_calls / tool_call_id for all models."""
+    rounds = [
+        {"role": "user", "content": "echo STEP1 then STEP2"},
+        {
+            "role": "assistant",
+            "content": None,
+            "tool_calls": [
+                {
+                    "id": "call_1",
+                    "type": "function",
+                    "function": {"name": "bash", "arguments": '{"command":"echo STEP1"}'},
+                }
+            ],
+        },
+        {"role": "tool", "tool_call_id": "call_1", "content": "STEP1\n"},
+    ]
+    a6 = normalize_openai_compat_messages(rounds, as_parts=False)
+    assert a6[1].get("tool_calls")
+    assert a6[1]["tool_calls"][0]["function"]["name"] == "bash"
+    assert a6[2]["role"] == "tool"
+    assert a6[2]["tool_call_id"] == "call_1"
+    assert isinstance(a6[2]["content"], str)
+
+    # Legacy gemini helper must also keep the protocol (no silent strip).
+    gemini = _normalize_gemini_messages(rounds)
+    assert gemini[1].get("tool_calls")
+    assert gemini[2]["role"] == "tool"
+    assert gemini[2]["tool_call_id"] == "call_1"
+
+    # Builders used by tests / leftover Kie paths — same invariant.
+    g_payload = build_gemini_payload(rounds, tools=SAMPLE_TOOLS)
+    assert g_payload["messages"][1].get("tool_calls")
+    assert g_payload["messages"][2]["tool_call_id"] == "call_1"

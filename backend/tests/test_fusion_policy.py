@@ -37,6 +37,16 @@ def test_classify_phase_complexity_confidence():
     assert tb.classify_phase == "debug"
     assert tb.complexity_band in ("med", "heavy")
 
+    # P06: "code review" must be review, not architecture/plan
+    rev = classify_local(
+        "Сделай code review: гонка в обновлении баланса "
+        "user.balance_usd -= charge без лока. Найди баг и предложи фикс."
+    )
+    assert rev.classify_phase == "review"
+    assert rev.task_kind == "review"
+    assert rev.complexity_band == "med"
+    assert not rev.design_lexicon
+
 
 def test_effort_high_bump_cap_heavy():
     assert bump_complexity("light", "high") == "med"
@@ -234,8 +244,10 @@ def test_custom_panel_rules():
     assert two.models == ["a", "b"] and two.roles == ["A", "B"]
     assert "C" not in two.roles
 
+    # Потолок панели — 3 доера: четвёртый отбрасывается, а не расширяет панель
     three = resolve_custom_panel(["a", "b", "c", "d"], ready=ready)
     assert three.models == ["a", "b", "c"] and three.roles == ["A", "B", "C"]
+    assert three.path_hint == "FULL"
 
 
 def test_cascade_escalate_map():
@@ -249,10 +261,11 @@ def test_cascade_escalate_map():
     )
     assert simple.action == "stronger_leader" and not simple.allow_full
 
+    # Power fixed crew: Mini fail → keep (no ladder / no FULL handoff)
     heavy = cascade_escalate_action(
         kill_switch=False, product_mode="power", complexity="heavy", phase="implement"
     )
-    assert heavy.action == "full" and heavy.routed_by == "cascade_escalate_full"
+    assert heavy.action == "keep" and heavy.routed_by == "cascade_fixed_no_escalate"
 
     med1 = cascade_escalate_action(
         kill_switch=False,
@@ -261,10 +274,10 @@ def test_cascade_escalate_map():
         phase="implement",
         stronger_already_tried=False,
     )
-    assert med1.action == "stronger_leader"
+    assert med1.action == "keep"
     med2 = cascade_escalate_action(
         kill_switch=False,
-        product_mode="power",
+        product_mode="custom",
         complexity="med",
         phase="implement",
         stronger_already_tried=True,
@@ -274,9 +287,9 @@ def test_cascade_escalate_map():
 
 def test_leader_failover_ordered():
     chain = leader_failover_chain(product_mode="power")
-    assert chain[0] == "claude-opus-4-8"
+    assert chain[0] == "claude-opus-4-6"
     nxt = next_leader_failover(chain[0], product_mode="power")
-    assert nxt == "deepseek-v4-pro"
+    assert nxt == "gpt-5.4-mini"
     assert next_leader_failover(chain[-1], product_mode="power") is None
 
     # empty ready → disaster (None)

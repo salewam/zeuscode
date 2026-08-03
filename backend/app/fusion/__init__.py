@@ -44,12 +44,21 @@ from . import panel as panel  # noqa: F401
 from . import pipeline as pipeline  # noqa: F401
 from . import policy as policy  # noqa: F401
 from . import roles as roles  # noqa: F401
+from . import advisor as advisor  # noqa: F401
 from . import clarifier as clarifier  # noqa: F401
+from . import crew as crew  # noqa: F401
+from . import task_card as task_card  # noqa: F401
+from . import plan_artifact as plan_artifact  # noqa: F401
 from . import session as session  # noqa: F401
 from . import verify as verify  # noqa: F401
 from .model_power import TEST_AUTHOR_MIN, power_score  # noqa: F401
 from .pipeline import pick_pipeline  # noqa: F401
-from .roles import resolve_roles  # noqa: F401
+from .roles import (  # noqa: F401
+    MODEL_ALIAS_INFO,
+    resolve_model_aliases,
+    resolve_roles,
+    resolve_stack,
+)
 from .metrics import (  # noqa: F401
     DEFAULT_BASELINE_ID,
     apply_effort_kill_prefs,
@@ -70,6 +79,8 @@ from .session import (  # noqa: F401
     put_sticky,
     sticky_leader_hint,
 )
+from .crew import CrewDecision, CrewSession, TurnKind, select_crew  # noqa: F401
+from .task_card import TaskCard, parse_task_card  # noqa: F401
 
 # Same module object as ``_monolith.upstream`` so
 # ``patch("app.fusion.upstream.chat_completions")`` still hits live calls.
@@ -91,6 +102,8 @@ from ._monolith import (  # noqa: E402, F401
 __all__ = [
     "BillableState",
     "BranchUsage",
+    "CrewDecision",
+    "CrewSession",
     "DEFAULT_BASELINE_ID",
     "DEFAULT_PRODUCT_MODE",
     "FUSION_IDS",
@@ -99,6 +112,8 @@ __all__ = [
     "PRODUCT_MODES",
     "PathName",
     "StickyState",
+    "TurnKind",
+    "TaskCard",
     "_CLASSIFIER_TIMEOUT_S",
     "_parse_classifier_json",
     "apply_classifier_guardrails",
@@ -135,6 +150,9 @@ __all__ = [
     "resolve_routing",
     "resolve_routing_ex",
     "resolve_serving_path",
+    "select_crew",
+    "parse_task_card",
+    "task_card",
     "run_fusion",
     "runtime_budgets_from_settings",
     "sanitize_messages",

@@ -1,0 +1,106 @@
+{
+  "source": "Fusion vs Solo panel chart (Jul 2026) — Artificial Analysis–style IQ/coding panel scores",
+  "unit": "percent_score",
+  "note": "External research scores are NOT our suite. We map crew composition to a peer rung, then project our live pass_rate onto the same 40–72% axis for orientation only.",
+  "rungs": [
+    {
+      "id": "R1_fable_gpt55",
+      "label": "Fable 5 + GPT-5.5 (fusion)",
+      "kind": "fusion",
+      "score": 69.0,
+      "models": ["claude-fable-5", "gpt-5.5"],
+      "partial_tasks": "93/100"
+    },
+    {
+      "id": "R2_opus_gpt55_gem31",
+      "label": "Opus 4.8 + GPT-5.5 + Gemini 3.1 Pro (fusion)",
+      "kind": "fusion",
+      "score": 68.5,
+      "models": ["claude-opus-4-8", "gpt-5.5", "gemini-3.1-pro"]
+    },
+    {
+      "id": "R3_opus_gpt55",
+      "label": "Opus 4.8 + GPT-5.5 (fusion)",
+      "kind": "fusion",
+      "score": 67.5,
+      "models": ["claude-opus-4-8", "gpt-5.5"]
+    },
+    {
+      "id": "R4_opus_self",
+      "label": "Opus 4.8 + Opus 4.8 (self-fusion)",
+      "kind": "fusion",
+      "score": 65.5,
+      "models": ["claude-opus-4-8", "claude-opus-4-8"]
+    },
+    {
+      "id": "R5_fable_solo",
+      "label": "Claude Fable 5 (solo)",
+      "kind": "solo",
+      "score": 65.0,
+      "models": ["claude-fable-5"],
+      "partial_tasks": "93/100"
+    },
+    {
+      "id": "R6_flash_kimi_ds",
+      "label": "Gemini 3 Flash + Kimi K2.6 + DeepSeek V4 Pro (fusion)",
+      "kind": "fusion",
+      "score": 64.5,
+      "models": ["gemini-3-flash", "kimi-k2.6", "deepseek-v4-pro"]
+    },
+    {
+      "id": "R7_ds_solo",
+      "label": "DeepSeek V4 Pro (solo)",
+      "kind": "solo",
+      "score": 60.5,
+      "models": ["deepseek-v4-pro"]
+    },
+    {
+      "id": "R8_gpt55_solo",
+      "label": "GPT-5.5 (solo)",
+      "kind": "solo",
+      "score": 60.0,
+      "models": ["gpt-5.5"]
+    },
+    {
+      "id": "R9_opus_solo",
+      "label": "Claude Opus 4.8 (solo)",
+      "kind": "solo",
+      "score": 59.0,
+      "models": ["claude-opus-4-8"]
+    },
+    {
+      "id": "R10_kimi_solo",
+      "label": "Kimi K2.6 (solo)",
+      "kind": "solo",
+      "score": 54.0,
+      "models": ["kimi-k2.6"]
+    },
+    {
+      "id": "R11_gem31_solo",
+      "label": "Gemini 3.1 Pro (solo)",
+      "kind": "solo",
+      "score": 45.5,
+      "models": ["gemini-3.1-pro"]
+    },
+    {
+      "id": "R12_gem_flash_solo",
+      "label": "Gemini 3 Flash (solo)",
+      "kind": "solo",
+      "score": 43.0,
+      "models": ["gemini-3-flash"]
+    }
+  ],
+  "aliases": {
+    "gpt-5.4": "gpt-5.5",
+    "gpt-5.4-codex": "gpt-5.5",
+    "claude-opus-4-7": "claude-opus-4-8",
+    "claude-opus-4-6": "claude-opus-4-8",
+    "deepseek-v4-flash": null
+  },
+  "zeus_power_crew": [
+    "claude-opus-4-6",
+    "gpt-5.4",
+    "deepseek-v4-pro",
+    "gemini-3.1-pro"
+  ]
+}

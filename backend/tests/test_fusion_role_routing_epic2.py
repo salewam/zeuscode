@@ -239,7 +239,7 @@ def test_kill_switch_never_pipeline_v1():
         roles=rr,
     )
     assert d.pipeline != "v1"
-    assert d.pipeline == "small"
+    assert d.pipeline == "fallback_single"
 
 
 def test_kill_switch_blocks_v1_even_with_forced_false():
@@ -256,8 +256,8 @@ def test_kill_switch_blocks_v1_even_with_forced_false():
         roles=rr,
         forced_path=False,
     )
-    assert d.pipeline == "small"
-    assert d.serving_path_clamp in ("FAST", "CASCADE", None) or d.pipeline == "small"
+    assert d.pipeline == "fallback_single"
+    assert d.serving_path_clamp is None
 
 
 def test_soft_stop_prefers_post_merge_over_raw_live_power():

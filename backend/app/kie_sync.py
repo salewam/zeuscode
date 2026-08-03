@@ -1,4 +1,8 @@
-"""Fetch Kie.ai model pricing and normalize into ZeusCode catalog rows."""
+"""Legacy Kie.ai catalog helpers (network sync disabled).
+
+Live catalog comes from A6 via ``a6_sync``. This module only keeps local
+loaders/helpers for compatibility.
+"""
 
 from __future__ import annotations
 
@@ -8,11 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import httpx
-
-from app.config import get_settings
-
-PRICING_URL = "https://api.kie.ai/client/v1/model-pricing/page"
+PRICING_URL = ""  # Kie.ai disabled — do not call
 DATA_DIR = Path(__file__).resolve().parent / "data"
 KIE_MODELS_PATH = DATA_DIR / "kie_models.json"
 RAW_CATALOG_PATH = Path(__file__).resolve().parents[2] / "stage0" / "upstream_catalog.json"
@@ -168,31 +168,8 @@ def family_for(model_id: str, provider: str, modality: str) -> str:
 
 
 async def fetch_kie_pricing_rows() -> list[dict[str, Any]]:
-    settings = get_settings()
-    key = settings.upstream_api_key or ""
-    headers = {
-        "Authorization": f"Bearer {key}" if key else "",
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
-    rows: list[dict[str, Any]] = []
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        for page in range(1, 50):
-            r = await client.post(
-                PRICING_URL,
-                headers=headers,
-                json={"pageNum": page, "pageSize": 100},
-            )
-            data = r.json()
-            payload = data.get("data") or {}
-            records = payload.get("records") or payload.get("list") or payload.get("rows") or []
-            if not records:
-                break
-            rows.extend(records)
-            total = int(payload.get("total") or 0)
-            if total and len(rows) >= total:
-                break
-    return rows
+    """Kie.ai network sync disabled — never call api.kie.ai."""
+    return []
 
 
 def rows_to_models(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -297,35 +274,18 @@ def rows_to_models(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 async def sync_kie_catalog(*, save_raw: bool = True) -> dict[str, Any]:
-    rows = await fetch_kie_pricing_rows()
-    if not rows and RAW_CATALOG_PATH.exists():
-        raw = json.loads(RAW_CATALOG_PATH.read_text(encoding="utf-8"))
-        rows = raw.get("rows") or []
-    models = rows_to_models(rows)
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    payload = {
+    """No-op: Kie.ai catalog sync removed. Use sync_a6_catalog instead."""
+    _ = save_raw
+    existing = load_kie_models()
+    return {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
-        "source": PRICING_URL,
-        "raw_rows": len(rows),
-        "models_n": len(models),
-        "models": models,
+        "source": "disabled",
+        "raw_rows": 0,
+        "models_n": len(existing),
+        "models": existing,
+        "disabled": True,
+        "note": "Kie.ai sync removed — catalog is A6 + Zeus studio",
     }
-    KIE_MODELS_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    if save_raw:
-        RAW_CATALOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-        RAW_CATALOG_PATH.write_text(
-            json.dumps(
-                {
-                    "total": len(rows),
-                    "fetched_at": payload["fetched_at"],
-                    "rows": rows,
-                },
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-    return payload
 
 
 def load_kie_models() -> list[dict[str, Any]]:

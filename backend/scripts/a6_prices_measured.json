@@ -1,0 +1,878 @@
+{
+  "measured_at": "2026-07-29T13:44:37.751890+00:00",
+  "spent_usd": 34.4046,
+  "rows": [
+    {
+      "model": "claude-fable-5",
+      "cost_a_usd": 0.4446000000000001,
+      "cost_b_usd": 0.06659999999999999,
+      "usage_a": {
+        "in": 30868,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 21,
+        "out": 920,
+        "cached": 0
+      },
+      "in_usd_per_1m": 14.4009,
+      "out_usd_per_1m": 72.0626
+    },
+    {
+      "model": "claude-haiku-4-5",
+      "cost_a_usd": 0.029799999999999827,
+      "cost_b_usd": 0.004400000000000404,
+      "usage_a": {
+        "in": 29219,
+        "out": 1,
+        "cached": 63
+      },
+      "usage_b": {
+        "in": 82,
+        "out": 839,
+        "cached": 53
+      },
+      "in_usd_per_1m": 1.0197,
+      "out_usd_per_1m": 5.1447
+    },
+    {
+      "model": "claude-haiku-4-5-20251001",
+      "cost_a_usd": 0.05639999999999956,
+      "cost_b_usd": 0.010800000000000143,
+      "usage_a": {
+        "in": 35650,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 4920,
+        "out": 376,
+        "cached": 0
+      },
+      "in_usd_per_1m": 1.5818,
+      "out_usd_per_1m": 8.0251
+    },
+    {
+      "model": "claude-mythos-5",
+      "cost_a_usd": 0.24440000000000017,
+      "cost_b_usd": 0.036599999999999966,
+      "usage_a": {
+        "in": 30849,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 21,
+        "out": 920,
+        "cached": 0
+      },
+      "in_usd_per_1m": 7.9212,
+      "out_usd_per_1m": 39.6018
+    },
+    {
+      "model": "claude-opus-4-6",
+      "cost_a_usd": 0.2784,
+      "cost_b_usd": 0.0416000000000003,
+      "usage_a": {
+        "in": 30923,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 21,
+        "out": 920,
+        "cached": 0
+      },
+      "in_usd_per_1m": 9.0016,
+      "out_usd_per_1m": 45.0119
+    },
+    {
+      "model": "claude-opus-4-7",
+      "cost_a_usd": 0.40339999999999954,
+      "cost_b_usd": 0.05840000000000023,
+      "usage_a": {
+        "in": 29239,
+        "out": 1,
+        "cached": 17
+      },
+      "usage_b": {
+        "in": 82,
+        "out": 839,
+        "cached": 53
+      },
+      "in_usd_per_1m": 13.7943,
+      "out_usd_per_1m": 68.2585
+    },
+    {
+      "model": "claude-opus-4-8",
+      "cost_a_usd": 0.31479999999999997,
+      "cost_b_usd": 0.04720000000000013,
+      "usage_a": {
+        "in": 30862,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 21,
+        "out": 920,
+        "cached": 0
+      },
+      "in_usd_per_1m": 10.1986,
+      "out_usd_per_1m": 51.0716
+    },
+    {
+      "model": "claude-opus-5",
+      "cost_a_usd": 0.22899999999999965,
+      "cost_b_usd": 0.03299999999999992,
+      "usage_a": {
+        "in": 29391,
+        "out": 1,
+        "cached": 47
+      },
+      "usage_b": {
+        "in": 82,
+        "out": 839,
+        "cached": 53
+      },
+      "in_usd_per_1m": 7.7902,
+      "out_usd_per_1m": 38.5712
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "cost_a_usd": 0.07400000000000029,
+      "cost_b_usd": 0.01100000000000012,
+      "usage_a": {
+        "in": 30820,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 21,
+        "out": 920,
+        "cached": 0
+      },
+      "in_usd_per_1m": 2.4007,
+      "out_usd_per_1m": 11.9017
+    },
+    {
+      "model": "claude-sonnet-5",
+      "cost_a_usd": 0.05959999999999965,
+      "cost_b_usd": 0.008600000000000385,
+      "usage_a": {
+        "in": 29304,
+        "out": 1,
+        "cached": 61
+      },
+      "usage_b": {
+        "in": 82,
+        "out": 839,
+        "cached": 53
+      },
+      "in_usd_per_1m": 2.0335,
+      "out_usd_per_1m": 10.0516
+    },
+    {
+      "model": "codex-auto-review",
+      "cost_a_usd": 0.07319999999999949,
+      "cost_b_usd": 0.013400000000000745,
+      "usage_a": {
+        "in": 26377,
+        "out": 5,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 22,
+        "out": 803,
+        "cached": 0
+      },
+      "in_usd_per_1m": 2.772,
+      "out_usd_per_1m": 16.6115
+    },
+    {
+      "model": "deepseek-v4-flash",
+      "cost_a_usd": 0.0475999999999992,
+      "cost_b_usd": 0.0032000000000005357,
+      "usage_a": {
+        "in": 28357,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 99,
+        "out": 876,
+        "cached": 0
+      },
+      "in_usd_per_1m": 1.6785,
+      "out_usd_per_1m": 3.4633
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "cost_a_usd": 0.033800000000000274,
+      "cost_b_usd": 0.0019999999999997797,
+      "usage_a": {
+        "in": 28188,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 20,
+        "out": 800,
+        "cached": 0
+      },
+      "in_usd_per_1m": 1.199,
+      "out_usd_per_1m": 2.47
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "cost_a_usd": 0.006599999999999717,
+      "cost_b_usd": 0.0032000000000005357,
+      "usage_a": {
+        "in": 26383,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 19,
+        "out": 1491,
+        "cached": 0
+      },
+      "in_usd_per_1m": 0.2501,
+      "out_usd_per_1m": 2.143
+    },
+    {
+      "model": "LongCat-2.0",
+      "error": "HTTP 503: {\"error\":{\"message\":\"上游服务暂时不可用。 原因：上游服务、网络链路或代理返回异常响应。 解决方案：请稍后重试。如当前使用智能路由，请先重试；若仍失败，建议切换固定商家；如当前使用固定商家，请切换固定商家或开启智能路由。 request_id: 202607291153109885436858268d9d6FrSuAxuc\",\"type\""
+    },
+    {
+      "model": "gemini-2.5-pro",
+      "cost_a_usd": 4.236799999999999,
+      "cost_b_usd": 1.2574000000000005,
+      "usage_a": {
+        "in": 26358,
+        "out": 69,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 18,
+        "out": 996,
+        "cached": 0
+      },
+      "in_usd_per_1m": 157.4432,
+      "out_usd_per_1m": 1259.6044,
+      "suspect": true
+    },
+    {
+      "model": "gemini-3-flash-agent",
+      "error": "HTTP 401: {\"error\":{\"message\":\"上游服务暂时不可用。 原因：上游服务、网络链路或代理返回异常响应。 解决方案：请稍后重试。如当前使用智能路由，请先重试；若仍失败，建议切换固定商家；如当前使用固定商家，请切换固定商家或开启智能路由。 request_id: 202607291153382583884588268d9d6ag4i9He7\",\"type\""
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "error": "non-JSON body: data: {\"id\":\"chatcmpl-2ulpaovdI-WkktwPj6as8Qs\",\"object\":\"chat.completion.chunk\",\"created\":1785326042,\"model\":\"gemini-3.1-flash-lite\",\"choices\":[{\"inde"
+    },
+    {
+      "model": "gemini-3-pro-preview",
+      "cost_a_usd": 0.1341999999999981,
+      "cost_b_usd": 0.03140000000000143,
+      "usage_a": {
+        "in": 26623,
+        "out": 0,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 272,
+        "out": 996,
+        "cached": 0
+      },
+      "in_usd_per_1m": 5.0408,
+      "out_usd_per_1m": 30.1495
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "error": "HTTP 500: {\"error\":{\"message\":\"请求参数不正确，请检查请求体后重试。 原因：请求中存在目标接口不支持的字段、缺少必填字段，或 JSON 格式不完整。 解决方案：请按目标接口文档检查参数名、字段类型和 JSON 格式；移除不支持的参数后重试。 request_id: 202607291154305996474778268d9d69QlGecKf\",\""
+    },
+    {
+      "model": "gemini-3.1-pro-preview",
+      "error": "non-JSON body: data: {\"id\":\"chatcmpl---lpao6qKMnxnsEPzMrJ4Qs\",\"object\":\"chat.completion.chunk\",\"created\":1785326078,\"model\":\"antigravity/gemini-pro-agent\",\"choices\":"
+    },
+    {
+      "model": "gemini-3.1-pro-preview-low",
+      "error": "non-JSON body: data: {\"id\":\"chatcmpl-A-ppar-cOqvRnsEPi7ewsQM\",\"object\":\"chat.completion.chunk\",\"created\":1785326087,\"model\":\"antigravity/gemini-3.1-pro-low\",\"choices"
+    },
+    {
+      "model": "gemini-3.5-flash",
+      "cost_a_usd": 0.10219999999999985,
+      "cost_b_usd": 0.02400000000000091,
+      "usage_a": {
+        "in": 26634,
+        "out": 0,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 272,
+        "out": 996,
+        "cached": 0
+      },
+      "in_usd_per_1m": 3.8372,
+      "out_usd_per_1m": 23.0485
+    },
+    {
+      "model": "gemini-3.5-flash-extra-low",
+      "error": "non-JSON body: data: {\"id\":\"chatcmpl-HOppaoroMNG0kdUPtOOHuAM\",\"object\":\"chat.completion.chunk\",\"created\":1785326109,\"model\":\"antigravity/gemini-3.5-flash-extra-low\","
+    },
+    {
+      "model": "gemini-3.5-flash-high",
+      "cost_a_usd": 0.10239999999999938,
+      "cost_b_usd": 0.023999999999997357,
+      "usage_a": {
+        "in": 26651,
+        "out": 0,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 272,
+        "out": 996,
+        "cached": 0
+      },
+      "in_usd_per_1m": 3.8423,
+      "out_usd_per_1m": 23.0471
+    },
+    {
+      "model": "gemini-3.5-flash-low",
+      "error": "non-JSON body: data: {\"id\":\"chatcmpl-M-ppaoCmNoGrnsEP3dOEgAs\",\"object\":\"chat.completion.chunk\",\"created\":1785326132,\"model\":\"antigravity/gemini-3.5-flash-low\",\"choic"
+    },
+    {
+      "model": "gemini-3.6-flash",
+      "cost_a_usd": 0.1357999999999997,
+      "cost_b_usd": 0.04420000000000002,
+      "usage_a": {
+        "in": 26325,
+        "out": 122,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 19,
+        "out": 1748,
+        "cached": 0
+      },
+      "in_usd_per_1m": 5.0417,
+      "out_usd_per_1m": 25.2312
+    },
+    {
+      "model": "glm-5.1",
+      "cost_a_usd": 0.3219999999999992,
+      "cost_b_usd": 0.039400000000000546,
+      "usage_a": {
+        "in": 27383,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 21,
+        "out": 950,
+        "cached": 0
+      },
+      "in_usd_per_1m": 11.7576,
+      "out_usd_per_1m": 41.2138
+    },
+    {
+      "model": "glm-5.2",
+      "cost_a_usd": 0.049399999999998556,
+      "cost_b_usd": 0.006000000000000227,
+      "usage_a": {
+        "in": 27391,
+        "out": 3,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 22,
+        "out": 950,
+        "cached": 0
+      },
+      "in_usd_per_1m": 1.8028,
+      "out_usd_per_1m": 6.274
+    },
+    {
+      "model": "gpt-4o",
+      "cost_a_usd": 1.0462000000000025,
+      "cost_b_usd": 0.13260000000000005,
+      "usage_a": {
+        "in": 26413,
+        "out": 2,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 23,
+        "out": 832,
+        "cached": 0
+      },
+      "in_usd_per_1m": 39.5973,
+      "out_usd_per_1m": 158.2804
+    },
+    {
+      "model": "gpt-4o-mini",
+      "cost_a_usd": 0.06340000000000146,
+      "cost_b_usd": 0.007999999999999119,
+      "usage_a": {
+        "in": 26414,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 23,
+        "out": 823,
+        "cached": 0
+      },
+      "in_usd_per_1m": 2.3999,
+      "out_usd_per_1m": 9.6535
+    },
+    {
+      "model": "gpt-5.2",
+      "error": "HTTP 403: {\"error\":{\"message\":\"账户额度不足，请充值或调整请求后重试。 原因：当前账户余额或订阅额度不足，无法完成本次预扣或调用。 解决方案：请充值、切换低价模型/商家，或减少请求长度后重试。 request_id: 202607291159055036180108268d9d6vjTHFMZY\",\"type\":\"insufficient_quot"
+    },
+    {
+      "model": "gpt-5.2-2025-12-11",
+      "cost_a_usd": 2.541599999999999,
+      "cost_b_usd": 0.31040000000000134,
+      "usage_a": {
+        "in": 26454,
+        "out": 5,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 22,
+        "out": 803,
+        "cached": 0
+      },
+      "in_usd_per_1m": 96.0036,
+      "out_usd_per_1m": 383.9202,
+      "suspect": true
+    },
+    {
+      "model": "gpt-5.2-chat-latest",
+      "error": "HTTP 502: {\"error\":{\"message\":\"上游服务暂时不可用。 原因：上游服务、网络链路或代理返回异常响应。 解决方案：请稍后重试。如当前使用智能路由，请先重试；若仍失败，建议切换固定商家；如当前使用固定商家，请切换固定商家或开启智能路由。 request_id: 202607291159315721528628268d9d63Nf6PQW5\",\"type\""
+    },
+    {
+      "model": "gpt-5.3-codex",
+      "cost_a_usd": 0.8893999999999984,
+      "cost_b_usd": 0.21659999999999968,
+      "usage_a": {
+        "in": 26428,
+        "out": 5,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 22,
+        "out": 803,
+        "cached": 0
+      },
+      "in_usd_per_1m": 33.6028,
+      "out_usd_per_1m": 268.8179
+    },
+    {
+      "model": "gpt-5.3-codex-spark",
+      "cost_a_usd": 0.09339999999999904,
+      "cost_b_usd": 0.03340000000000032,
+      "usage_a": {
+        "in": 26443,
+        "out": 53,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 22,
+        "out": 1196,
+        "cached": 0
+      },
+      "in_usd_per_1m": 3.4763,
+      "out_usd_per_1m": 27.8625
+    },
+    {
+      "model": "gpt-5.4",
+      "cost_a_usd": 0.09860000000000113,
+      "cost_b_usd": 0.020800000000001262,
+      "usage_a": {
+        "in": 30800,
+        "out": 5,
+        "cached": 3840
+      },
+      "usage_b": {
+        "in": 4402,
+        "out": 803,
+        "cached": 3840
+      },
+      "in_usd_per_1m": 3.1999,
+      "out_usd_per_1m": 8.361
+    },
+    {
+      "model": "gpt-5.4-mini",
+      "cost_a_usd": 0.053599999999999426,
+      "cost_b_usd": 0.017399999999998528,
+      "usage_a": {
+        "in": 38585,
+        "out": 6,
+        "cached": 4800
+      },
+      "usage_b": {
+        "in": 5505,
+        "out": 1004,
+        "cached": 4800
+      },
+      "in_usd_per_1m": 1.3876,
+      "out_usd_per_1m": 9.7222
+    },
+    {
+      "model": "gpt-5.5",
+      "cost_a_usd": 0.11459999999999937,
+      "cost_b_usd": 4.334200000000003,
+      "usage_a": {
+        "in": 30740,
+        "out": 5,
+        "cached": 3840
+      },
+      "usage_b": {
+        "in": 4402,
+        "out": 826,
+        "cached": 3840
+      },
+      "in_usd_per_1m": 2.8771,
+      "out_usd_per_1m": 5231.8828,
+      "suspect": true
+    },
+    {
+      "model": "gpt-5.6",
+      "cost_a_usd": 0.29339999999999833,
+      "cost_b_usd": 1.482800000000001,
+      "usage_a": {
+        "in": 26462,
+        "out": 5,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 22,
+        "out": 824,
+        "cached": 0
+      },
+      "in_usd_per_1m": 10.7476,
+      "out_usd_per_1m": 1799.2276,
+      "suspect": true
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "cost_a_usd": 0.02499999999999858,
+      "cost_b_usd": 0.6522000000000041,
+      "usage_a": {
+        "in": 26397,
+        "out": 5,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 22,
+        "out": 825,
+        "cached": 0
+      },
+      "in_usd_per_1m": 0.7973,
+      "out_usd_per_1m": 790.5242,
+      "suspect": true
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "cost_a_usd": 0.36760000000000304,
+      "cost_b_usd": 2.894200000000005,
+      "usage_a": {
+        "in": 30928,
+        "out": 5,
+        "cached": 3840
+      },
+      "usage_b": {
+        "in": 4404,
+        "out": 821,
+        "cached": 3840
+      },
+      "in_usd_per_1m": 11.3256,
+      "out_usd_per_1m": 3464.4606,
+      "suspect": true
+    },
+    {
+      "model": "gpt-5.6-terra",
+      "cost_a_usd": 0.07920000000000016,
+      "cost_b_usd": 0.06640000000000157,
+      "usage_a": {
+        "in": 26331,
+        "out": 17,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 22,
+        "out": 823,
+        "cached": 0
+      },
+      "in_usd_per_1m": 2.9558,
+      "out_usd_per_1m": 80.6014,
+      "suspect": true
+    },
+    {
+      "model": "grok-4.20-0309-console",
+      "cost_a_usd": 0.33319999999999794,
+      "cost_b_usd": 0.022599999999997067,
+      "usage_a": {
+        "in": 26361,
+        "out": 1,
+        "cached": 128
+      },
+      "usage_b": {
+        "in": 209,
+        "out": 883,
+        "cached": 128
+      },
+      "in_usd_per_1m": 12.639,
+      "out_usd_per_1m": 22.603
+    },
+    {
+      "model": "grok-4.3",
+      "cost_a_usd": 0.5456000000000003,
+      "cost_b_usd": 0.018599999999999284,
+      "usage_a": {
+        "in": 26459,
+        "out": 1,
+        "cached": 128
+      },
+      "usage_b": {
+        "in": 209,
+        "out": 919,
+        "cached": 128
+      },
+      "in_usd_per_1m": 20.62,
+      "out_usd_per_1m": 15.55
+    },
+    {
+      "model": "grok-4.5",
+      "cost_a_usd": 0.13519999999999754,
+      "cost_b_usd": 0.01020000000000465,
+      "usage_a": {
+        "in": 36678,
+        "out": 663,
+        "cached": 149
+      },
+      "usage_b": {
+        "in": 4623,
+        "out": 856,
+        "cached": 128
+      },
+      "in_usd_per_1m": 3.8462,
+      "out_usd_per_1m": -8.8564,
+      "suspect": true
+    },
+    {
+      "model": "hy3",
+      "cost_a_usd": 0.053400000000003445,
+      "cost_b_usd": 0.24519999999998987,
+      "usage_a": {
+        "in": 28669,
+        "out": 73,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 28,
+        "out": 1000,
+        "cached": 0
+      },
+      "in_usd_per_1m": 1.2384,
+      "out_usd_per_1m": 245.1653,
+      "suspect": true
+    },
+    {
+      "model": "kimi-k2.5",
+      "cost_a_usd": 0.17740000000000578,
+      "cost_b_usd": 0.014400000000001967,
+      "usage_a": {
+        "in": 27091,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 25,
+        "out": 800,
+        "cached": 0
+      },
+      "in_usd_per_1m": 6.5476,
+      "out_usd_per_1m": 17.7954
+    },
+    {
+      "model": "kimi-k2.6",
+      "cost_a_usd": 2.8320000000000007,
+      "cost_b_usd": 0.35419999999999874,
+      "usage_a": {
+        "in": 27122,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 25,
+        "out": 800,
+        "cached": 0
+      },
+      "in_usd_per_1m": 104.4009,
+      "out_usd_per_1m": 439.4875,
+      "suspect": true
+    },
+    {
+      "model": "kimi-k2.7-code",
+      "cost_a_usd": 0.3954000000000022,
+      "cost_b_usd": 0.061399999999991905,
+      "usage_a": {
+        "in": 27228,
+        "out": 50,
+        "cached": 3
+      },
+      "usage_b": {
+        "in": 23,
+        "out": 932,
+        "cached": 0
+      },
+      "in_usd_per_1m": 14.4015,
+      "out_usd_per_1m": 65.5244
+    },
+    {
+      "model": "kimi-k3",
+      "cost_a_usd": 2.2889999999999944,
+      "cost_b_usd": 0.42719999999999914,
+      "usage_a": {
+        "in": 27246,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 104,
+        "out": 944,
+        "cached": 0
+      },
+      "in_usd_per_1m": 83.9961,
+      "out_usd_per_1m": 443.2886,
+      "suspect": true
+    },
+    {
+      "model": "mimo-v2.5",
+      "cost_a_usd": 0.31039999999999424,
+      "cost_b_usd": 0.05920000000000414,
+      "usage_a": {
+        "in": 27734,
+        "out": 1,
+        "cached": 192
+      },
+      "usage_b": {
+        "in": 265,
+        "out": 1000,
+        "cached": 192
+      },
+      "in_usd_per_1m": 11.19,
+      "out_usd_per_1m": 56.2346
+    },
+    {
+      "model": "mimo-v2.5-pro",
+      "cost_a_usd": 0.29240000000000066,
+      "cost_b_usd": 0.0805999999999969,
+      "usage_a": {
+        "in": 27885,
+        "out": 1,
+        "cached": 192
+      },
+      "usage_b": {
+        "in": 269,
+        "out": 1000,
+        "cached": 192
+      },
+      "in_usd_per_1m": 10.4831,
+      "out_usd_per_1m": 77.78
+    },
+    {
+      "model": "minimax-m2.5",
+      "cost_a_usd": 0.06580000000000297,
+      "cost_b_usd": 0.009799999999998477,
+      "usage_a": {
+        "in": 27391,
+        "out": 3,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 57,
+        "out": 1000,
+        "cached": 0
+      },
+      "in_usd_per_1m": 2.4012,
+      "out_usd_per_1m": 9.6631
+    },
+    {
+      "model": "minimax-m2.7",
+      "error": "request failed: ReadTimeout The read operation timed out",
+      "cost_a_usd": 0.03160000000000451
+    },
+    {
+      "model": "minimax-m3",
+      "cost_a_usd": 0.049399999999998556,
+      "cost_b_usd": 0.006199999999999761,
+      "usage_a": {
+        "in": 27513,
+        "out": 1,
+        "cached": 128
+      },
+      "usage_b": {
+        "in": 192,
+        "out": 835,
+        "cached": 171
+      },
+      "in_usd_per_1m": 1.7953,
+      "out_usd_per_1m": 7.0123
+    },
+    {
+      "model": "qwen3.6-27b",
+      "cost_a_usd": 0.299199999999999,
+      "cost_b_usd": 0.11840000000000117,
+      "usage_a": {
+        "in": 27006,
+        "out": 1,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 28,
+        "out": 1000,
+        "cached": 0
+      },
+      "in_usd_per_1m": 11.0746,
+      "out_usd_per_1m": 118.0899
+    },
+    {
+      "model": "qwen3.7-max",
+      "cost_a_usd": 0.8126000000000033,
+      "cost_b_usd": 0.09099999999999397,
+      "usage_a": {
+        "in": 26936,
+        "out": 50,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 28,
+        "out": 1002,
+        "cached": 0
+      },
+      "in_usd_per_1m": 30.0008,
+      "out_usd_per_1m": 89.98
+    },
+    {
+      "model": "qwen3.7-plus",
+      "cost_a_usd": 0.19940000000000424,
+      "cost_b_usd": 0.05239999999999867,
+      "usage_a": {
+        "in": 26976,
+        "out": 179,
+        "cached": 0
+      },
+      "usage_b": {
+        "in": 28,
+        "out": 1815,
+        "cached": 0
+      },
+      "in_usd_per_1m": 7.2009,
+      "out_usd_per_1m": 28.7594
+    }
+  ]
+}

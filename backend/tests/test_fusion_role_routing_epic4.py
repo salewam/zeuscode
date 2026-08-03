@@ -28,7 +28,8 @@ from app.fusion.roles import resolve_roles
 # --- Story 4.1: hard trigger ---
 
 
-def test_v1_trigger_only_large_2nd_power_custom_strong():
+def test_pick_pipeline_standard_bootstrap_v1():
+    """Standard bootstrap keeps v1 executor while selection is adaptive."""
     rr = resolve_roles(product_mode="power", task_kind="architecture")
     assert rr.has_strong
     d = pick_pipeline(
@@ -39,20 +40,32 @@ def test_v1_trigger_only_large_2nd_power_custom_strong():
         roles=rr,
     )
     assert d.pipeline == "v1"
-    assert d.serving_path_clamp == "FULL"
+    assert d.serving_path_clamp is None
+    assert d.reason == "always_crew"
 
 
-def test_v1_forbidden_without_second_signal_or_simple_or_kill():
-    rr = resolve_roles(product_mode="power", task_kind="architecture")
+def test_standard_bootstrap_v1_except_kill_switch():
+    rr_arch = resolve_roles(product_mode="power", task_kind="architecture")
     assert (
         pick_pipeline(
-            size="large",
+            size="small",
+            second_signal=False,
+            product_mode="power",
+            kill_switch=False,
+            roles=rr_arch,
+        ).pipeline
+        == "v1"
+    )
+    rr = resolve_roles(product_mode="power", task_kind="code")
+    assert (
+        pick_pipeline(
+            size="small",
             second_signal=False,
             product_mode="power",
             kill_switch=False,
             roles=rr,
         ).pipeline
-        != "v1"
+        == "v1"
     )
     assert (
         pick_pipeline(
@@ -62,7 +75,7 @@ def test_v1_forbidden_without_second_signal_or_simple_or_kill():
             kill_switch=False,
             roles=rr,
         ).pipeline
-        != "v1"
+        == "v1"
     )
     assert (
         pick_pipeline(
@@ -72,7 +85,7 @@ def test_v1_forbidden_without_second_signal_or_simple_or_kill():
             kill_switch=True,
             roles=rr,
         ).pipeline
-        != "v1"
+        == "fallback_single"
     )
 
 

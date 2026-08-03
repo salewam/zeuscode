@@ -1,0 +1,91 @@
+{
+  "suite_id": "zeuscode_power_v1",
+  "product_mode": "power",
+  "model": "zeuscode",
+  "gates": {
+    "min_pass_rate": 0.8,
+    "max_p95_latency_s": 300,
+    "max_escalate_rate": 0.05,
+    "forbid_models": ["gpt-5.5"],
+    "max_mean_rub_per_case": 40.0
+  },
+  "cases": [
+    {
+      "id": "P01_chitchat",
+      "bucket": "light",
+      "prompt": "привет",
+      "oracle": {
+        "non_empty": true,
+        "max_latency_s": 45,
+        "max_branches": 2,
+        "forbid_escalate": true,
+        "min_answer_chars": 2
+      }
+    },
+    {
+      "id": "P02_trivial_ui",
+      "bucket": "light",
+      "prompt": "поменяй цвет кнопки Submit на красный в CSS",
+      "oracle": {
+        "non_empty": true,
+        "expect_code_fence": true,
+        "max_latency_s": 60,
+        "max_branches": 3,
+        "forbid_escalate": true,
+        "min_answer_chars": 40
+      }
+    },
+    {
+      "id": "P03_code_fix",
+      "bucket": "code",
+      "prompt": "В auth.py ImportError: No module named jwt. Дай минимальный фикс (код).",
+      "oracle": {
+        "non_empty": true,
+        "expect_code_fence": true,
+        "max_latency_s": 90,
+        "max_branches": 3,
+        "forbid_escalate": true,
+        "min_answer_chars": 60,
+        "must_contain_any": ["jwt", "PyJWT", "import"]
+      }
+    },
+    {
+      "id": "P04_ui_landing",
+      "bucket": "ui",
+      "prompt": "Сделай минимальный HTML+CSS hero для лендинга автосервиса (один файл).",
+      "oracle": {
+        "non_empty": true,
+        "expect_code_fence": true,
+        "max_latency_s": 90,
+        "max_branches": 4,
+        "forbid_escalate": true,
+        "min_answer_chars": 120,
+        "must_contain_any": ["html", "HTML", "<!DOCTYPE", "<div"]
+      }
+    },
+    {
+      "id": "P05_architecture",
+      "bucket": "heavy",
+      "prompt": "Спроектируй архитектуру prepaid API биллинга: модули, миграции, тесты, риски. Кратко и по делу.",
+      "oracle": {
+        "non_empty": true,
+        "max_latency_s": 180,
+        "max_branches": 8,
+        "min_answer_chars": 200,
+        "must_contain_any": ["API", "миграц", "тест", "модул", "billing", "баланс"]
+      }
+    },
+    {
+      "id": "P06_review",
+      "bucket": "heavy",
+      "prompt": "Сделай code review: гонка в обновлении баланса user.balance_usd -= charge без лока. Найди баг и предложи фикс.",
+      "oracle": {
+        "non_empty": true,
+        "max_latency_s": 120,
+        "max_branches": 6,
+        "min_answer_chars": 100,
+        "must_contain_any": ["race", "лок", "lock", "atomic", "транзак", "concurrent"]
+      }
+    }
+  ]
+}

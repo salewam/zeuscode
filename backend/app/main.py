@@ -17,9 +17,6 @@ from app.routers import (
     keys,
     me,
     models,
-    projects,
-    github,
-    studio_fs,
     publish,
     tg_miniapp,
     usage_admin,
@@ -37,22 +34,23 @@ async def lifespan(_app: FastAPI):
     await _migrate_balances_to_rub()
     # Best-effort catalog: never block startup on network sync
     try:
+        from app.a6_sync import A6_MODELS_PATH, sync_a6_catalog
         from app.catalog import reload_catalog
-        from app.kie_sync import KIE_MODELS_PATH, sync_kie_catalog
-        from app.polza_sync import sync_polza_prices
         import asyncio
 
         async def _refresh_catalog() -> None:
-            if not KIE_MODELS_PATH.exists():
-                await sync_kie_catalog()
-            await sync_polza_prices()
+            # Прайс polza.ai больше не накладываем на A6: он давал ложный себес.
+            # Цены A6 — только измеренные/мерчантские.
+            try:
+                await sync_a6_catalog()
+            except Exception:
+                pass
             reload_catalog()
 
-        if KIE_MODELS_PATH.exists():
+        if A6_MODELS_PATH.exists():
             reload_catalog()
             asyncio.create_task(_refresh_catalog())
         else:
-            # First boot: need local file before serving models
             try:
                 await asyncio.wait_for(_refresh_catalog(), timeout=25)
             except Exception:
@@ -108,9 +106,7 @@ app.include_router(auth.router)
 app.include_router(keys.router)
 app.include_router(me.router)
 app.include_router(fusion_feedback.router)
-app.include_router(projects.router)
-app.include_router(studio_fs.router)
-app.include_router(github.router)
+# Studio (site project editor / orchestrate) removed — ZeusCode /v1 only.
 app.include_router(billing.router)
 app.include_router(models.router)
 app.include_router(chat.router)
@@ -119,30 +115,6 @@ app.include_router(tg_miniapp.router)
 app.include_router(usage_admin.router)
 
 app.mount("/static", StaticFiles(directory=str(FRONTEND)), name="static")
-
-# Public demo of Studio workspace landing (no auth) — for shareable links
-_COFFEE_DEMO = ROOT / "data" / "workspaces" / "23" / "43" / "src" / "frontend"
-if _COFFEE_DEMO.is_dir():
-    app.mount(
-        "/demo/coffee",
-        StaticFiles(directory=str(_COFFEE_DEMO), html=True),
-        name="demo_coffee",
-    )
-
-# Autoservice mode bake-off (gemini-only runs)
-for _mode, _uid, _pid in (
-    ("light", "27", "54"),
-    ("standard", "27", "55"),
-    ("ultra", "27", "56"),
-    ("premium", "27", "57"),
-):
-    _demo = ROOT / "data" / "workspaces" / _uid / _pid / "src" / "frontend"
-    if _demo.is_dir() and (_demo / "index.html").is_file():
-        app.mount(
-            f"/demo/sto-{_mode}",
-            StaticFiles(directory=str(_demo), html=True),
-            name=f"demo_sto_{_mode}",
-        )
 
 
 @app.get("/")

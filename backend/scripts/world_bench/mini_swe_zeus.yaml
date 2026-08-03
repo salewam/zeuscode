@@ -1,0 +1,29 @@
+# Overlay for mini-swe-agent → ZeusCode OpenAI-compat.
+# Use with: -c swebench.yaml -c mini_swe_zeus.yaml
+#
+# Zeus = brain (OpenAI-compat /v1).
+# mini-swe = hands (bash in SWE-bench Docker /testbed).
+#
+# Default model: adaptive ZeusCode crew.
+# Override explicitly only for a solo-model comparison.
+
+agent:
+  step_limit: 150
+  cost_limit: 0
+
+model:
+  model_name: openai/zeuscode
+  cost_tracking: ignore_errors
+  litellm_model_registry: backend/scripts/world_bench/litellm_zeus_registry.json
+  model_kwargs:
+    # Endpoint comes from OPENAI_BASE_URL / OPENAI_API_BASE (runner derives it
+    # from ZEUS_PERF_BASE), so concurrent benchmark suites can use other ports.
+    drop_params: true
+    temperature: 0.2
+
+environment:
+  environment_class: docker
+  cwd: "/testbed"
+  timeout: 180
+  pull_timeout: 3600
+  container_timeout: "4h"

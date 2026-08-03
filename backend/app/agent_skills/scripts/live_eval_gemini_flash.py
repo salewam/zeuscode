@@ -357,7 +357,7 @@ async def main() -> int:
             credits = (r.json() or {}).get("data")
             print("CREDITS", credits, flush=True)
             if isinstance(credits, (int, float)) and credits <= 0:
-                print("ABORT: insufficient credits — top up kie.ai", flush=True)
+                print("ABORT: insufficient credits — top up A6 / wallet", flush=True)
                 return 2
     except Exception as e:  # noqa: BLE001
         print("credit check failed", e, flush=True)

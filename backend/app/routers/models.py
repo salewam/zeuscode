@@ -7,7 +7,7 @@ from app.catalog import public_catalog, reload_catalog
 from app.claude_gateway import gateway_picker_models
 from app.config import get_settings
 from app.db import get_db
-from app.kie_sync import sync_kie_catalog
+from app.a6_sync import sync_a6_catalog
 from app.model_policy import filter_catalog_for_user
 from app.models import ApiKey, User
 from app.polza_sync import sync_polza_prices
@@ -124,9 +124,9 @@ async def list_models(
 
 @router.post("/models/sync")
 @router.post("/v1/models/sync")
-async def sync_models_from_kie():
-    """Pull Kie catalog, then align user RUB prices with Polza.ai."""
-    payload = await sync_kie_catalog()
+async def sync_models_from_upstream():
+    """Pull A6 catalog, then align user RUB prices with Polza.ai when possible."""
+    payload = await sync_a6_catalog()
     polza = await sync_polza_prices()
     reload_catalog()
     rows = public_catalog()
@@ -136,9 +136,9 @@ async def sync_models_from_kie():
         by_mod[m] = by_mod.get(m, 0) + 1
     return {
         "ok": True,
-        "fetched_at": payload.get("fetched_at"),
-        "raw_rows": payload.get("raw_rows"),
-        "models_n": payload.get("models_n"),
+        "source": "a6",
+        "fetched_at": payload.get("synced_at") or payload.get("fetched_at"),
+        "models_n": payload.get("n") or payload.get("models_n"),
         "catalog_n": len(rows),
         "by_modality": by_mod,
         "ready_n": sum(1 for r in rows if r.get("ready")),

@@ -20,7 +20,12 @@ from app.fusion import (
 )
 
 _SIMPLE = ["deepseek-v4-flash", "gemini-3-pro", "claude-haiku-4-5"]
-_POWER = ["claude-opus-4-8", "deepseek-v4-pro", "gemini-3.1-pro"]
+_POWER = [
+    "claude-opus-4-6",
+    "gpt-5.4",
+    "deepseek-v4-pro",
+    "gemini-3.1-pro",
+]
 
 
 def test_chitchat_fast():
@@ -111,15 +116,15 @@ def test_pick_leader_simple():
 
 
 def test_pick_leader_power():
-    assert pick_leader(_POWER, "architecture") == "claude-opus-4-8"
-    assert pick_leader(_POWER, "code") == "claude-opus-4-8"
+    assert pick_leader(_POWER, "architecture") == "claude-opus-4-6"
+    assert pick_leader(_POWER, "code") == "claude-opus-4-6"
     assert pick_leader(_POWER, "light") == "deepseek-v4-pro"
-    assert pick_leader(_POWER, "review") in ("gemini-3.1-pro", "claude-opus-4-8")
+    assert pick_leader(_POWER, "review") in ("gpt-5.4", "claude-opus-4-6", "gemini-3.1-pro")
 
 
 def test_order_leader_first():
-    ordered = order_panel_leader_first(_POWER, "gemini-3.1-pro")
-    assert ordered[0] == "gemini-3.1-pro"
+    ordered = order_panel_leader_first(_POWER, "gpt-5.4")
+    assert ordered[0] == "gpt-5.4"
     assert set(ordered) == set(_POWER)
 
 
@@ -183,6 +188,26 @@ def test_classify_smart_chitchat_skips_llm():
     out = asyncio.run(classify_smart([{"role": "user", "content": "привет"}]))
     assert out["source"] == "regex-chitchat"
     assert out["stack"] == "fast"
+
+
+def test_classify_smart_force_regex_skips_llm():
+    """Hot path: force_regex=True must never call upstream."""
+
+    async def _run():
+        with patch(
+            "app.fusion._monolith.upstream.chat_completions",
+            new_callable=AsyncMock,
+        ) as m:
+            out = await classify_smart(
+                [{"role": "user", "content": "поправь auth middleware"}],
+                force_regex=True,
+            )
+            m.assert_not_called()
+            return out
+
+    out = asyncio.run(_run())
+    assert out["source"] == "regex"
+    assert out["stack"] in ("fast", "full")
 
 
 def test_classify_smart_llm_accepted():

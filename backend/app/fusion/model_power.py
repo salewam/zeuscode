@@ -42,11 +42,13 @@ _AA_INDEX: dict[str, float] = {
     "claude-opus-4-8": 56.0,  # Opus 4.8 max
     "gpt-5.6-terra": 55.0,  # Terra max
     "grok-4-5": 54.0,  # Grok 4.5 high
+    "grok-4.5": 54.0,
     "claude-sonnet-5": 53.0,  # Sonnet 5 max
     "gpt-5.6-luna": 51.0,  # Luna max
     # gpt-5.5 mainline ≈ between Terra and Luna; Instant AA~29 is not this SKU
     "gpt-5.5": 55.0,
     "gpt-5.4": 51.0,
+    "gpt-5.4-mini": 48.0,  # live cheap stand-in while gpt-5.4 supplier down
     "gemini-3.5-flash": 50.0,
     "gemini-3.1-pro": 46.0,  # Gemini 3.1 Pro Preview
     "deepseek-v4-pro": 44.0,  # V4 Pro max

@@ -1,7 +1,7 @@
-"""ZeusCode model catalog — Studio presets + synced upstream models.
+"""ZeusCode model catalog — Studio presets + A6 upstream models.
 
 Prices: upstream USD; user sees × MARKUP × USD_RUB (₽).
-Kie models live in app/data/kie_models.json (see kie_sync.sync_kie_catalog).
+Chat LLMs are served via A6 (a6api.com). Kie.ai is not used.
 """
 
 from __future__ import annotations
@@ -164,8 +164,18 @@ STUDIO_MODELS: list[dict[str, Any]] = [
 ]
 
 
+# Не роутить: дороже топового Claude без выигрыша по качеству (замер себеса A6).
+# Держим в каталоге, но ready=False — авто-подбор их не берёт.
+ROUTING_BLACKLIST: dict[str, str] = {
+    "gpt-5.3-codex": "выход ~$268/1M — дороже Fable 5 вчетверо",
+    "gpt-4o": "~$39.6/$158 при слабом результате",
+    "gpt-5.6": "~$20.7/$88.8 — дороже Opus без выигрыша",
+    "claude-opus-4-7": "дороже opus-4-8 при том же классе",
+}
+
+
 def _merge_catalog() -> list[dict[str, Any]]:
-    from app.kie_sync import load_kie_models
+    from app.a6_sync import apply_measured_prices, load_a6_models
     from app.polza_sync import POLZA_PASS_THROUGH
 
     by_id: dict[str, dict[str, Any]] = {}
@@ -176,11 +186,25 @@ def _merge_catalog() -> list[dict[str, Any]]:
         row["output_rub"] = round(float(row.get("output_usd") or 0) * POLZA_PASS_THROUGH, 4)
         row["pricing_source"] = "polza-rate"
         by_id[row["id"]] = row
-    for m in load_kie_models():
+    # A6 is the sole external chat catalog (Kie.ai removed).
+    a6_rows = load_a6_models()
+    apply_measured_prices(a6_rows)
+    for m in a6_rows:
         mid = m["id"]
         if mid in by_id and by_id[mid].get("source") == "zeus":
             continue
-        by_id[mid] = dict(m)
+        row = dict(m)
+        row["ready"] = True
+        row["adapter"] = "a6"
+        row["upstream_model"] = m.get("upstream_model") or mid
+        row["a6_model"] = mid
+        row["source"] = "a6"
+        by_id[mid] = row
+    for mid, reason in ROUTING_BLACKLIST.items():
+        row = by_id.get(mid)
+        if row is not None:
+            row["ready"] = False
+            row["blacklist_reason"] = reason
     rows = list(by_id.values())
     mod_rank = {"chat": 0, "image": 1, "video": 2, "music": 3}
 
@@ -219,6 +243,22 @@ _FUSION_ALIASES: dict[str, str] = {
     "zeuscode": "zeuscode",
 }
 
+# Spelling-only legacy ids (hyphen ↔ dot). Never swap to a different model.
+# gemini-3.1-pro → preview: same SKU; A6 catalog id includes -preview suffix.
+_LEGACY_MODEL_ALIASES: dict[str, str] = {
+    "gpt-5-2": "gpt-5.2",
+    "gpt-5-4": "gpt-5.4",
+    "gpt-5-4-mini": "gpt-5.4-mini",
+    "gpt-5-5": "gpt-5.5",
+    "gpt-5-6-luna": "gpt-5.6-luna",
+    "gpt-5-6-terra": "gpt-5.6-terra",
+    "gpt-5-6-sol": "gpt-5.6-sol",
+    "grok-4-3": "grok-4.3",
+    "grok-4-5": "grok-4.5",
+    "gemini-3.1-pro": "gemini-3.1-pro-preview",
+    "gemini-3-pro": "gemini-3-pro-preview",
+}
+
 
 def canonical_model_id(model_id: str | None) -> str:
     """Resolve aliases + case to catalog id (never invent a new spelling)."""
@@ -229,6 +269,11 @@ def canonical_model_id(model_id: str | None) -> str:
     if alias:
         row = BY_ID.get(alias) or BY_ID_LOWER.get(alias.lower())
         return str(row["id"]) if row else alias
+    legacy = _LEGACY_MODEL_ALIASES.get(mid.lower())
+    if legacy:
+        row = BY_ID.get(legacy) or BY_ID_LOWER.get(legacy.lower())
+        if row:
+            return str(row["id"])
     row = BY_ID.get(mid) or BY_ID_LOWER.get(mid.lower())
     return str(row["id"]) if row else mid
 
@@ -243,6 +288,11 @@ def get_model(model_id: str) -> dict | None:
     canon = _FUSION_ALIASES.get(mid.lower())
     if canon:
         return BY_ID.get(canon) or BY_ID_LOWER.get(canon.lower())
+    legacy = _LEGACY_MODEL_ALIASES.get(mid.lower())
+    if legacy:
+        hit = BY_ID.get(legacy) or BY_ID_LOWER.get(legacy.lower())
+        if hit is not None:
+            return hit
     # Clients often send Claude-fable-5 / Gemini-3.1-Pro — match case-insensitively.
     return BY_ID_LOWER.get(mid.lower())
 

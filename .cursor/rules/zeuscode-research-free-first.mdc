@@ -1,0 +1,37 @@
+---
+description: ZeusCode research stack — free-first web, scale without Chrome stampede
+alwaysApply: true
+---
+
+# ZeusCode research: free-first + scalable
+
+## Goal
+
+Research must work for many concurrent users **without** burning RAM/IP on a local browser farm. Prefer free paths; paid keys only as optional upgrades.
+
+## Stack order (do not invert)
+
+1. **Search:** Tavily (optional key) → **DuckDuckGo HTML** → DDG Instant API → **SEC EDGAR** (filings) → **arXiv** (papers) → Google/Yandex HTML → browser SERP last (global slots).
+2. **Fetch:** **httpx** first (SEC needs identifying UA) → Jina optional → browser only if text thin **and** `WEB_BROWSER_GLOBAL_SLOTS` free.
+3. **Cache:** SERP + research packs (`WEB_SEARCH_CACHE_TTL_S`, default 900s).
+4. **Concurrency:** `WEB_SEARCH_CONCURRENCY` + `WEB_BROWSER_GLOBAL_SLOTS` (default 2). Never one Chrome per user.
+
+## Anti-patterns
+
+- Do not scale by running browser-daemon for every research user.
+- Do not put Google/Yandex HTML before DDG as the primary path.
+- Do not treat “findings about search failure” as `web_ok=true` — ok means real HTTP URLs.
+- Do not invent paid anti-captcha / residential proxy farms as the default fix.
+- Do not port Hermes/omp agent-loop onto the Zeus server; keep server = brain + billing, client = hands.
+
+## Researchers
+
+Prefer three distinct schools (Gemini / Grok / DeepSeek). If A6 remaps empty Gemini → Grok, use Haiku (or another live distinct model) for school A until Gemini is healthy again.
+
+## Verify
+
+```bash
+PYTHONPATH=backend .venv/bin/python backend/scripts/smoke_web_research.py
+```
+
+Expect SEARCH via `duckduckgo_html` (or `tavily`), PACK `ok=true` with usable refs, role diversity ≥2.

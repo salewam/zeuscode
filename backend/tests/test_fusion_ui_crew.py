@@ -30,8 +30,18 @@ def test_pick_critics_prefer_other_families():
 
 
 def test_is_ui_crew_task_heuristics():
-    assert is_ui_crew_task(task_kind="ui", user_q="hello")
-    assert is_ui_crew_task(task_kind="general", user_q="Сделай одностраничный сайт СТО")
+    # trivial / kind=ui alone → no expensive UI Crew
+    assert not is_ui_crew_task(task_kind="ui", user_q="hello")
+    assert not is_ui_crew_task(
+        task_kind="ui", user_q="поменяй цвет кнопки Submit на красный"
+    )
+    assert not is_ui_crew_task(
+        task_kind="ui", user_q="Сделай минимальный HTML+CSS hero блок"
+    )
+    # heavy landing from scratch → yes
+    assert is_ui_crew_task(
+        task_kind="general", user_q="Сделай лендинг с нуля для автосервиса СТО"
+    )
     assert not is_ui_crew_task(task_kind="light", user_q="сколько будет 2+2")
 
 

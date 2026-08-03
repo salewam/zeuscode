@@ -53,22 +53,39 @@ def test_should_skip_simple_kill_trivia():
     )
 
 
-def test_should_run_large_or_second_or_flag():
+def test_should_run_vague_large_or_explicit_flag():
+    # Vague short large → clarify
     assert should_run_clarifier(
         product_mode="power",
         size="large",
         second_signal=False,
         kill_switch=False,
         zeus={},
-        user_q="big feature",
+        user_q="сделай фичу",
     )
-    assert should_run_clarifier(
-        product_mode="power",
-        size="small",
-        second_signal=True,
-        kill_switch=False,
-        zeus={},
-        user_q="landing",
+    # Concrete architecture → skip auto-clarify
+    assert (
+        should_run_clarifier(
+            product_mode="power",
+            size="large",
+            second_signal=True,
+            kill_switch=False,
+            zeus={},
+            user_q="Спроектируй архитектуру prepaid API биллинга: модули, миграции, тесты",
+        )
+        is False
+    )
+    # Forced full (bench) → never auto-clarify
+    assert (
+        should_run_clarifier(
+            product_mode="power",
+            size="large",
+            second_signal=True,
+            kill_switch=False,
+            zeus={"mode": "full"},
+            user_q="лендинг",
+        )
+        is False
     )
     assert should_run_clarifier(
         product_mode="power",
@@ -109,11 +126,22 @@ def test_pick_clarifier_prefers_gemini():
     assert mid2 in ("claude-opus-4-6", "deepseek-v4-flash")
 
 
-def test_roles_clarifier_gemini_on_power():
+def test_roles_clarifier_gemini_when_in_stack():
+    # Gemini-first when present (custom / mixed stacks)
+    a = assign_role_model(
+        "clarifier",
+        "custom",
+        ["claude-opus-4-8", "gemini-3-flash", "deepseek-v4-flash"],
+    )
+    assert a.model_id == "gemini-3-flash"
+
+
+def test_roles_clarifier_gemini_on_power_crew():
+    # Power-5 crew includes gemini-3.1-pro — clarifier prefers it (not Opus)
     rr = resolve_roles(product_mode="power", task_kind="architecture")
     a = assign_role_model("clarifier", "power", rr.stack)
-    assert a.model_id is not None
-    assert "gemini" in a.model_id
+    assert a.model_id == "gemini-3.1-pro"
+    assert a.model_id not in ("claude-opus-4-8", "claude-opus-4-6")
 
 
 def test_ask_confirm_done_flow_heuristic():
@@ -149,7 +177,7 @@ def test_ask_confirm_done_flow_heuristic():
         assert t2.state.spec_summary
         assert "да" in t2.user_text.lower()
 
-        # Turn 3: approve → done with enriched prompt
+        # Turn 3: approve ТЗ → plan
         t3 = asyncio.run(
             run_clarifier_turn(
                 user_q="да",
@@ -158,11 +186,28 @@ def test_ask_confirm_done_flow_heuristic():
                 session_id="sess-1",
             )
         )
-        assert t3.halt is False
-        assert t3.phase == "done"
-        assert t3.meta.get("brief_approved") is True
-        assert "ТЗ" in t3.user_text or "лендинг" in t3.user_text.lower()
-        assert t3.state.enriched_prompt
+        assert t3.halt is True
+        assert t3.phase == "plan"
+        assert t3.state.dev_plan
+        assert "план" in t3.user_text.lower()
+        assert isinstance(t3.meta.get("plan_artifact"), dict)
+        assert t3.meta["plan_artifact"].get("content")
+
+        # Turn 4: approve plan → done with enriched prompt
+        t4 = asyncio.run(
+            run_clarifier_turn(
+                user_q="делай",
+                state=t3.state,
+                stack=stack,
+                session_id="sess-1",
+            )
+        )
+        assert t4.halt is False
+        assert t4.phase == "done"
+        assert t4.meta.get("brief_approved") is True
+        assert t4.meta.get("plan_approved") is True
+        assert "ТЗ" in t4.user_text or "лендинг" in t4.user_text.lower()
+        assert "План" in t4.state.enriched_prompt or t4.state.dev_plan
     finally:
         os.environ.pop("ZEUS_FUSION_CLARIFIER_HEURISTIC", None)
 

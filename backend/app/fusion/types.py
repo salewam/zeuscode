@@ -7,7 +7,9 @@ from typing import Any, Literal
 
 PathName = Literal["FAST", "CASCADE", "RACE", "FULL"]
 ComplexityBand = Literal["light", "med", "heavy"]
-PipelineName = Literal["small", "v1", "fallback_single"]
+PipelineName = Literal[
+    "small", "v1", "tool_bootstrap", "incremental", "session_soft_stop", "fallback_single"
+]
 SizeName = Literal["small", "large"]
 BillableState = Literal[
     "completed",
@@ -26,6 +28,8 @@ class BranchUsage:
     billable_state: BillableState
     prompt_tokens: int = 0
     completion_tokens: int = 0
+    # Prompt tokens the provider served from cache — billed at the cached rate.
+    cached_tokens: int = 0
     # agent|judge|verifier|classifier|doer_*|mini_verifier|log_analyst|…
     role: str = "agent"
     meta: dict[str, Any] = field(default_factory=dict)
@@ -37,11 +41,16 @@ class BranchUsage:
 
     @property
     def usage(self) -> dict[str, int]:
-        """AD-14 nested usage shape."""
-        return {
-            "prompt_tokens": int(self.prompt_tokens or 0),
+        """AD-14 nested usage shape; cache hits are additive when present."""
+        prompt = int(self.prompt_tokens or 0)
+        out = {
+            "prompt_tokens": prompt,
             "completion_tokens": int(self.completion_tokens or 0),
         }
+        cached = max(0, min(int(self.cached_tokens or 0), prompt))
+        if cached:
+            out["cached_tokens"] = cached
+        return out
 
 
 @dataclass

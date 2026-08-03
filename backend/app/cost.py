@@ -28,9 +28,34 @@ def rub_price_for(model: str) -> tuple[float, float] | None:
     return float(meta["input_rub"]), float(meta.get("output_rub") or 0)
 
 
-def estimate_upstream_usd(model: str, prompt_tokens: int, completion_tokens: int) -> float:
+def _cache_input_usd(model: str, pin: float) -> float:
+    """Cached prompt rate: catalog cache_input_usd or ~50% of input (A6 typical)."""
+    meta = get_model(model) or {}
+    raw = meta.get("cache_input_usd")
+    if raw is not None:
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            pass
+    return pin * 0.5
+
+
+def estimate_upstream_usd(
+    model: str,
+    prompt_tokens: int,
+    completion_tokens: int,
+    *,
+    cached_tokens: int = 0,
+) -> float:
     pin, pout = price_for(model)
-    return (prompt_tokens / 1_000_000) * pin + (completion_tokens / 1_000_000) * pout
+    cached = max(0, min(int(cached_tokens or 0), int(prompt_tokens or 0)))
+    uncached = max(0, int(prompt_tokens or 0) - cached)
+    pcache = _cache_input_usd(model, pin)
+    return (
+        (uncached / 1_000_000) * pin
+        + (cached / 1_000_000) * pcache
+        + (completion_tokens / 1_000_000) * pout
+    )
 
 
 def usd_to_rub(amount_usd: float, rate: float | None = None) -> float:
@@ -46,10 +71,26 @@ def user_price(upstream_usd: float, markup: float | None = None) -> float:
     return usd_to_rub(upstream_usd * m)
 
 
-def estimate_user_rub(model: str, prompt_tokens: int, completion_tokens: int) -> float:
-    """User charge in RUB for token usage (Polza-aligned when possible)."""
+def estimate_user_rub(
+    model: str,
+    prompt_tokens: int,
+    completion_tokens: int,
+    *,
+    cached_tokens: int = 0,
+) -> float:
+    """User charge in RUB for token usage (measured A6 / markup fallback)."""
     rub = rub_price_for(model)
     if rub is not None:
         pin, pout = rub
-        return (prompt_tokens / 1_000_000) * pin + (completion_tokens / 1_000_000) * pout
-    return user_price(estimate_upstream_usd(model, prompt_tokens, completion_tokens))
+        cached = max(0, min(int(cached_tokens or 0), int(prompt_tokens or 0)))
+        uncached = max(0, int(prompt_tokens or 0) - cached)
+        return (
+            (uncached / 1_000_000) * pin
+            + (cached / 1_000_000) * (pin * 0.5)
+            + (completion_tokens / 1_000_000) * pout
+        )
+    return user_price(
+        estimate_upstream_usd(
+            model, prompt_tokens, completion_tokens, cached_tokens=cached_tokens
+        )
+    )

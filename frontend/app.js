@@ -236,23 +236,9 @@ function rankPackModels(rows) {
 }
 
 function launchStudioFromPack() {
-  const rows = selectedModelObjs();
-  if (!rows.length) {
-    alert("Сначала выбери 2–5 моделей в каталоге");
-    setTab("models");
-    return;
-  }
-  const ranked = rankPackModels(rows);
-  state.teamModels = rows.map((m) => m.id);
-  state.judgeModel = ranked.judge?.id || rows[0].id;
-  state.agentsN = Math.min(4, Math.max(2, rows.length));
-  localStorage.setItem("os_team_models", JSON.stringify(state.teamModels));
-  localStorage.setItem("os_judge_model", state.judgeModel || "");
-  setTab("projects");
-  flashSetup(
-    `Студия: оркестратор ${state.judgeModel} · воркеры ${state.teamModels.filter((id) => id !== state.judgeModel).join(", ") || "—"}`
-  );
-  startNewStudioChat().catch((e) => alert(e.message || String(e)));
+  // Studio editor removed — ZeusCode lives in Cursor/omp via API key.
+  setTab("keys");
+  flashSetup("Студия на сайте отключена. Возьми ключ и model=zeuscode в Cursor/omp.");
 }
 
 function flashSetup(msg) {
@@ -373,7 +359,7 @@ const CLIENT_GUIDES = [
     title: "Fusion",
     steps: [
       "model = zeuscode — режим из Mini App / выбора ниже",
-      "Простой: flash+gemini-3-pro+haiku · Мощный: opus-4-8+v4-pro+3.1-pro (умный 1↔3)",
+      "Простой: flash+gemini+haiku · Мощный: opus+gpt-5.4+deepseek+gemini (фиксированные роли)",
       "Свой набор: отметь до 3 моделей во вкладке «модели»",
       "Cursor: только zeuscode — режим с аккаунта",
     ],
@@ -727,7 +713,12 @@ function buildClientConfig(kind) {
   }
   if (kind === "opencode") {
     const simple = ["deepseek-v4-flash", "gemini-3-pro", "claude-haiku-4-5"];
-    const power = ["claude-opus-4-8", "deepseek-v4-pro", "gemini-3.1-pro"];
+    const power = [
+      "claude-opus-4-6",
+      "gpt-5.4",
+      "deepseek-v4-pro",
+      "gemini-3.1-pro",
+    ];
     const pref = state.fusionPref || "power";
     const custom = selectedModelIds().slice(0, 3);
     const titles = {
@@ -811,13 +802,14 @@ function buildClientConfig(kind) {
   if (kind === "goose") {
     return [
       `# Goose — путь A (built-in openai)`,
+      `# OPENAI_HOST без /v1 — Goose добавляет /v1/chat/completions`,
       `export GOOSE_PROVIDER=openai`,
       `export OPENAI_API_KEY="${key}"`,
-      `export OPENAI_HOST="${root}"`,
+      `export OPENAI_HOST="${host}"`,
       `export GOOSE_MODEL="${fusion}"`,
       ``,
       `# Путь B: ~/.config/goose/custom_providers/zeuscode.json`,
-      `# base_url=${root}/chat/completions · api_key_env=ZEUSCODE_API_KEY`,
+      `# base_url=${root} · api_key_env=ZEUSCODE_API_KEY`,
       ``,
       ...catNote,
       `# goose info -v && goose session`,
@@ -1745,22 +1737,19 @@ function setTab(name) {
   document.querySelectorAll(".nav a[data-tab]").forEach((a) => {
     a.classList.toggle("on", a.dataset.tab === name);
   });
+  // Studio tab removed — ZeusCode API only (keys / models / billing).
+  if (name === "projects") name = "dash";
   ["dash", "models", "projects", "keys", "usage", "billing"].forEach((t) => {
-    $(`tab-${t}`).classList.toggle("hidden", t !== name);
+    const el = $(`tab-${t}`);
+    if (el) el.classList.toggle("hidden", t !== name);
   });
-  const studioFocus = name === "projects";
-  $("view-app")?.classList.toggle("studio-focus", studioFocus);
-  document.body.classList.toggle("studio-focus", studioFocus);
+  $("view-app")?.classList.remove("studio-focus");
+  document.body.classList.remove("studio-focus");
   const appVisible = $("view-app") && !$("view-app").classList.contains("hidden");
-  // Exit lives inside studio canvas (#btn-studio-exit); hide duplicate top chip
   $("nav-cabinet")?.classList.add("hidden");
-  $("nav-bal")?.classList.toggle("hidden", studioFocus || !appVisible);
-  $("nav-logout")?.classList.toggle("hidden", studioFocus || !appVisible);
-  $("nav-logo")?.classList.toggle("hidden", studioFocus);
-  if (name === "projects") {
-    loadStudioMeta();
-    enterStudioShell();
-  }
+  $("nav-bal")?.classList.toggle("hidden", !appVisible);
+  $("nav-logout")?.classList.toggle("hidden", !appVisible);
+  $("nav-logo")?.classList.remove("hidden");
   if (name === "keys") {
     syncBaseUrlFields();
     ensureApiKey().then(() => refreshKeys()).catch(() => refreshKeys());
@@ -4135,7 +4124,7 @@ document.addEventListener("click", async (e) => {
       return;
     }
     if (a === "launch-studio") {
-      launchStudioFromPack();
+      launchStudioFromPack(); // redirects to keys — Studio removed
       return;
     }
   }

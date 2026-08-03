@@ -17,6 +17,26 @@ class Settings(BaseSettings):
     APP_NAME: str = "ZeusCode"
     UPSTREAM_API_KEY: str = ""
     UPSTREAM_BASE_URL: str = ""
+    # A6 (a6api.com) — OpenAI-compatible flat /v1; when set, chat models route here first.
+    A6_API_KEY: str = ""
+    # Optional second A6 token (wider/stable pool). Used when primary cheap pool
+    # returns unavailable / empty after retries — A6 picks another merchant per key.
+    A6_API_KEY_FALLBACK: str = ""
+    # Per model: top cheap suppliers fail → 70% key for N seconds, then retry 30%.
+    A6_PRIMARY_COOLDOWN_S: float = 900.0
+    # Remember dead suppliers per model+key (30% and 70%) so walks pick new ones.
+    A6_DEAD_SUPPLIER_TTL_S: float = 7200.0
+    # Deprecated (unused): was haiku-only recovery ping.
+    A6_PROBE_MODEL: str = ""
+    # How many live enable_groups suppliers to try on the 30% key before 70%.
+    A6_TOP_SUPPLIERS: int = 3
+    # Same walk size on the 70% key (skip known-dead for that lane too).
+    A6_FALLBACK_TOP_SUPPLIERS: int = 3
+    # HTTP retries per pinned supplier before marking that supplier dead.
+    # Walk size (A6_TOP_SUPPLIERS=3) = "three suppliers then 70%".
+    A6_GROUP_ATTEMPTS: int = 1
+    A6_BASE_URL: str = "https://a6api.com/v1"
+    A6_ENABLED: bool = True
     JWT_SECRET: str = "change-me"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_HOURS: int = 72
@@ -75,13 +95,25 @@ class Settings(BaseSettings):
     UPSTREAM_CLAUDE_MAX_TOKENS: int = 7680
     # Kie Claude Messages hybrid: required for Fable/Opus stability (support 2026-07).
     UPSTREAM_CLAUDE_THINKING_FLAG: bool = True
-    # Fusion panel agent answers (FULL/RACE/CASCADE) use this, not tiny 4k/8k caps.
+    # Fusion panel agent answers (FULL/RACE/v1) use this, not tiny 4k/8k caps.
     FUSION_AGENT_MAX_TOKENS: int = 65536
-    # UI Crew: Author(max power) → Critics(+web) → Author revise (not 3-way HTML mash).
+    # CASCADE/FAST (typical prepaid coding) — tighter ceiling for latency/cost.
+    FUSION_SMALL_MAX_TOKENS: int = 8192
+    # Power/custom crew size (Architect·Test·Doers·Mini pool).
+    # Hard cap: ≥4 doers на один turn запрещены (источник «каши из пяти»)
+    FUSION_MAX_PANEL: int = 3
+    # Power: no CASCADE cheap→strong ladder (fixed role models).
+    FUSION_POWER_FIXED_CREW: bool = True
+    # Hot-path LLM micro-router (classify_smart). Off = regex/local only (−1 RTT).
+    FUSION_LLM_CLASSIFY: bool = False
+    # Read-only advisor after verify. Off by default (opt-in via zeus.advisor=true).
+    FUSION_ADVISOR_DEFAULT: bool = False
+    # UI Crew: Author→Critics(+web)→revise. Off by default — only heavy landings
+    # via is_ui_crew_task (bench: trivial UI was 250s / expensive).
     FUSION_UI_CREW_ENABLED: bool = True
     # Retries for the strongest author before failover to weaker panel models.
     FUSION_UI_AUTHOR_RETRIES: int = 2
-    # Optional Tavily for critic web search (empty → DuckDuckGo HTML fallback).
+    # Optional Tavily (free tier / paid). Empty → DuckDuckGo HTML (default free path).
     TAVILY_API_KEY: str = ""
     WEB_RESEARCH_ENABLED: bool = True
     # Standard pack: 3 reference sites for critics (still compressed for tokens).
@@ -89,10 +121,22 @@ class Settings(BaseSettings):
     WEB_RESEARCH_MAX_FETCH: int = 3
     WEB_REFS_CHAR_BUDGET: int = 4200
     WEB_REF_EXTRACT_CHARS: int = 850
+    # Free-first scale: cache SERP/packs; cap concurrent search + browser slots.
+    WEB_SEARCH_CACHE_TTL_S: int = 900
+    WEB_SEARCH_CONCURRENCY: int = 4
+    WEB_BROWSER_GLOBAL_SLOTS: int = 2
+    WEB_SERP_TIMEOUT_S: float = 12.0
     # DJARVIS browser-daemon (optional). Socket preferred; CLI fallback if socket down.
     WEB_BROWSER_ENABLED: bool = True
-    WEB_BROWSER_SOCK: str = "/run/browser-daemon/daemon.sock"
+    # Prefer /tmp (no root). Prod may set /run/browser-daemon/daemon.sock
+    WEB_BROWSER_SOCK: str = "/tmp/browser-daemon/daemon.sock"
     JARVIS_BROWSER_CLI: str = "/usr/local/bin/browser-cli.py"
+    # TZ: research×3 → analyst on every non-light request
+    FUSION_RESEARCH_CREW_ENABLED: bool = True
+    # True = even «привет» runs research (дорого; для отладки)
+    FUSION_RESEARCH_CREW_ALWAYS: bool = False
+    # Live UI verify via browser-daemon + vision after HTML answers
+    FUSION_UI_LIVE_VERIFY: bool = True
     # Thin-fetch escalate + forced live-competitor peeks.
     WEB_BROWSER_MAX_PAGES: int = 2
     WEB_BROWSER_LIVE_COMPETITORS: int = 2

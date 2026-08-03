@@ -9,6 +9,7 @@ Order: Architect Brief → Test Author contracts → isolated parallel doers
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import re
@@ -180,7 +181,11 @@ def pick_mid_doer(
     if not pool:
         return None
     if prefer_role == "doer_ui":
-        for pref in ("gemini-3.1-pro", "gemini-3-pro", "claude-haiku-4-5"):
+        for pref in ("grok-4.3", "claude-haiku-4-5", "gpt-5.4-mini"):
+            if pref in pool:
+                return pref
+    if prefer_role == "doer_logic":
+        for pref in ("gpt-5.4-mini", "deepseek-v4-pro"):
             if pref in pool:
                 return pref
     return max(pool, key=lambda m: (power_score(m), -ready.index(m) if m in ready else 0))
@@ -283,6 +288,8 @@ async def execute_pipeline_v1(
     cancel_event: Any = None,
     complexity: str = "med",
     phase: str = "implement",
+    max_components: int | None = None,
+    role_overrides: dict[str, str] | None = None,
 ) -> ExecuteOutcome:
     """Full Pipeline v1. On Brief failure sets ``meta.degrade_to_fallback``."""
     t0 = time.perf_counter()
@@ -295,6 +302,11 @@ async def execute_pipeline_v1(
     ph = phase if phase in (
         "chat", "ui", "docs", "test", "implement", "debug", "plan", "review"
     ) else "implement"
+    overrides = {
+        str(key): str(value)
+        for key, value in (role_overrides or {}).items()
+        if value
+    }
 
     def _degrade(reason: str) -> ExecuteOutcome:
         return ExecuteOutcome(
@@ -315,7 +327,27 @@ async def execute_pipeline_v1(
             },
         )
 
-    architect = pick_strong_model(stack, unhealthy=unhealthy)
+    # Role-table first: Architect = Opus (≥950), Test Author = GPT
+    try:
+        from app.fusion.roles import assign_role_model
+
+        _pm = product_mode if product_mode in ("simple", "power", "custom") else "power"
+        _arch = assign_role_model(
+            "architect", _pm, stack, unhealthy=unhealthy
+        ).model_id
+        # Soft mid picks are OK for routing meta; v1 Brief still needs ≥950
+        if overrides.get("leader"):
+            architect = overrides["leader"]
+        elif _arch and power_score(_arch) >= TEST_AUTHOR_MIN:
+            architect = _arch
+        else:
+            architect = pick_strong_model(stack, unhealthy=unhealthy)
+        test_author_pref = overrides.get("analyst") or assign_role_model(
+            "test_author", _pm, stack, unhealthy=unhealthy
+        ).model_id
+    except Exception:  # noqa: BLE001
+        architect = pick_strong_model(stack, unhealthy=unhealthy)
+        test_author_pref = overrides.get("analyst")
     if not architect:
         return _degrade("no_strong_architect")
 
@@ -354,11 +386,66 @@ async def execute_pipeline_v1(
         if brief is None:
             return _degrade("invalid_brief")
 
+    if max_components is not None:
+        brief.components = brief.components[: max(1, min(3, int(max_components)))]
+
     if _cancelled(cancel_event):
         return _degrade("cancelled")
 
-    # --- Test Author (Layer B) ---
-    test_author = pick_strong_model(stack, unhealthy=unhealthy)
+    specialist = overrides.get("specialist")
+    specialist_checklist = ""
+    if specialist:
+        if _heuristic_v1():
+            specialist_checklist = "Verify security boundaries and rollback safety."
+            branches.append(
+                BranchUsage(
+                    model_id=specialist,
+                    billable_state="completed",
+                    completion_tokens=4,
+                    role="specialist",
+                    meta={
+                        "heuristic": True,
+                        "checklist_preview": specialist_checklist[:160],
+                    },
+                )
+            )
+        else:
+            raw_specialist, s_live = await _call_json_role(
+                model_id=specialist,
+                system=(
+                    "You are the selected ZeusCode risk specialist. Return concise risk "
+                    "checks for this implementation plan. Do not rewrite the plan."
+                ),
+                user=f"Brief:\n{json.dumps(brief.as_dict(), ensure_ascii=False)[:3500]}",
+                role="specialist",
+                upstream_call=upstream_call,
+                cancel_event=cancel_event,
+                branches=branches,
+            )
+            live.append(s_live)
+            specialist_checklist = raw_specialist.strip()[:2000]
+            if branches and branches[-1].role == "specialist":
+                branches[-1].meta.update(
+                    {
+                        "checklist_preview": specialist_checklist[:160],
+                        "checklist_sha256": hashlib.sha256(
+                            specialist_checklist.encode("utf-8", errors="ignore")
+                        ).hexdigest()[:16],
+                    }
+                )
+        llm_calls += 1
+
+    # --- Test Author (Layer B) — GPT-5.4 from roles, not Opus ---
+    test_author = test_author_pref or pick_mid_doer(
+        stack, unhealthy=unhealthy, prefer_role="doer_logic"
+    )
+    if test_author == architect:
+        # Prefer a distinct mid model when stack allows
+        alt = pick_mid_doer(
+            stack, used={architect}, unhealthy=unhealthy, prefer_role="doer_logic"
+        )
+        if alt:
+            test_author = alt
     tests_by_c: dict[str, list[str]] = {c.id: [] for c in brief.components}
     if test_author:
         if _heuristic_v1():
@@ -374,7 +461,7 @@ async def execute_pipeline_v1(
                     billable_state="completed",
                     prompt_tokens=0,
                     completion_tokens=6,
-                    role="test_author",
+                    role="analyst" if overrides.get("analyst") else "test_author",
                     meta={"heuristic": True},
                 )
             )
@@ -384,9 +471,15 @@ async def execute_pipeline_v1(
                 system=_TEST_AUTHOR_SYSTEM,
                 user=(
                     f"Brief:\n{json.dumps(brief.as_dict(), ensure_ascii=False)[:3500]}\n\n"
+                    + (
+                        f"Specialist risk checklist:\n{specialist_checklist}\n\n"
+                        if specialist_checklist
+                        else ""
+                    )
+                    +
                     "Emit short contract tests JSON."
                 ),
-                role="test_author",
+                role="analyst" if overrides.get("analyst") else "test_author",
                 upstream_call=upstream_call,
                 cancel_event=cancel_event,
                 branches=branches,
@@ -410,7 +503,7 @@ async def execute_pipeline_v1(
     used: set[str] = set()
     doer_assignments: list[tuple[BriefComponent, str]] = []
     for c in brief.components:
-        mid = pick_mid_doer(
+        mid = overrides.get("doer") or pick_mid_doer(
             stack,
             used=used,
             unhealthy=unhealthy,
@@ -434,6 +527,7 @@ async def execute_pipeline_v1(
                 }
                 for c in brief.components
             ],
+            "specialist_risk_checklist": specialist_checklist,
         },
         ensure_ascii=False,
     )[:3500]
@@ -450,6 +544,13 @@ async def execute_pipeline_v1(
             f"Acceptance: {comp.acceptance_one_liner}\n"
             f"files_hint: {comp.files_hint}\n"
             f"YOUR contract checks: {tests_by_c.get(comp.id) or []}\n\n"
+            + (
+                f"Specialist risk checklist (must be honored):\n"
+                f"{specialist_checklist}\n\n"
+                if specialist_checklist
+                else ""
+            )
+            +
             f"User goal: {(user_q or '')[:1500]}\n\n{peer_ban}\n"
             "Return the implementation artifact for YOUR files only. "
             "Prefix each file with `// file: path`."
@@ -539,7 +640,7 @@ async def execute_pipeline_v1(
             red_ids.append(comp.id)
 
     test_fix_ran = False
-    if red_ids and test_author:
+    if red_ids and test_author and max_components is None:
         test_fix_ran = True
         fix_targets = [a for a in artifacts if a.get("component_id") in red_ids]
 

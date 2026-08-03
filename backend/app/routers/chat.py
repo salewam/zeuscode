@@ -6,12 +6,13 @@ Cursor always sends stream=true; fusion streams thinking (no model names) live.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import time
 from collections.abc import AsyncIterator
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,8 +26,8 @@ from app.deps import get_user_by_api_key
 from app.model_policy import assert_model_allowed
 from app.models import ApiKey, UsageLog, User
 from app.openai_tools import (
-    pick_agent_solo_model,
     prepare_agent_messages,
+    repair_completion_tool_calls,
     request_wants_tools,
 )
 from app.usage_analytics import (
@@ -116,19 +117,172 @@ class ChatCompletionIn(BaseModel):
     tool_choice: Any | None = None
 
 
+def _automatic_tool_session_id(
+    *,
+    api_key_identity: str,
+    messages: list[dict[str, Any]],
+) -> str | None:
+    """Stable privacy-safe task key for tool clients that omit a session id."""
+    identity = str(api_key_identity or "").strip()
+    if not identity:
+        return None
+    rows = list(messages or [])
+    last_user_index = max(
+        (
+            index
+            for index, message in enumerate(rows)
+            if str(message.get("role") or "").strip().lower() == "user"
+        ),
+        default=-1,
+    )
+    has_current_tool_result = any(
+        str(message.get("role") or "").strip().lower() in ("tool", "function")
+        for message in rows[last_user_index + 1 :]
+    )
+    if has_current_tool_result:
+        for message in rows:
+            if str(message.get("role") or "").strip().lower() != "assistant":
+                continue
+            calls = message.get("tool_calls")
+            if not isinstance(calls, list):
+                continue
+            for call in calls:
+                call_id = str(call.get("id") or "").strip() if isinstance(call, dict) else ""
+                if call_id:
+                    return _tool_call_alias_session_id(identity, call_id)
+    # Tool clients such as mini-swe append a synthetic user message after an
+    # assistant accidentally returns prose. That message is a retry of the
+    # existing tool turn, not a new task. Keep the original tool-call alias so
+    # the retry restores its crew state and mandatory-tool contract.
+    last_user_content = rows[last_user_index].get("content") if last_user_index >= 0 else ""
+    last_user_text = (
+        last_user_content
+        if isinstance(last_user_content, str)
+        else str(last_user_content or "")
+    )
+    normalized_retry = " ".join(last_user_text.lower().split())
+    is_tool_protocol_retry = (
+        "tool call error:" in normalized_retry
+        and (
+            "no tool calls found" in normalized_retry
+            or "must include at least one tool call" in normalized_retry
+        )
+    )
+    if is_tool_protocol_retry:
+        for message in rows[:last_user_index]:
+            if str(message.get("role") or "").strip().lower() != "assistant":
+                continue
+            calls = message.get("tool_calls")
+            if not isinstance(calls, list):
+                continue
+            for call in calls:
+                call_id = str(call.get("id") or "").strip() if isinstance(call, dict) else ""
+                if call_id:
+                    return _tool_call_alias_session_id(identity, call_id)
+    first_task = ""
+    task_rows = rows[last_user_index:] if last_user_index >= 0 else rows
+    for message in task_rows:
+        if str(message.get("role") or "").strip().lower() != "user":
+            continue
+        content = message.get("content")
+        if isinstance(content, str):
+            text = content.strip()
+        elif isinstance(content, list):
+            text = "\n".join(
+                str(part.get("text") or part.get("content") or "")
+                if isinstance(part, dict)
+                else str(part or "")
+                for part in content
+            ).strip()
+        else:
+            text = str(content or "").strip()
+        if text:
+            first_task = " ".join(text.split())
+            break
+    if not first_task:
+        return None
+    digest = hashlib.sha256(
+        f"{identity}\0{first_task}".encode("utf-8", errors="ignore")
+    ).hexdigest()
+    return f"auto-tool-{digest[:48]}"
+
+
+def _tool_call_alias_session_id(api_key_identity: str, tool_call_id: str) -> str:
+    digest = hashlib.sha256(
+        f"{str(api_key_identity).strip()}\0tool-call\0{str(tool_call_id).strip()}".encode(
+            "utf-8", errors="ignore"
+        )
+    ).hexdigest()
+    return f"auto-tool-call-{digest[:48]}"
+
+
+def _namespace_session_id(api_key_identity: str, session_id: str) -> str:
+    digest = hashlib.sha256(
+        f"{str(api_key_identity).strip()}\0session\0{str(session_id).strip()}".encode(
+            "utf-8", errors="ignore"
+        )
+    ).hexdigest()
+    return f"key-session-{digest[:48]}"
+
+
+def _namespace_project_scope(api_key_identity: str, project_id: str) -> str:
+    """Scope persisted project memory to one API key.
+
+    ``project_id`` is a free-form client string, so keying the store on it
+    directly would let any caller read another tenant's file map by guessing
+    the name.
+    """
+    digest = hashlib.sha256(
+        f"{str(api_key_identity).strip()}\0project\0{str(project_id).strip()}".encode(
+            "utf-8", errors="ignore"
+        )
+    ).hexdigest()
+    return f"key-project-{digest[:48]}"
+
+
+def _first_emitted_tool_call_id(data: dict[str, Any]) -> str:
+    try:
+        message = (data.get("choices") or [{}])[0].get("message") or {}
+        calls = message.get("tool_calls") or []
+        for call in calls:
+            call_id = str(call.get("id") or "").strip() if isinstance(call, dict) else ""
+            if call_id:
+                return call_id
+    except (AttributeError, IndexError, TypeError):
+        pass
+    return ""
+
+
 async def _apply_sticky_hint(
     db: AsyncSession,
     zeus: dict[str, Any] | None,
     *,
     session_header: str | None,
+    api_key_identity: str = "",
+    messages: list[dict[str, Any]] | None = None,
+    tools_enabled: bool = False,
 ) -> tuple[dict[str, Any], str | None]:
     """Load sticky Leader hint into zeus (never Path). Returns (zeus, session_id)."""
     from app.fusion import extract_session_id, get_sticky, sticky_leader_hint
 
     out = dict(zeus) if isinstance(zeus, dict) else {}
+    # Crew counters/evidence are server-owned. Never trust a client replay of
+    # crew_state, which could reset the session budget or forge a GREEN gate.
+    out.pop("crew_state", None)
+    out.pop("memory_scope", None)
+    raw_project = str(out.get("project_id") or "").strip()
+    if raw_project and str(api_key_identity or "").strip():
+        out["memory_scope"] = _namespace_project_scope(api_key_identity, raw_project)
     sid = extract_session_id(header_value=session_header, zeus=out)
     if sid:
-        out.setdefault("session_id", sid)
+        sid = _namespace_session_id(api_key_identity, sid)
+    elif tools_enabled:
+        sid = _automatic_tool_session_id(
+            api_key_identity=api_key_identity,
+            messages=list(messages or []),
+        )
+    if sid:
+        out["session_id"] = sid
     if not sid:
         return out, None
     try:
@@ -141,6 +295,12 @@ async def _apply_sticky_hint(
             clar = state.phase_meta.get("clarify")
             if isinstance(clar, dict) and "clarify_state" not in out:
                 out["clarify_state"] = clar
+            art = state.phase_meta.get("plan_artifact")
+            if isinstance(art, dict) and art.get("content") and "plan_artifact" not in out:
+                out["plan_artifact"] = art
+            crew = state.phase_meta.get("crew")
+            if isinstance(crew, dict):
+                out["crew_state"] = crew
     except Exception:  # noqa: BLE001
         pass
     return out, sid
@@ -153,7 +313,8 @@ async def _observe_and_persist_sticky(
     session_id: str | None,
 ) -> None:
     """Epic4 edge: metrics + sticky write after FusionResult is known."""
-    from app.fusion import observe_request, put_sticky
+    from app.fusion import observe_request
+    from app.fusion.session import atomic_merge_sticky
     from app.fusion.metrics import load_fusion_flags
 
     fr = data.get("_fusion_result")
@@ -183,18 +344,50 @@ async def _observe_and_persist_sticky(
 
     try:
         meta: dict[str, Any] = {"phase": phase, "routed_by": routed_by}
-        # Preserve clarifier interview across turns (ask → confirm → done)
+        incoming_crew = onestack.get("crew_state") or data.get("crew_state")
+        # Preserve clarifier interview across turns (ask → confirm → plan → done)
         clar = onestack.get("clarify_state") or onestack.get("clarify")
         if isinstance(clar, dict):
             meta["clarify"] = clar
         elif isinstance(data.get("clarify_state"), dict):
             meta["clarify"] = data["clarify_state"]
-        await put_sticky(
+        # omp-style plan artifact (sticky, not only chat text)
+        art = onestack.get("plan_artifact") or data.get("plan_artifact")
+        if (
+            isinstance(art, dict)
+            and art.get("content")
+        ):
+            meta["plan_artifact"] = {
+                "version": max(1, min(10, int(art.get("version") or 1))),
+                "kind": str(art.get("kind") or "crew_plan_digest")[:80],
+                "content": str(art.get("content") or "")[:6000],
+            }
+        elif isinstance(clar, dict) and clar.get("dev_plan"):
+            try:
+                from app.fusion.plan_artifact import plan_artifact_from_clarify_state
+
+                built = plan_artifact_from_clarify_state(clar)
+                if built:
+                    meta["plan_artifact"] = built
+            except Exception:  # noqa: BLE001
+                pass
+        crew = incoming_crew
+        if isinstance(crew, dict):
+            meta["crew"] = crew
+        budgets = (
+            onestack.get("crew_budgets")
+            if isinstance(onestack.get("crew_budgets"), dict)
+            else {}
+        )
+        await atomic_merge_sticky(
             db,
             session_id,
             leader=str(leader) if leader else None,
             stack=list(stack) if stack else None,
             phase_meta=meta,
+            spent_internal_branches=int(
+                budgets.get("spent_internal_branches") or 0
+            ),
         )
     except Exception:  # noqa: BLE001
         pass
@@ -240,7 +433,7 @@ def _sse_from_completion(data: dict[str, Any], *, chunk_size: int = 48) -> list[
     if not isinstance(content, str):
         content = str(content)
     tool_calls = msg.get("tool_calls") if isinstance(msg.get("tool_calls"), list) else None
-    finish = choice.get("finish_reason") or ("tool_calls" if tool_calls else "stop")
+    finish = "tool_calls" if tool_calls else (choice.get("finish_reason") or "stop")
 
     lines = [_sse_pack(cid=cid, model=model, created=created, delta={"role": "assistant"})]
     if content.strip():
@@ -314,17 +507,57 @@ def _branch_rows(fr: Any) -> list[dict[str, Any]]:
         if isinstance(b, dict):
             rows.append(b)
             continue
-        rows.append(
-            {
-                "model": getattr(b, "model_id", None),
-                "model_id": getattr(b, "model_id", None),
-                "billable_state": getattr(b, "billable_state", "completed"),
-                "prompt_tokens": int(getattr(b, "prompt_tokens", 0) or 0),
-                "completion_tokens": int(getattr(b, "completion_tokens", 0) or 0),
-                "role": getattr(b, "role", "agent"),
-            }
+        prompt_tokens = int(getattr(b, "prompt_tokens", 0) or 0)
+        cached_tokens = max(
+            0, min(int(getattr(b, "cached_tokens", 0) or 0), prompt_tokens)
         )
+        row = {
+            "model": getattr(b, "model_id", None),
+            "model_id": getattr(b, "model_id", None),
+            "billable_state": getattr(b, "billable_state", "completed"),
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": int(getattr(b, "completion_tokens", 0) or 0),
+            "role": getattr(b, "role", "agent"),
+        }
+        if cached_tokens:
+            row["cached_tokens"] = cached_tokens
+            row["usage"] = {
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": int(getattr(b, "completion_tokens", 0) or 0),
+                "cached_tokens": cached_tokens,
+            }
+        rows.append(row)
     return rows
+
+
+def _cached_tokens(data: dict[str, Any]) -> int:
+    """Cache hits for this response — per branch on the crew path, else usage."""
+    fr = _fusion_result_from_data(data)
+    if fr is not None:
+        total = 0
+        for b in _branch_rows(fr):
+            if str(b.get("billable_state") or "completed") in (
+                "cancelled_no_tokens",
+                "disaster",
+                "empty",
+            ):
+                continue
+            usage = b.get("usage") if isinstance(b.get("usage"), dict) else {}
+            try:
+                total += int(usage.get("cached_tokens") or b.get("cached_tokens") or 0)
+            except (TypeError, ValueError):
+                continue
+        if total:
+            return total
+    usage = data.get("usage") if isinstance(data.get("usage"), dict) else {}
+    try:
+        return int(
+            (usage.get("prompt_tokens_details") or {}).get("cached_tokens")
+            or usage.get("cached_tokens")
+            or 0
+        )
+    except (TypeError, ValueError):
+        return 0
 
 
 def _is_fusion_completion(data: dict[str, Any]) -> bool:
@@ -338,13 +571,39 @@ def _is_fusion_completion(data: dict[str, Any]) -> bool:
     return path in ("FAST", "CASCADE", "RACE", "FULL")
 
 
+def _is_disaster(data: dict[str, Any], fr: Any | None = None) -> bool:
+    """TZ §5.2: disaster → no user charge."""
+    if fr is None:
+        fr = _fusion_result_from_data(data)
+    if fr is not None:
+        if bool(getattr(fr, "disaster", False)):
+            return True
+        if isinstance(fr, dict) and fr.get("disaster"):
+            return True
+        code = getattr(fr, "disaster_code", None) or (
+            fr.get("disaster_code") if isinstance(fr, dict) else None
+        )
+        if code:
+            return True
+    onestack = data.get("onestack") if isinstance(data.get("onestack"), dict) else {}
+    if onestack.get("disaster") or onestack.get("disaster_code"):
+        return True
+    err = data.get("error")
+    if isinstance(err, dict) and err.get("type") == "fusion_disaster":
+        return True
+    return False
+
+
 def _charge_amounts(data: dict[str, Any], bill_model: str) -> tuple[float, float, int, int]:
     """Bill from FusionResult branches when present (AD-8 / AD-14 / FR-19).
 
     ``cancelled_no_tokens`` → ₽0. Path is never inferred from token totals alone.
     Fusion completions never use the legacy ``onestack.agents``-only charge path.
+    Disaster → ₽0 (TZ: за disaster деньги не списываются).
     """
     fr = _fusion_result_from_data(data)
+    if _is_disaster(data, fr):
+        return 0.0, 0.0, 0, 0
     if fr is not None:
         upstream_cost = 0.0
         charged = 0.0
@@ -355,13 +614,19 @@ def _charge_amounts(data: dict[str, Any], bill_model: str) -> tuple[float, float
             usage = b.get("usage") if isinstance(b.get("usage"), dict) else {}
             pt = int(b.get("prompt_tokens") or usage.get("prompt_tokens") or 0)
             ct = int(b.get("completion_tokens") or usage.get("completion_tokens") or 0)
-            if state == "cancelled_no_tokens":
+            if state in ("cancelled_no_tokens", "disaster", "empty"):
                 continue
             mid = b.get("model_id") or b.get("model") or bill_model
             prompt += pt
             completion += ct
-            upstream_cost += estimate_upstream_usd(str(mid), pt, ct)
-            charged += estimate_user_rub(str(mid), pt, ct)
+            cached = int(
+                usage.get("cached_tokens")
+                or b.get("cached_tokens")
+                or (usage.get("prompt_tokens_details") or {}).get("cached_tokens")
+                or 0
+            )
+            upstream_cost += estimate_upstream_usd(str(mid), pt, ct, cached_tokens=cached)
+            charged += estimate_user_rub(str(mid), pt, ct, cached_tokens=cached)
         return upstream_cost, charged, prompt, completion
 
     usage = data.get("usage") or {}
@@ -446,6 +711,43 @@ def _sync_onestack_from_fusion_result(data: dict[str, Any]) -> None:
         onestack["branches"] = branches
 
 
+_EMPTY_FALLBACK = (
+    "ZeusCode не получил ответ от модели (пустой upstream). "
+    "Повтори запрос — при повторе система сменит маршрут."
+)
+
+
+def _ensure_non_empty_completion(data: dict[str, Any]) -> bool:
+    """TZ: пустое наружу не уходит. Returns True if content was empty before fix."""
+    try:
+        choice = (data.get("choices") or [{}])[0] or {}
+        msg = choice.get("message") if isinstance(choice.get("message"), dict) else {}
+        content = msg.get("content")
+        tools = msg.get("tool_calls") if isinstance(msg.get("tool_calls"), list) else None
+        text = content if isinstance(content, str) else ("" if content is None else str(content))
+        if tools:
+            choice["finish_reason"] = "tool_calls"
+            return False
+        if text.strip():
+            return False
+        # Structured disaster error already explains — still need non-empty body
+        err = data.get("error")
+        if isinstance(err, dict) and err.get("message"):
+            fill = str(err.get("message"))
+        else:
+            fill = _EMPTY_FALLBACK
+        if "choices" not in data or not data["choices"]:
+            data["choices"] = [{"index": 0, "message": {"role": "assistant", "content": fill}, "finish_reason": "stop"}]
+        else:
+            data["choices"][0].setdefault("message", {"role": "assistant"})
+            data["choices"][0]["message"]["content"] = fill
+            data["choices"][0]["finish_reason"] = data["choices"][0].get("finish_reason") or "stop"
+        data["_empty_guard"] = True
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 async def _bill_and_enrich(
     *,
     db: AsyncSession,
@@ -457,7 +759,25 @@ async def _bill_and_enrich(
     bill_model: str,
 ) -> dict[str, Any]:
     _sync_onestack_from_fusion_result(data)
+    was_empty = _ensure_non_empty_completion(data)
+    disaster = _is_disaster(data)
+    try:
+        from app.fusion.metrics import note_response_emptiness, note_token_profile
+
+        note_response_emptiness(empty=was_empty, disaster=disaster)
+    except Exception:  # noqa: BLE001
+        pass
     upstream_cost, charged, prompt, completion = _charge_amounts(data, bill_model)
+    try:
+        from app.fusion.metrics import note_token_profile
+
+        note_token_profile(
+            prompt_tokens=prompt,
+            completion_tokens=completion,
+            cached_tokens=_cached_tokens(data),
+        )
+    except Exception:  # noqa: BLE001
+        pass
 
     if user.balance_usd < charged:
         raise HTTPException(402, f"Недостаточно средств (~{charged:.2f} ₽)")
@@ -749,44 +1069,31 @@ async def _fusion_live_sse(
 @router.post("/v1/chat/completions")
 async def chat_completions(
     body: ChatCompletionIn,
+    request: Request,
     auth: tuple[User, ApiKey] = Depends(get_user_by_api_key),
     db: AsyncSession = Depends(get_db),
     x_zeus_session_id: str | None = Header(default=None, alias="X-Zeus-Session-Id"),
+    x_zeus_client: str | None = Header(default=None, alias="X-Zeus-Client"),
 ):
     user, api_key = auth
     timer = RequestTimer()
     messages = [m.model_dump(exclude_none=True) for m in body.messages]
+    from app.client_hands import apply_client_hands_policy, detect_external_coding_client
+
+    _client = detect_external_coding_client(
+        user_agent=request.headers.get("user-agent"),
+        client_header=x_zeus_client,
+        messages=messages,
+    )
     from app.claude_gateway import resolve_model_id
 
     model = resolve_model_id(body.model or settings.DEFAULT_MODEL)
-    wants_tools = request_wants_tools(body.tools)
-
     from app.fusion import is_fusion_model as _is_fusion_early
 
-    # OpenCode/Cline need real tool_calls. Fusion strips tools → remount to a solo coder.
-    if wants_tools and (
-        _is_fusion_early(model)
-        or model
-        in {
-            "ultra-mode",
-            "ultra",
-            "onestack-ultra",
-            "studio-light",
-            "studio-standard",
-            "studio-ultra",
-            "studio-premium",
-        }
-    ):
-        preferred = list(body.models or [])
-        if isinstance(body.zeus, dict) and isinstance(body.zeus.get("models"), list):
-            preferred = preferred or list(body.zeus["models"])
-        reroute = pick_agent_solo_model(preferred)
-        import logging as _logging
+    if _client or _is_fusion_early(model):
+        messages = apply_client_hands_policy(messages, client=_client or "zeuscode")
 
-        _logging.getLogger("zeus.chat").info(
-            "agent_tools_reroute from=%s to=%s", model, reroute
-        )
-        model = reroute
+    wants_tools = request_wants_tools(body.tools)
 
     if user.balance_usd <= 0:
         await _log_chat(
@@ -832,7 +1139,8 @@ async def chat_completions(
 
     from app.fusion import apply_user_fusion_pref, is_fusion_model, run_fusion
 
-    if is_fusion_model(model) and body.stream:
+    # Live thinking SSE is text-only. With tools: buffer crew → fake-stream tool_calls.
+    if is_fusion_model(model) and body.stream and not wants_tools:
         zeus = body.zeus if isinstance(body.zeus, dict) else {}
         panel = body.models or zeus.get("models")
         zeus, panel = apply_user_fusion_pref(user, zeus=zeus, models=list(panel) if panel else None)
@@ -855,7 +1163,14 @@ async def chat_completions(
                 error=str(e)[:800],
             )
             raise HTTPException(429, str(e)) from e
-        zeus, sid = await _apply_sticky_hint(db, zeus, session_header=x_zeus_session_id)
+        zeus, sid = await _apply_sticky_hint(
+            db,
+            zeus,
+            session_header=x_zeus_session_id,
+            api_key_identity=str(api_key.id),
+            messages=messages,
+            tools_enabled=False,
+        )
         judge = zeus.get("judge") if isinstance(zeus, dict) else None
         return StreamingResponse(
             _fusion_live_sse(
@@ -904,7 +1219,14 @@ async def chat_completions(
                 check_rate_limit()
             except RateLimitExceeded as e:
                 raise HTTPException(429, str(e)) from e
-            zeus, sid = await _apply_sticky_hint(db, zeus, session_header=x_zeus_session_id)
+            zeus, sid = await _apply_sticky_hint(
+                db,
+                zeus,
+                session_header=x_zeus_session_id,
+                api_key_identity=str(api_key.id),
+                messages=messages,
+                tools_enabled=wants_tools,
+            )
             judge = zeus.get("judge") if isinstance(zeus, dict) else None
             data = await run_fusion(
                 messages=messages,
@@ -913,30 +1235,28 @@ async def chat_completions(
                 judge=str(judge) if judge else None,
                 model_id=model,
                 zeus=zeus if isinstance(zeus, dict) else None,
+                tools=body.tools if wants_tools else None,
+                tool_choice=body.tool_choice if wants_tools else None,
             )
             await _observe_and_persist_sticky(db, data, session_id=sid)
+            if wants_tools:
+                emitted_call_id = _first_emitted_tool_call_id(data)
+                if emitted_call_id:
+                    alias_sid = _tool_call_alias_session_id(
+                        str(api_key.id), emitted_call_id
+                    )
+                    if alias_sid != sid:
+                        await _observe_and_persist_sticky(
+                            db, data, session_id=alias_sid
+                        )
             mode = "fusion"
             bill_model = data.get("_bill_model") or settings.DEFAULT_MODEL
         elif model in studio_ids:
-            from app.orchestrate import normalize_mode, run_studio
-
-            user_text = ""
-            history = []
-            for m in messages:
-                if m.get("role") in ("user", "assistant") and m.get("content"):
-                    history.append({"role": m["role"], "content": m["content"]})
-                if m.get("role") == "user":
-                    c = m.get("content", "")
-                    user_text = c if isinstance(c, str) else str(c)
-            hist = history[:-1] if history and history[-1]["role"] == "user" else history
-            data = await run_studio(
-                user_text=user_text or "Сделай минимальный рабочий пример.",
-                intent="feature",
-                mode=normalize_mode(model),
-                history=hist,
+            raise HTTPException(
+                410,
+                "Studio / ultra-mode сняты. Используй model=zeuscode (ZeusCode) "
+                "или обычную модель из каталога.",
             )
-            mode = (data.get("onestack") or {}).get("mode") or "ultra"
-            bill_model = data.get("_bill_model") or settings.ULTRA_MODEL
         else:
             meta = get_model(model)
             if meta and not meta.get("ready"):
@@ -1015,6 +1335,9 @@ async def chat_completions(
         )
         raise
 
+    if wants_tools and isinstance(data, dict):
+        data = repair_completion_tool_calls(data, body.tools)
+
     data = await _bill_and_enrich(
         db=db,
         user=user,
@@ -1086,9 +1409,11 @@ class ResponsesCreateIn(BaseModel):
 @router.post("/v1/responses")
 async def create_response(
     body: ResponsesCreateIn,
+    request: Request,
     auth: tuple[User, ApiKey] = Depends(get_user_by_api_key),
     db: AsyncSession = Depends(get_db),
     x_zeus_session_id: str | None = Header(default=None, alias="X-Zeus-Session-Id"),
+    x_zeus_client: str | None = Header(default=None, alias="X-Zeus-Client"),
 ):
     """
     Codex CLI (wire_api=responses) + OmniRoute bridge.
@@ -1112,9 +1437,11 @@ async def create_response(
     )
     result = await chat_completions(
         chat_body,
+        request,
         auth=auth,
         db=db,
         x_zeus_session_id=x_zeus_session_id,
+        x_zeus_client=x_zeus_client,
     )
     if isinstance(result, StreamingResponse):
         # Fusion stream path shouldn't run with stream=False; safety net
@@ -1157,9 +1484,11 @@ class AnthropicMessagesIn(BaseModel):
 @router.post("/v1/messages")
 async def anthropic_messages(
     body: AnthropicMessagesIn,
+    request: Request,
     auth: tuple[User, ApiKey] = Depends(get_user_by_api_key),
     db: AsyncSession = Depends(get_db),
     x_zeus_session_id: str | None = Header(default=None, alias="X-Zeus-Session-Id"),
+    x_zeus_client: str | None = Header(default=None, alias="X-Zeus-Client"),
 ):
     """
     Claude Code: ANTHROPIC_BASE_URL=https://zeuscode.ru (без /v1)
@@ -1168,27 +1497,32 @@ async def anthropic_messages(
     from app.anthropic_compat import (
         anthropic_to_openai_messages,
         anthropic_to_sse_events,
+        anthropic_tools_to_openai,
         chat_completion_to_anthropic,
     )
 
     from app.claude_gateway import resolve_model_id
+    from app.openai_tools import repair_completion_tool_calls, request_wants_tools
 
     messages = anthropic_to_openai_messages(body.messages, system=body.system)
+    tools_oai = anthropic_tools_to_openai(body.tools)
+    wants_tools = request_wants_tools(tools_oai)
     chat_body = ChatCompletionIn(
         model=resolve_model_id(body.model or "zeuscode"),
         messages=[ChatMessage(**m) for m in messages],
         stream=False,
         temperature=body.temperature,
         max_tokens=body.max_tokens,
-        # Anthropic tools shape ≠ OpenAI; ignore until mapped
-        tools=None,
-        tool_choice=None,
+        tools=tools_oai if wants_tools else None,
+        tool_choice=body.tool_choice if wants_tools else None,
     )
     result = await chat_completions(
         chat_body,
+        request,
         auth=auth,
         db=db,
         x_zeus_session_id=x_zeus_session_id,
+        x_zeus_client=x_zeus_client,
     )
     if isinstance(result, StreamingResponse):
         raise HTTPException(
@@ -1198,6 +1532,8 @@ async def anthropic_messages(
         )
     if not isinstance(result, dict):
         raise HTTPException(502, "Anthropic bridge: unexpected chat result")
+    if wants_tools:
+        result = repair_completion_tool_calls(result, tools_oai)
     msg = chat_completion_to_anthropic(result, model=chat_body.model)
     if body.stream:
         return StreamingResponse(

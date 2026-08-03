@@ -19,7 +19,7 @@ def test_raise_upstream_rate_limit_logs_and_status(caplog):
     with caplog.at_level(logging.ERROR, logger="zeus.upstream"):
         with pytest.raises(UpstreamError) as ei:
             _raise_upstream_http_error(
-                "https://api.kie.ai/demo/v1/chat/completions",
+                "https://a6api.com/v1/chat/completions",
                 429,
                 {"msg": "Too Many Requests"},
             )

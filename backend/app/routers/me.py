@@ -14,6 +14,7 @@ from app.fusion import (
     parse_fusion_models_json,
 )
 from app.fusion.metrics import normalize_effort
+from app.fusion.roles import MODEL_ALIAS_INFO, resolve_model_aliases, resolve_stack
 from app.models import UsageLog, User
 
 router = APIRouter(prefix="/me", tags=["me"])
@@ -32,26 +33,40 @@ async def get_fusion_pref(user: User = Depends(get_current_user)):
     models = parse_fusion_models_json(getattr(user, "fusion_models", None))
     effort = normalize_effort(getattr(user, "fusion_effort", None))
     kill_switch = bool(getattr(user, "fusion_kill_switch", 0))
+    stack = resolve_stack(
+        mode,
+        panel=models if mode == "custom" else None,
+        custom_models=models if mode == "custom" else None,
+    )
+    aliases = resolve_model_aliases(mode, stack)
+    alias_cards = [
+        {**info, "model": aliases.get(info["id"])}
+        for info in MODEL_ALIAS_INFO
+        if aliases.get(info["id"])
+    ]
     return {
         "mode": mode,
         "models": models,
+        "stack": stack,
         "effort": effort,
         "kill_switch": kill_switch,
+        "model_aliases": aliases,
+        "alias_cards": alias_cards,
         "modes": [
             {
                 "id": "simple",
                 "title": "Простой",
-                "hint": "deepseek-v4-flash · gemini-3-pro · haiku-4-5 (умный 1↔3)",
+                "hint": "gpt-5.4-mini · deepseek-pro · haiku-4-5 (умный 1↔3)",
             },
             {
                 "id": "power",
                 "title": "Мощный",
-                "hint": "opus-4-8 · deepseek-v4-pro · gemini-3.1-pro (умный 1↔3)",
+                "hint": "opus-4.6 · gpt-5.4-mini · deepseek-pro · grok-4.3 (A6 live)",
             },
             {
                 "id": "custom",
                 "title": "Свой набор",
-                "hint": "Выбери до 3 моделей; роутинг 1↔3 внутри набора",
+                "hint": "Выбери до 5 моделей; роли как в мощном",
             },
         ],
         "effort_levels": ["low", "normal", "high", "max"],
