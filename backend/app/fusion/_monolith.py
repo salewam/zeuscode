@@ -1,10 +1,10 @@
 """Zeus Fusion — панель до 3 доеров + judge.
 
 Product modes (``zeus.mode`` / user.fusion_pref):
-  • simple — gpt-5.4-mini + deepseek-v4-pro + claude-haiku-4-5
-  • power  — opus-4.6 · gpt-5.4-mini · deepseek-v4-pro · grok-4.3
-             (без flash; роли фиксированы)
-  • custom — свои models[] (до FUSION_MAX_PANEL = 3); тот же role routing
+  • standard — готовый стек ZeusCode (обычно Combo-3)
+  • manual   — свой выбор 1 или 3 моделей → solo / combo3 по числу
+  • legacy simple/power/custom/combo2/combo3 — migration → standard|manual (Combo-2 rejected)
+Roles inside combo are assigned by power score (not click order).
 
 Auto stack/task: local/regex classify by default (−1 RTT). Opt-in LLM
 micro-router via zeus.llm_classify / FUSION_LLM_CLASSIFY (JSON → regex
@@ -41,26 +41,21 @@ from app.catalog import get_model, public_catalog
 from app.model_policy import model_allowed_for_user
 
 from .brief import build_satellite_brief, satellite_messages_from_brief
-from .types import BranchUsage, FusionResult
-
-# Path enum (AD-15). Brownfield stack size stays fast|full internally.
-_STACK_TO_PATH = {"fast": "FAST", "full": "FULL"}
-
-# Closed routed_by values used by brownfield today (FR-28 / FR-37). Epic 2 adds policy_*.
-_ROUTED_BY_CLOSED = frozenset(
-    {
-        "legacy_fast_alias",
-        "legacy_full_alias",
-        "forced_fast",
-        "forced_full",
-        "compat_1to3_auto",
-        "compat_1to3_classify",
-        "compat_1to3_classify_local",
-        "mode_ignored",
-        # Keep accepting legacy bridge labels during migration
-        "auto",
-        "forced",
-    }
+from .runtime.pack import (
+    agents_to_branches,
+    build_fusion_result,
+    fusion_result_to_dict,
+    infer_billable_state,
+    pack_completion as _pack_completion,
+)
+from .runtime.route import (
+    DEFAULT_PRODUCT_MODE,
+    PUBLIC_FUSION_MODEL_ID,
+    PRODUCT_MODES,
+    build_runtime_route,
+    normalize_product_mode,
+    resolve_show_thinking,
+    stack_to_path,
 )
 
 _SCRUB_PLACEHOLDER = "[REDACTED]"
@@ -125,9 +120,6 @@ def _client_bash_call(
         }
     return None
 
-# Public id for clients: ``zeuscode``. Legacy ``zeus/fusion*`` kept as aliases.
-PUBLIC_FUSION_MODEL_ID = "zeuscode"
-
 FUSION_IDS = frozenset(
     {
         "zeuscode",
@@ -149,10 +141,6 @@ FUSION_IDS = frozenset(
         "fusion-custom",
     }
 )
-
-# User-facing product modes (TG / cabinet / zeus.mode)
-PRODUCT_MODES = frozenset({"simple", "power", "custom"})
-DEFAULT_PRODUCT_MODE = "power"
 
 # Простой — живые дешёвые на A6 (flash/gemini-3 пустые у поставщика)
 _SIMPLE_PANEL = (
@@ -247,43 +235,17 @@ def is_fusion_model(model_id: str | None) -> bool:
     return mid in FUSION_IDS
 
 
-def normalize_product_mode(raw: str | None) -> str | None:
-    """Map aliases → simple|power|custom, or None if not a product mode."""
-    m = (raw or "").strip().lower()
-    if m in PRODUCT_MODES:
-        return m
-    if m in ("lite", "easy", "cheap"):
-        return "simple"
-    if m in ("auto", "smart", "мощный", "powerful"):
-        return "power"
-    if m in ("pick", "manual", "свой"):
-        return "custom"
-    return None
-
-
 def product_mode_from_model_id(model_id: str | None) -> str | None:
     mid = (model_id or "").strip().lower()
     if mid in ("zeuscode-simple", "zeus/fusion-simple", "fusion-simple"):
-        return "simple"
+        return "manual"
     if mid in ("zeuscode-power", "zeus/fusion-power", "fusion-power"):
-        return "power"
+        return "standard"
     if mid in ("zeuscode-custom", "zeus/fusion-custom", "fusion-custom"):
-        return "custom"
+        return "manual"
     if mid in ("zeuscode", "zeus/fusion", "fusion", "zeus-fusion"):
         return None  # defer to zeus.mode / user pref
     return None
-
-
-def stack_to_path(stack: str | None) -> str:
-    """Map brownfield stack size → Path enum (AD-15). Unknown → CASCADE-safe FULL? → FAST."""
-    s = (stack or "").strip().lower()
-    if s.startswith("fast"):
-        return "FAST"
-    if s.startswith("full"):
-        return "FULL"
-    if s in ("cascade", "race"):
-        return s.upper()
-    return _STACK_TO_PATH.get(s, "FAST")
 
 
 def resolve_routing(
@@ -300,7 +262,7 @@ def resolve_routing(
 def resolve_routing_ex(
     model_id: str | None, zeus: dict[str, Any] | None, user_q: str
 ) -> tuple[str, str, str]:
-    """Return (stack fast|full, routed_by, product_mode simple|power|custom).
+    """Return (stack fast|full, routed_by, product_mode standard|manual).
 
     Legacy model-id aliases never share codes with ``zeus.mode`` force (FR-37 / AD-15).
     """
@@ -311,26 +273,26 @@ def resolve_routing_ex(
 
     # Legacy aliases (model id) — FR-37
     if mid in ("zeus/fusion-fast", "fusion-fast"):
-        return "fast", "legacy_fast_alias", "simple"
+        return "fast", "legacy_fast_alias", "manual"
     if mid in ("zeus/fusion-full", "fusion-full"):
-        return "full", "legacy_full_alias", "power"
+        return "full", "legacy_full_alias", "standard"
 
     # Explicit zeus.mode force — never conflated with legacy_*
     if raw == "fast":
-        return "fast", "forced_fast", "simple"
+        return "fast", "forced_fast", "manual"
     if raw == "full":
-        return "full", "forced_full", "power"
+        return "full", "forced_full", "standard"
 
     product = product_mode_from_model_id(mid) or normalize_product_mode(raw)
     if product is None:
         product = DEFAULT_PRODUCT_MODE
+    # Map leftover legacy tokens that product_mode_from_model_id still emits.
+    if product in ("simple", "custom"):
+        product = "manual"
+    elif product == "power":
+        product = "standard"
 
-    # Historic brownfield auto 1↔3 (Epic 2 will replace with policy_*)
-    if product == "custom":
-        return classify_query(user_q), "compat_1to3_auto", "custom"
-    if product == "simple":
-        return classify_query(user_q), "compat_1to3_auto", "simple"
-    return classify_query(user_q), "compat_1to3_auto", "power"
+    return classify_query(user_q), "compat_1to3_auto", product
 
 
 def resolve_mode(model_id: str | None, zeus: dict[str, Any] | None, user_q: str) -> str:
@@ -375,9 +337,22 @@ def apply_user_fusion_pref(
         zeus_out["mode"] = pref
 
     product = normalize_product_mode(str(zeus_out.get("mode") or "")) or DEFAULT_PRODUCT_MODE
-    if product == "custom" and not panel and user is not None:
+    # standard/manual (+ legacy custom/combo*) load saved models when omitted.
+    if product in (
+        "standard",
+        "manual",
+        "custom",
+        "combo2",
+        "combo3",
+    ) and not panel and user is not None:
         panel = parse_fusion_models_json(getattr(user, "fusion_models", None))
         if panel:
+            zeus_out["models"] = panel
+    # Legacy simple/power without models → recommended fill at resolve time.
+    if product in ("simple", "power") and not panel and user is not None:
+        saved = parse_fusion_models_json(getattr(user, "fusion_models", None))
+        if saved:
+            panel = saved
             zeus_out["models"] = panel
 
     # EPIC4-HOOK: Effort + Kill-Switch prefs (zeus.* > prefs > default). Product modes untouched.
@@ -1148,7 +1123,11 @@ def resolve_panel(
     ready_set = set(ready)
 
     prod = product_mode if product_mode in PRODUCT_MODES else DEFAULT_PRODUCT_MODE
-    exclusive, default_judge = _exclusive_for_product(prod)
+    exclusive, default_judge = _exclusive_for_product(
+        "power"
+        if prod in ("standard", "manual", "combo2", "combo3")
+        else prod
+    )
     # Legacy force-fast without product context → first of simple stack
     if mode == "fast" and prod == "power" and not models:
         # When caller only asked fast stack size on power/default, still use
@@ -1156,7 +1135,7 @@ def resolve_panel(
         pass
 
     panel: list[str] = []
-    # Custom models only if caller explicitly passed them — capped to FUSION_MAX_PANEL.
+    # Stack models only if caller explicitly passed them — capped to FUSION_MAX_PANEL.
     _cap = _max_panel()
     for mid in models or []:
         mid = str(mid).strip()
@@ -1172,39 +1151,69 @@ def resolve_panel(
             break
 
     if not panel:
-        # AD-21 / FR2: custom never invents out-of-stack models (no silent power fill).
-        if prod == "custom":
-            raise HTTPException(
-                400,
-                f"ZeusCode: custom mode requires models[] (1–{_cap}) from your stack",
-            )
-        # Soft-fill exclusive menu: resolve aliases, skip unavailable ids.
-        # Hard-fail only if NOTHING from the crew menu is ready.
-        from app.catalog import canonical_model_id
+        # standard / combo presets: fill recommended when models omitted.
+        if prod in ("standard", "combo2", "combo3", "simple", "power"):
+            from app.fusion.combo import STANDARD_MODELS, recommended_models
 
-        for mid in exclusive:
-            try:
-                canon = canonical_model_id(mid) or mid
-            except Exception:  # noqa: BLE001
-                canon = mid
-            if canon not in ready_set and mid not in ready_set:
-                continue
-            use = canon if canon in ready_set else mid
-            if user is not None and not model_allowed_for_user(user, use):
-                continue
-            if use not in panel:
-                panel.append(use)
-            if len(panel) >= _cap:
-                break
-        if not panel:
-            missing = [m for m in exclusive if m not in ready_set]
+            preset = (
+                list(STANDARD_MODELS)
+                if prod in ("standard", "power", "combo3")
+                else list(recommended_models("combo2"))
+            )
+            for mid in preset:
+                if mid in ready_set and mid not in panel:
+                    if user is not None and not model_allowed_for_user(user, mid):
+                        continue
+                    panel.append(mid)
+                if len(panel) >= (2 if prod in ("combo2", "simple") else 3):
+                    break
+            need = 2 if prod in ("combo2", "simple") else 3
+            if len(panel) < need and prod != "manual":
+                raise HTTPException(
+                    422,
+                    "ZeusCode: стандартный стек недоступен — выбери модели вручную",
+                )
+        elif prod in ("manual", "custom"):
             raise HTTPException(
                 400,
-                f"Fusion: эксклюзивный стек недоступен, нет: {', '.join(missing[:8])}",
+                f"ZeusCode: manual mode requires models[] (1–{_cap}) from your stack",
             )
+        else:
+            # Soft-fill exclusive menu: resolve aliases, skip unavailable ids.
+            # Hard-fail only if NOTHING from the crew menu is ready.
+            from app.catalog import canonical_model_id
+
+            for mid in exclusive:
+                try:
+                    canon = canonical_model_id(mid) or mid
+                except Exception:  # noqa: BLE001
+                    canon = mid
+                if canon not in ready_set and mid not in ready_set:
+                    continue
+                use = canon if canon in ready_set else mid
+                if user is not None and not model_allowed_for_user(user, use):
+                    continue
+                if use not in panel:
+                    panel.append(use)
+                if len(panel) >= _cap:
+                    break
+            if not panel:
+                missing = [m for m in exclusive if m not in ready_set]
+                raise HTTPException(
+                    400,
+                    f"Fusion: эксклюзивный стек недоступен, нет: {', '.join(missing[:8])}",
+                )
 
     if not panel:
         raise HTTPException(400, "Fusion: нет доступных моделей для панели")
+
+    if prod in ("manual", "custom") and len(panel) not in (1, 3):
+        raise HTTPException(422, "ZeusCode: выбери 1 или 3 разные модели (не 2)")
+    if prod == "combo2":
+        raise HTTPException(422, "ZeusCode: Combo-2 удалён — выбери 1 или 3 модели")
+    if prod in ("combo3", "standard") and len(panel) != 3:
+        if len(panel) < 3:
+            raise HTTPException(422, "ZeusCode: нужно ровно 3 готовые модели")
 
     panel = panel[:_cap]
 
@@ -1445,326 +1454,6 @@ async def _race_first(
     return winner, results
 
 
-def infer_billable_state(agent: dict[str, Any]) -> str:
-    """Map agent/branch row → FR-19 billable state."""
-    explicit = agent.get("billable_state")
-    if explicit in (
-        "completed",
-        "partial_stream",
-        "cancelled_no_tokens",
-        "cancelled_with_usage",
-    ):
-        return str(explicit)
-    pt = int(agent.get("prompt_tokens") or 0)
-    ct = int(agent.get("completion_tokens") or 0)
-    ok = bool(agent.get("ok"))
-    if agent.get("partial_stream") or agent.get("partial"):
-        return "partial_stream"
-    if not ok and pt == 0 and ct == 0:
-        return "cancelled_no_tokens"
-    if not ok and (pt > 0 or ct > 0):
-        return "cancelled_with_usage"
-    return "completed"
-
-
-def _complexity_for_stack(stack: str, task_kind: str | None) -> str:
-    if str(stack).startswith("fast"):
-        return "light"
-    if task_kind in ("architecture", "review"):
-        return "heavy"
-    return "med"
-
-
-def _phase_for_task(task_kind: str | None, classifier: dict[str, Any] | None) -> str:
-    if isinstance(classifier, dict):
-        for key in ("classify_phase", "phase"):
-            val = classifier.get(key)
-            if isinstance(val, str) and val.strip():
-                return val.strip().lower()
-    tk = (task_kind or "general").lower()
-    if tk in ("light", "ui"):
-        return "chat"
-    if tk in ("architecture", "review"):
-        return "debug" if tk == "review" else "plan"
-    return "implement"
-
-
-def agents_to_branches(
-    agents: list[dict[str, Any]],
-    *,
-    classifier: dict[str, Any] | None = None,
-) -> list[BranchUsage]:
-    """Build FusionResult.branches from onestack agents (+ optional classifier call)."""
-    branches: list[BranchUsage] = []
-    if isinstance(classifier, dict):
-        cpt = int(classifier.get("prompt_tokens") or 0)
-        cct = int(classifier.get("completion_tokens") or 0)
-        if cpt or cct or classifier.get("source") == "llm":
-            branches.append(
-                BranchUsage(
-                    model_id=str(classifier.get("model") or "classifier"),
-                    billable_state="completed" if (cpt or cct) else "cancelled_no_tokens",
-                    prompt_tokens=cpt,
-                    completion_tokens=cct,
-                    role="classifier",
-                    meta={"source": classifier.get("source")},
-                )
-            )
-    for a in agents:
-        role = str(a.get("role") or "agent")
-        if role == "panel":
-            role = "agent"
-        branches.append(
-            BranchUsage(
-                model_id=str(a.get("model") or ""),
-                billable_state=infer_billable_state(a),  # type: ignore[arg-type]
-                prompt_tokens=int(a.get("prompt_tokens") or 0),
-                completion_tokens=int(a.get("completion_tokens") or 0),
-                role=role,
-                meta={
-                    k: a.get(k)
-                    for k in (
-                        "label",
-                        "title",
-                        "ok",
-                        "winner",
-                        "leader",
-                        "error",
-                        "latency_s",
-                        "failover",
-                        "degraded",
-                    )
-                    if k in a
-                },
-            )
-        )
-    return branches
-
-
-def build_fusion_result(
-    *,
-    answer: str,
-    stack_mode: str,
-    routed_by: str,
-    leader: str | None,
-    agents: list[dict[str, Any]],
-    task_kind: str | None = None,
-    classifier: dict[str, Any] | None = None,
-    escalate_from: str | None = None,
-    policy_path: str | None = None,
-    serving_path: str | None = None,
-    trace_id: str | None = None,
-    completion: dict[str, Any] | None = None,
-    onestack: dict[str, Any] | None = None,
-) -> FusionResult:
-    """Execute→Bill handoff (AD-14).
-
-    ``serving_path`` is the AD-15 Path enum. ``stack_mode`` is Edge stack size only
-    (fast|full) used for complexity heuristics when Path is FAST/FULL-mapped.
-    """
-    path = (serving_path or "").strip().upper() or stack_to_path(stack_mode)
-    if path not in ("FAST", "CASCADE", "RACE", "FULL"):
-        path = stack_to_path(stack_mode)
-    pol = (policy_path or path).strip().upper() if policy_path else path
-    if pol not in ("FAST", "CASCADE", "RACE", "FULL"):
-        pol = path
-    tid = trace_id or f"fus-{uuid.uuid4().hex[:16]}"
-    rb = routed_by if routed_by in _ROUTED_BY_CLOSED or routed_by.startswith(
-        ("policy_", "mor_", "cascade_", "race_", "compat_1to3_")
-    ) else "compat_1to3_auto"
-    # Normalize legacy bridge labels
-    if rb == "auto":
-        rb = "compat_1to3_auto"
-    if rb == "forced":
-        rb = "forced_fast" if path == "FAST" else "forced_full"
-    return FusionResult(
-        path=path,
-        policy_path=pol,
-        routed_by=rb,
-        phase=_phase_for_task(task_kind, classifier),
-        complexity=_complexity_for_stack(stack_mode, task_kind),
-        leader=leader,
-        branches=agents_to_branches(agents, classifier=classifier),
-        answer=answer,
-        trace_id=tid,
-        escalate_from=escalate_from,
-        completion=completion,
-        onestack=onestack or {},
-    )
-
-
-def fusion_result_to_dict(fr: FusionResult) -> dict[str, Any]:
-    """JSON-friendly FusionResult for Onestack / meta (AD-14 shape)."""
-    return {
-        "path": fr.path,
-        "policy_path": fr.policy_path,
-        "escalate_from": fr.escalate_from,
-        "routed_by": fr.routed_by,
-        "phase": fr.phase,
-        "complexity": fr.complexity,
-        "leader": fr.leader,
-        "answer": fr.answer,
-        "trace_id": fr.trace_id,
-        "branches": [
-            {
-                "model": b.model_id,
-                "model_id": b.model_id,
-                "role": b.role,
-                "billable_state": b.billable_state,
-                "usage": b.usage,
-                "prompt_tokens": b.prompt_tokens,
-                "completion_tokens": b.completion_tokens,
-                "meta": b.meta,
-            }
-            for b in fr.branches
-        ],
-    }
-
-
-def _pack_completion(
-    *,
-    answer: str,
-    panel: list[str],
-    judge_model: str | None,
-    agents: list[dict[str, Any]],
-    mode: str,
-    total_pt: int,
-    total_ct: int,
-    visible: str | None = None,
-    routed_by: str = "compat_1to3_auto",
-    product_mode: str = DEFAULT_PRODUCT_MODE,
-    leader: str | None = None,
-    task_kind: str | None = None,
-    classifier: dict[str, Any] | None = None,
-    escalate_from: str | None = None,
-    policy_path: str | None = None,
-    serving_path: str | None = None,
-    trace_id: str | None = None,
-) -> dict[str, Any]:
-    # `visible` = thinking + answer for the client; `answer` kept clean in onestack
-    body = visible if visible is not None else answer
-    # AD-15: serving Path enum is authoritative; mode/fast|full is Edge stack size only.
-    stack_size = "fast" if str(mode).startswith("fast") else "full"
-    path = (serving_path or "").strip().upper() or stack_to_path(mode)
-    if path not in ("FAST", "CASCADE", "RACE", "FULL"):
-        path = stack_to_path(mode)
-    pol_path = (policy_path or path).strip().upper() if policy_path else path
-    if pol_path not in ("FAST", "CASCADE", "RACE", "FULL"):
-        pol_path = path
-    prod = product_mode if product_mode in PRODUCT_MODES else DEFAULT_PRODUCT_MODE
-    head = leader or (panel[0] if panel else None)
-    tid = trace_id or f"fus-{uuid.uuid4().hex[:16]}"
-
-    # Stamp billable_state onto agent rows for Onestack transparency
-    stamped_agents: list[dict[str, Any]] = []
-    for a in agents:
-        row = dict(a)
-        row["billable_state"] = infer_billable_state(row)
-        stamped_agents.append(row)
-
-    fr = build_fusion_result(
-        answer=answer,
-        stack_mode=stack_size,
-        routed_by=routed_by,
-        leader=head,
-        agents=stamped_agents,
-        task_kind=task_kind,
-        classifier=classifier,
-        escalate_from=escalate_from,
-        policy_path=pol_path,
-        serving_path=path,
-        trace_id=tid,
-    )
-    fr_dict = fusion_result_to_dict(fr)
-
-    clf = classifier if isinstance(classifier, dict) else {}
-    onestack = {
-        "mode": f"fusion-{stack_size}",
-        # legacy bridge — NOT serving mode (AD-15). Prefer path / stack_size.
-        "fusion_mode": stack_size,
-        "stack_size": stack_size,
-        "path": fr.path,
-        "policy_path": fr.policy_path,
-        "escalate_from": fr.escalate_from,
-        "product_mode": prod,
-        "routed_by": fr.routed_by,
-        "phase": fr.phase,
-        "complexity": fr.complexity,
-        "task_kind": task_kind or clf.get("task_kind") or "general",
-        "leader": head,
-        "panel": panel,
-        "judge": judge_model,
-        "classifier": classifier,
-        "panel_ok": [a["model"] for a in stamped_agents if a.get("role") == "panel" and a.get("ok")],
-        "agents": stamped_agents,
-        "branches": fr_dict["branches"],
-        "trace_id": fr.trace_id,
-        "answer_only": answer,
-        "thinking_visible": True,
-        # Role Routing FR-14 / AD-28
-        "pipeline": clf.get("pipeline") or "small",
-        "size": clf.get("size") or "small",
-        "second_signal": bool(clf.get("second_signal")),
-        "curator_model": clf.get("curator_model") or head,
-        "role_table": clf.get("role_table") or "v1",
-        "roles": list(clf.get("roles") or []),
-        "models_by_role": dict(clf.get("models_by_role") or {}),
-        "model_aliases": dict(clf.get("model_aliases") or {}),
-        "gate": clf.get("gate"),
-        "gate_reasons": list(clf.get("gate_reasons") or []),
-        "escalate_count": int(clf.get("escalate_count") or 0),
-        "soft_stop": bool(clf.get("soft_stop")),
-        "research_ok": clf.get("research_ok"),
-        "research_meta": clf.get("research_meta"),
-        "research_digest": clf.get("research_digest"),
-        "turn_kind": clf.get("turn_kind") or "bootstrap",
-        "crew_size": int(clf.get("crew_size") or 2),
-        "crew_tier": clf.get("crew_tier") or "compact",
-        "active_roles": list(clf.get("active_roles") or []),
-        "crew_reason": clf.get("crew_reason") or "",
-        "distinct_model_count": int(clf.get("distinct_model_count") or 0),
-        "crew_degraded": bool(clf.get("crew_degraded")),
-        "crew_budgets": dict(clf.get("crew_budgets") or {}),
-        "crew_state": dict(clf.get("crew_state") or {}),
-    }
-    fr.pipeline = onestack["pipeline"]
-    fr.curator_model = onestack["curator_model"]
-    fr.role_table = onestack["role_table"]
-    fr.roles = list(onestack["roles"])
-    fr.models_by_role = dict(onestack["models_by_role"])
-    fr.task_kind = onestack["task_kind"]
-    fr.size = onestack["size"]
-    fr.gate = onestack.get("gate")
-    fr.gate_reasons = list(onestack.get("gate_reasons") or [])
-    fr.escalate_count = int(onestack.get("escalate_count") or 0)
-    fr.soft_stop = bool(onestack.get("soft_stop"))
-    fr.onestack = onestack
-    data = {
-        "id": f"chatcmpl-fusion-{uuid.uuid4().hex[:12]}",
-        "object": "chat.completion",
-        "created": int(time.time()),
-        "model": PUBLIC_FUSION_MODEL_ID,
-        "choices": [
-            {
-                "index": 0,
-                "message": {"role": "assistant", "content": body},
-                "finish_reason": "stop",
-            }
-        ],
-        "usage": {
-            "prompt_tokens": total_pt,
-            "completion_tokens": total_ct,
-            "total_tokens": total_pt + total_ct,
-        },
-        "onestack": onestack,
-        "_bill_model": judge_model or head or "deepseek-chat",
-        "_fusion_result": fr,
-        "fusion_result": fr_dict,
-    }
-    fr.completion = {k: v for k, v in data.items() if k != "_fusion_result"}
-    return data
-
-
 def _clip(text: str, n: int = 160) -> str:
     t = " ".join((text or "").split())
     if len(t) <= n:
@@ -1850,58 +1539,26 @@ async def iter_fusion(
     _client_tool_choice = tool_choice if _client_tools else None
     messages = prepare_messages_for_policy(messages)
     user_q = _text_of(messages) or "Ответь на запрос."
-    product_mode = DEFAULT_PRODUCT_MODE
-    routed_by = "forced_full"
-    resolved = (mode or "").strip().lower()
-    # AD-15: Path enum is the serving decision; fast|full is Edge stack size only.
-    serving_path = "FULL"
-    policy_path_serving: str | None = None
-    clf_meta: dict[str, Any] | None = None
     trace_id = f"fus-{uuid.uuid4().hex[:16]}"
-    # ZeusCode has one normal runtime. Legacy path names are static additive
-    # API/billing labels and never select participants or execution strategy.
-    _z_runtime = zeus if isinstance(zeus, dict) else {}
-    product_mode = (
-        normalize_product_mode(str(_z_runtime.get("mode") or ""))
-        or DEFAULT_PRODUCT_MODE
+    _route = build_runtime_route(zeus)
+    product_mode = _route.product_mode
+    resolved = _route.resolved
+    serving_path = _route.serving_path
+    policy_path_serving: str | None = _route.policy_path
+    routed_by = _route.routed_by
+    clf_meta: dict[str, Any] | None = dict(_route.classifier)
+    _kill_runtime = _route.kill_switch
+    show_thinking = resolve_show_thinking(show_thinking, zeus)
+
+    # standard/manual/custom/combo* → caller models[]; legacy simple/power → exclusive fill
+    _stack_modes = (
+        "standard",
+        "manual",
+        "custom",
+        "combo2",
+        "combo3",
     )
-    resolved = "full"
-    serving_path = "CASCADE"
-    policy_path_serving = "CASCADE"
-    routed_by = "single_crew_runtime"
-    clf_meta = {
-        "source": "single_crew",
-        "task": "code",
-        "task_kind": "code",
-                        "path": serving_path,
-        "policy_path": policy_path_serving,
-    }
-
-    # Kill remains the only runtime override. Shadow/canary/path policy may
-    # still be reported elsewhere, but cannot remount a legacy executor.
-    _kill_runtime = bool(_z_runtime.get("kill_switch"))
-    try:
-        from app.fusion.metrics import load_fusion_flags
-
-        _kill_runtime = bool(_kill_runtime or load_fusion_flags().kill)
-        except Exception:  # noqa: BLE001
-            pass
-    if _kill_runtime:
-        routed_by = "kill_switch"
-        serving_path = "FAST"
-        policy_path_serving = "FAST"
-        clf_meta["path"] = "FAST"
-        clf_meta["policy_path"] = "FAST"
-
-    if show_thinking is None:
-        if isinstance(zeus, dict) and "thinking" in zeus:
-            show_thinking = bool(zeus.get("thinking"))
-        else:
-            # Brief status on both paths so Cursor never stares at a blank pane
-            show_thinking = True
-
-    # simple/power → exclusive Zeus stack; custom → caller's models[] (1↔3 auto)
-    panel_models = models if product_mode == "custom" else None
+    panel_models = models if product_mode in _stack_modes else None
 
     panel, judge_model = resolve_panel(
         user=user,
@@ -1910,6 +1567,47 @@ async def iter_fusion(
         mode=resolved,
         product_mode=product_mode,
     )
+
+    # Freeze stack definition (solo/combo2/combo3 + score roles) for this task.
+    _combo_state = None
+    try:
+        from app.fusion.combo_runtime import bootstrap_combo_runtime
+
+        _prior_combo = (
+            (zeus or {}).get("combo_state")
+            if isinstance(zeus, dict) and isinstance((zeus or {}).get("combo_state"), dict)
+            else None
+        )
+        # Smart routing: chitchat/simple → solo with DOER, skip Opus+Sonnet calls
+        from app.fusion.roles import DOER_MODEL as _doer_model
+        _fast_solo = (
+            product_mode == "standard"
+            and classify_query(user_q) == "fast"
+        )
+        _combo_state = bootstrap_combo_runtime(
+            "manual" if _fast_solo else product_mode,
+            [_doer_model] if _fast_solo else list(panel),
+            goal=user_q,
+            session_id=(
+                str((zeus or {}).get("session_id") or "").strip() or None
+                if isinstance(zeus, dict)
+                else None
+            ),
+            allow_recommended_fill=(not _fast_solo) and product_mode
+            in ("standard", "combo2", "combo3", "simple", "power"),
+            prior_state=_prior_combo,
+        )
+        if isinstance(zeus, dict):
+            zeus = dict(zeus)
+            zeus["combo_state"] = _combo_state.to_dict()
+        clf_meta = dict(clf_meta or {})
+        clf_meta["combo"] = _combo_state.definition.to_dict()
+        clf_meta["architecture"] = _combo_state.definition.architecture
+        clf_meta["smart_routing"] = "solo" if _fast_solo else "crew"
+    except Exception as _combo_exc:  # noqa: BLE001
+        if product_mode in ("standard", "manual", "combo2", "combo3"):
+            raise HTTPException(422, f"ZeusCode: {_combo_exc}") from _combo_exc
+        _combo_state = None
 
     # Task labels are telemetry only and cannot alter coding participants.
     task_kind = "code"
@@ -1942,8 +1640,6 @@ async def iter_fusion(
         _rr_clf = None
         _rr_size = "large" if _client_tools else "small"
         _rr_second = False
-        if clf_meta is None:
-            clf_meta = {}
         clf_meta = dict(clf_meta)
         clf_meta["size"] = _rr_size
         clf_meta["second_signal"] = _rr_second
@@ -1957,15 +1653,46 @@ async def iter_fusion(
             if isinstance(zeus, dict)
             else False
         ) or ("kill_switch" in (routed_by or "").lower())
-        # Custom must use caller models[] (AD-21) — never the exclusive fill from resolve_panel.
-        _rr_custom = list(panel_models) if product_mode == "custom" else None
+        # Manual/standard/combo must use caller models[] — never exclusive fill.
+        _rr_custom = (
+            list(panel_models)
+            if product_mode in _stack_modes and panel_models
+            else (list(panel) if product_mode in _stack_modes else None)
+        )
         _rr_roles = resolve_roles(
-            product_mode=product_mode,
+            product_mode=(
+                "custom" if product_mode in _stack_modes else product_mode
+            ),
             task_kind=task_kind,
             panel=panel,
             custom_models=_rr_custom,
             unhealthy=_unhealthy or None,
         )
+        if _combo_state is not None:
+            # Override role map with score-assigned ComboDefinition positions.
+            for role, mid in _combo_state.definition.models_by_role.items():
+                _rr_roles.models_by_role[role] = mid
+            _rr_roles.meta = dict(_rr_roles.meta or {})
+            _rr_roles.meta["combo"] = _combo_state.definition.to_dict()
+            _rr_roles.meta["combo_phase"] = _combo_state.session.phase
+            _rr_roles.meta["architecture"] = _combo_state.definition.architecture
+            _rr_roles.product_mode = (  # type: ignore[assignment]
+                "custom" if product_mode in _stack_modes else product_mode
+            )
+            # Owner of the current combo phase becomes execute leader.
+            _owner_mid = _combo_state.owner_model()
+            if _owner_mid:
+                leader = _owner_mid
+                panel = order_panel_leader_first(list(panel), leader)
+            # Reviewer / Finalizer are read-only on first launch.
+            if not _combo_state.tools_allowed_for_owner():
+                _client_tools = None
+                _client_tool_choice = None
+                clf_meta = dict(clf_meta or {})
+                clf_meta["combo_tools"] = "read_only"
+            else:
+                clf_meta = dict(clf_meta or {})
+                clf_meta["combo_tools"] = "mutating"
         from app.fusion.crew import CrewSession as _CrewSession, select_crew as _select_crew
 
         _prior_crew = _CrewSession.from_dict(
@@ -1990,7 +1717,7 @@ async def iter_fusion(
             prior=_prior_crew if _has_prior_crew else None,
             models_by_role=dict(_rr_roles.models_by_role),
             unhealthy=_unhealthy or None,
-            available_models=list(_rr_roles.stack),
+            available_models=list(set(_rr_roles.models_by_role.values())) if _rr_roles.models_by_role else panel,
             tool_enabled=bool(_client_tools),
         )
         # One memory key for every crew path. ``memory_scope`` is server-owned
@@ -2035,21 +1762,23 @@ async def iter_fusion(
         # immutable for normal traffic.
         if _rr_decision.doer_panel:
             panel = list(_rr_decision.doer_panel)
-        if _rr_decision.execute_leader:
-            leader = _rr_decision.execute_leader
-        elif _rr_decision.pipeline == "v1" and _rr_decision.curator_model:
-            leader = _rr_decision.curator_model
+        _execute_leader = getattr(_rr_decision, "execute_leader", None)
+        _curator_model = getattr(_rr_decision, "curator_model", None)
+        if _execute_leader:
+            leader = _execute_leader
+        elif _rr_decision.pipeline == "v1" and _curator_model:
+            leader = _curator_model
         panel = order_panel_leader_first(panel, leader)
         resolved = "full"
         clf_meta["pipeline"] = _rr_decision.pipeline
-        clf_meta["curator_model"] = _rr_decision.curator_model or (
-            _rr_roles.curator_model if _rr_roles else leader
+        clf_meta["curator_model"] = _curator_model or (
+            getattr(_rr_roles, "curator_model", None) if _rr_roles else leader
         )
         clf_meta["execute_leader"] = leader
-        clf_meta["role_table"] = _rr_roles.role_table
-        clf_meta["roles"] = list(_rr_roles.roles)
+        clf_meta["role_table"] = getattr(_rr_roles, "role_table", None)
+        clf_meta["roles"] = list(getattr(_rr_roles, "roles", []))
         clf_meta["models_by_role"] = dict(_rr_roles.models_by_role)
-        clf_meta["model_aliases"] = dict(_rr_roles.model_aliases)
+        clf_meta["model_aliases"] = dict(getattr(_rr_roles, "model_aliases", {}))
         clf_meta["size"] = _rr_decision.size
         clf_meta["second_signal"] = bool(_rr_decision.second_signal)
         clf_meta["crew_watch"] = bool((_rr_roles.meta or {}).get("crew_watch"))
@@ -2080,7 +1809,7 @@ async def iter_fusion(
             clf_meta["pipeline"] = "fallback_single"
             clf_meta["second_signal"] = False
             clf_meta["crew_watch"] = False
-    except Exception:  # noqa: BLE001 — Role Routing must never break brownfield
+    except Exception as _rr_exc:  # noqa: BLE001 — Role Routing must never break brownfield
         _rr_decision = None
         _rr_roles = None
         if not isinstance(clf_meta, dict):
@@ -2362,7 +2091,144 @@ async def iter_fusion(
         yield {"kind": "done", "data": _emergency_data}
         return
 
-    # --- Research×3 → Opus glue (TZ §3.1) — before Task Card / Path execute ---
+    # --- Sequential Solo / Combo-2 / Combo-3 (score roles + free-first research) ---
+    # Stack modes use combo runtime for coding. Forced research (DRACO /
+    # zeus.research) must NOT enter combo — combo returns early and never reaches
+    # research_crew (3 schools → lead final report).
+    _stack_combo_modes = ("standard", "manual", "combo2", "combo3")
+    _z_combo = zeus if isinstance(zeus, dict) else {}
+    _force_research_turn = bool(
+        _z_combo.get("research") is True or _z_combo.get("force_research")
+    )
+    if (
+        _combo_state is not None
+        and product_mode in _stack_combo_modes
+        and not _kill_runtime
+        and not _force_research_turn
+    ):
+        from app.fusion.combo_runtime import run_sequential_combo
+        from app.fusion.types import BranchUsage as _ComboBranch
+
+        if show_thinking:
+            yield think(
+                f"╭ ZeusCode {_combo_state.definition.architecture} · "
+                f"{'/'.join(_combo_state.definition.roles)}"
+                + (" · research" if _force_research_turn else "")
+            )
+        _combo_result = await run_sequential_combo(
+            _combo_state,
+            messages=_raw_messages,
+            client_tools=_client_tools,
+            tool_choice=_client_tool_choice,
+            cancel_event=cancel_event,
+            user_q=user_q,
+            task_kind=task_kind,
+            zeus=_z_combo,
+            force_research=_force_research_turn,
+        )
+        _combo_state = _combo_result.state
+        if isinstance(zeus, dict):
+            zeus = dict(zeus)
+            zeus["combo_state"] = _combo_state.to_dict()
+        clf_meta = dict(clf_meta or {})
+        clf_meta["combo"] = _combo_state.definition.to_dict()
+        clf_meta["combo_state"] = _combo_state.to_dict()
+        clf_meta["architecture"] = _combo_state.definition.architecture
+        clf_meta["combo_phase"] = _combo_state.session.phase
+        clf_meta["pipeline"] = f"combo_{_combo_state.definition.architecture}"
+        clf_meta["active_roles"] = [
+            a.get("role") for a in _combo_result.agents if a.get("role")
+        ]
+        if _combo_result.research:
+            clf_meta["combo_research"] = _combo_result.research
+            clf_meta["research_ok"] = bool(_combo_result.research.get("ok"))
+        if show_thinking:
+            for line in _combo_result.think_lines:
+                yield think(line if str(line).startswith(("╭", "│", "╰")) else f"│ {line}")
+            yield think(_think_frame_close())
+            yield think("")
+
+        _combo_agents = list(_combo_result.agents)
+        _combo_branches = [
+            _ComboBranch(
+                model_id=str(a.get("model") or ""),
+                billable_state="completed" if a.get("ok") else "cancelled_no_tokens",
+                prompt_tokens=int(a.get("prompt_tokens") or 0),
+                completion_tokens=int(a.get("completion_tokens") or 0),
+                role=str(a.get("role") or "doer"),
+                meta={"tool_calls": int(a.get("tool_calls") or 0)},
+            )
+            for a in _combo_agents
+        ]
+        _combo_text = str(_combo_result.text or "").strip()
+        _combo_tcs = list(_combo_result.tool_calls or [])
+        _combo_routed = f"combo_{_combo_state.definition.architecture}"
+        if _combo_result.research.get("needed"):
+            _combo_routed = f"{_combo_routed}_research"
+        _combo_data = _pack_completion(
+            answer=_combo_text,
+            panel=list(_combo_state.definition.models),
+            judge_model=None,
+            agents=_combo_agents,
+            mode="full",
+            total_pt=_combo_result.total_pt + clf_tokens_pt,
+            total_ct=_combo_result.total_ct + clf_tokens_ct,
+            routed_by=_combo_routed,
+            product_mode=product_mode,
+            leader=_combo_state.owner_model() or leader,
+            task_kind=task_kind,
+            classifier=clf_meta,
+            policy_path=policy_path_serving,
+            serving_path=serving_path,
+            trace_id=trace_id,
+        )
+        _combo_msg: dict[str, Any] = {
+            "role": "assistant",
+            "content": _combo_text if _combo_text else (None if _combo_tcs else ""),
+        }
+        if _combo_tcs:
+            _combo_msg["tool_calls"] = _combo_tcs
+        _combo_data["choices"] = [
+            {
+                "index": 0,
+                "message": _combo_msg,
+                "finish_reason": "tool_calls" if _combo_tcs else "stop",
+            }
+        ]
+        _combo_data["onestack"]["pipeline"] = clf_meta["pipeline"]
+        _combo_data["onestack"]["architecture"] = _combo_state.definition.architecture
+        _combo_data["onestack"]["combo_state"] = _combo_state.to_dict()
+        _combo_data["onestack"]["combo_phase"] = _combo_state.session.phase
+        _combo_data["onestack"]["models_by_role"] = dict(
+            _combo_state.definition.models_by_role
+        )
+        _combo_data["onestack"]["scores"] = dict(_combo_state.definition.scores)
+        _combo_data["onestack"]["hands_tool_calls"] = bool(_combo_tcs)
+        _combo_data["onestack"]["awaiting_tools"] = bool(_combo_result.awaiting_tools)
+        _combo_data["onestack"]["active_roles"] = list(clf_meta.get("active_roles") or [])
+        if _combo_result.research:
+            _combo_data["onestack"]["combo_research"] = _combo_result.research
+            _combo_data["onestack"]["research_ok"] = bool(
+                _combo_result.research.get("ok")
+            )
+        if _crew_session is not None:
+            _combo_data["onestack"]["crew_state"] = _crew_session.to_dict()
+        _fr_combo = _combo_data.get("_fusion_result")
+        if _fr_combo is not None:
+            _fr_combo.pipeline = clf_meta["pipeline"]
+            _fr_combo.branches = _combo_branches
+            _fr_combo.onestack = _combo_data["onestack"]
+            _fr_combo.completion = {
+                key: value
+                for key, value in _combo_data.items()
+                if key != "_fusion_result"
+            }
+        if _combo_text and not _combo_tcs:
+            yield {"kind": "answer", "text": _combo_text}
+        yield {"kind": "done", "data": _combo_data}
+        return
+
+    # --- Research×3 → Opus glue (legacy path for non-stack modes only) ---
     # Must run before the bootstrap early-return below; otherwise zeus.research
     # (DRACO) never reaches the research crew and falls into CASCADE/doer stubs.
     _research_branches: list[Any] = []
@@ -4160,14 +4026,14 @@ async def iter_fusion(
 
     async def _epic3_execute_full_or_crew(**kwargs):
         """Retained explicit UI Crew compatibility subflow."""
-            return await _execute_ui_crew(
-                panel=kwargs.get("panel") or panel,
-                leader=kwargs.get("leader") or leader,
-                messages=kwargs.get("messages") or messages,
-                user_q=kwargs.get("user_q") or user_q,
-                policy_path=kwargs.get("policy_path") or "FULL",
-                cancel_event=kwargs.get("cancel_event"),
-            )
+        return await _execute_ui_crew(
+            panel=kwargs.get("panel") or panel,
+            leader=kwargs.get("leader") or leader,
+            messages=kwargs.get("messages") or messages,
+            user_q=kwargs.get("user_q") or user_q,
+            policy_path=kwargs.get("policy_path") or "FULL",
+            cancel_event=kwargs.get("cancel_event"),
+        )
 
     _epic3_path = None
     # AD-9 / NFR-5: kill wins over zeus.path / clf path overrides
@@ -4222,8 +4088,10 @@ async def iter_fusion(
             elif _pipe_exec == "fallback_single":
                 yield think("╭ path CASCADE · fallback_single curator…")
             else:
-            _crew_tag = " · UI Crew" if _use_ui_crew and _epic3_path == "FULL" else ""
-            yield think(f"╭ path {_epic3_path}{_crew_tag}…")
+                _crew_tag = (
+                    " · UI Crew" if _use_ui_crew and _epic3_path == "FULL" else ""
+                )
+                yield think(f"╭ path {_epic3_path}{_crew_tag}…")
         try:
             # Epic 4 / AD-20..26: Pipeline v1 before brownfield FULL/CASCADE
             if _pipe_exec == "v1":
@@ -4423,10 +4291,10 @@ async def iter_fusion(
                 _outcome.disaster = False
                 _outcome.answer = ""
             else:
-            raise HTTPException(
-                502,
+                raise HTTPException(
+                    502,
                     f"ZeusCode: пустой ответ модели ({_outcome.disaster_code or _outcome.routed_by})",
-            )
+                )
         # FR-37: force/legacy labels win — except UI Crew executor signals (ui_*)
         if routed_by.startswith(("forced_", "legacy_")):
             if str(_outcome.routed_by or "").startswith("ui_"):
