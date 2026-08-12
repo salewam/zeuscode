@@ -85,9 +85,13 @@ def normalize_effort(raw: str | None) -> str:
 
 
 MODE_LABELS = {
-    "simple": "Пользовательский",
-    "power": "Продвинутый",
-    "custom": "Набор",
+    "standard": "ZeusCode",
+    "manual": "Ручной",
+    "combo2": "Ручной",  # legacy → manual; Combo-2 removed
+    "combo3": "ZeusCode",
+    "simple": "Ручной",
+    "power": "ZeusCode",
+    "custom": "Ручной",
 }
 
 _PAGE_SIZE = 8
@@ -102,8 +106,8 @@ def miniapp_url(view: str = "") -> str:
         return f"{base}?view=learn"
     if v in ("fusion", "models", "mode"):
         return f"{base}?view=fusion"
-    if v in ("advisor", "help", "ask"):
-        return f"{base}?view=advisor"
+    if v in ("subscription", "sub", "plan", "limits", "usage"):
+        return f"{base}?view=subscription"
     return base
 
 
@@ -251,9 +255,8 @@ def _mode_keyboard(current: str) -> InlineKeyboardMarkup:
         ],
     ]
     for mid, title in (
-        ("simple", "Пользовательский"),
-        ("power", "Продвинутый"),
-        ("custom", "Набор"),
+        ("standard", "ZeusCode"),
+        ("manual", "Ручной"),
     ):
         mark = " ✓" if mid == current else ""
         rows.append(
@@ -336,12 +339,10 @@ async def _sync_balance(user) -> tuple[float, bool]:
 def _pref_summary(user) -> str:
     mode = normalize_product_mode(getattr(user, "fusion_pref", None)) or DEFAULT_PRODUCT_MODE
     label = MODE_LABELS.get(mode, mode)
-    if mode == "custom":
-        models = parse_fusion_models_json(getattr(user, "fusion_models", None))
-        if models:
-            return f"Режим: <b>{label}</b> · {len(models)} нейронки"
-        return f"Режим: <b>{label}</b> · выбери нейронки в приложении"
-    return f"Режим: <b>{label}</b>"
+    models = parse_fusion_models_json(getattr(user, "fusion_models", None))
+    if models:
+        return f"Режим: <b>{label}</b> · {len(models)} модели · {' + '.join(models[:3])}"
+    return f"Режим: <b>{label}</b> · выбери модели в приложении"
 
 
 def _welcome_text(*, name: str, balance: float, is_new: bool) -> str:
@@ -475,7 +476,15 @@ async def on_mode_callback(query: CallbackQuery) -> None:
                 reply_markup=_mode_keyboard(mode),
             )
         return
-    if data.startswith("fm:") and data[3:] in ("simple", "power", "custom"):
+    if data.startswith("fm:") and data[3:] in (
+        "standard",
+        "manual",
+        "combo2",
+        "combo3",
+        "simple",
+        "power",
+        "custom",
+    ):
         mode = data[3:]
         async with SessionLocal() as db:
             user, _, _ = await ensure_telegram_user(
@@ -484,19 +493,31 @@ async def on_mode_callback(query: CallbackQuery) -> None:
                 username=query.from_user.username,
                 first_name=query.from_user.first_name,
             )
-            user.fusion_pref = mode
+            from app.fusion.combo import resolve_stack_definition, ComboConfigError
+
+            models = parse_fusion_models_json(getattr(user, "fusion_models", None))
+            try:
+                definition = resolve_stack_definition(
+                    mode, models, allow_standard_fill=True
+                )
+                user.fusion_pref = definition.product_mode
+                user.fusion_models = json.dumps(list(definition.models), ensure_ascii=False)
+                mode = definition.product_mode
+            except ComboConfigError:
+                user.fusion_pref = mode
             await db.commit()
             await db.refresh(user)
             await _log_action(
                 user, "pref_change", db=db, meta={"mode": mode, "via": "bot_callback"}
             )
         await query.answer(f"Режим: {MODE_LABELS.get(mode, mode)}")
-        if mode == "custom":
-            models = parse_fusion_models_json(getattr(user, "fusion_models", None))
+        models = parse_fusion_models_json(getattr(user, "fusion_models", None))
+        if mode == "manual":
             n = len(_coding_chat_models(user))
             if query.message:
                 await query.message.edit_text(
-                    f"<b>Набор</b> — отметь до 3 нейронок ({n} в списке).\n"
+                    f"<b>Ручной</b> — отметь 1 или 3 модели ({n} в списке).\n"
+                    "1 = соло, 3 = Combo-3. Две модели больше нельзя.\n"
                     "Или открой приложение — там удобнее.",
                     parse_mode="HTML",
                     reply_markup=_custom_models_keyboard(models, page=0, user=user),
@@ -548,7 +569,7 @@ async def on_custom_callback(query: CallbackQuery) -> None:
                 return
             else:
                 selected = selected + [mid]
-            user.fusion_pref = "custom"
+            user.fusion_pref = "manual"
             user.fusion_models = json.dumps(selected, ensure_ascii=False)
             await db.commit()
             page = 0
@@ -560,21 +581,36 @@ async def on_custom_callback(query: CallbackQuery) -> None:
             return
 
         if data == "fc:done":
-            user.fusion_pref = "custom"
-            user.fusion_models = json.dumps(selected[:3], ensure_ascii=False)
+            from app.fusion.combo import resolve_stack_definition, ComboConfigError
+
+            try:
+                definition = resolve_stack_definition(
+                    "manual", selected, allow_standard_fill=False
+                )
+            except ComboConfigError as exc:
+                await query.answer(str(exc), show_alert=True)
+                await db.commit()
+                return
+            user.fusion_pref = definition.product_mode
+            user.fusion_models = json.dumps(list(definition.models), ensure_ascii=False)
             await db.commit()
             await _log_action(
                 user,
                 "pref_change",
                 db=db,
-                meta={"mode": "custom", "models": selected[:3], "via": "bot_custom"},
+                meta={
+                    "mode": definition.product_mode,
+                    "models": list(definition.models),
+                    "architecture": definition.architecture,
+                    "via": "bot_custom",
+                },
             )
             await query.answer("Готово")
             if query.message:
                 await query.message.edit_text(
-                    "Набор сохранён.\n" + _pref_summary(user),
+                    "Сохранено.\n" + _pref_summary(user),
                     parse_mode="HTML",
-                    reply_markup=_mode_keyboard("custom"),
+                    reply_markup=_mode_keyboard(definition.product_mode),
                 )
             return
     await query.answer()
@@ -757,6 +793,43 @@ async def on_text(message: Message) -> None:
     text = (message.text or "").strip()
     if text.startswith("/"):
         return
+
+    # ПРИОРИТЕТ 1: Запрос о подключении окна разработки
+    from app.window_setup import detect_window_request, generate_window_config, format_setup_message
+
+    window_id = detect_window_request(text)
+    if window_id:
+        try:
+            async with SessionLocal() as db:
+                user, _, _ = await ensure_telegram_user(
+                    db,
+                    message.from_user.id,
+                    username=message.from_user.username,
+                    first_name=message.from_user.first_name,
+                )
+                await db.commit()
+
+                # Получаем ключ пользователя
+                prefix = active_key_prefix(user)
+                api_key = prefix if prefix else "zeus_ВАШ_КЛЮЧ"
+
+                # Генерируем конфиг
+                window_config = generate_window_config(window_id, api_key)
+                response = format_setup_message(window_config)
+
+                await message.answer(response, parse_mode="HTML")
+
+                await _log_action(
+                    user,
+                    "bot_window_setup",
+                    prompt_preview=text[:500],
+                    meta={"window_id": window_id},
+                )
+                return
+        except Exception:  # noqa: BLE001
+            log.exception("window setup failed")
+            # Продолжаем к обычному advisor
+
     try:
         await message.bot.send_chat_action(message.chat.id, action="typing")
     except Exception:  # noqa: BLE001
