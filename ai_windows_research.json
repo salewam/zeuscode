@@ -1,0 +1,1004 @@
+{
+  "research_date": "2026-08-12",
+  "total_windows": 45,
+  "categories": {
+    "desktop_ide": [
+      {
+        "id": "cursor",
+        "name": "Cursor",
+        "category": "desktop_ide",
+        "website": "https://cursor.com",
+        "docs_url": "https://docs.cursor.com",
+        "company": "Anysphere (acquired by SpaceX/xAI Q3 2026)",
+        "config_format": "ui_settings",
+        "config_location": "Settings → Models → Override OpenAI Base URL",
+        "setup_steps": [
+          "Open Cursor Settings (Cmd+,)",
+          "Navigate to Models section",
+          "Toggle 'Override OpenAI Base URL' to ON",
+          "Enter custom base URL (e.g., https://your-gateway.com/v1)",
+          "Enter custom API key",
+          "Select model from dropdown or enter custom model ID"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "supports_vision": true,
+        "notes": "Most popular AI IDE. Supports custom OpenAI-compatible endpoints. Works with localhost proxies (requires 127.0.0.1 instead of localhost). Model discovery via GET /v1/models.",
+        "references": [
+          "https://gist.github.com/seven7763/2c7bee16eeeae260db5e26c3ab48d626",
+          "https://docs.merge.dev/merge-gateway/features/use-in-your-ide/cursor",
+          "https://llmgateway.io/guides/cursor"
+        ]
+      },
+      {
+        "id": "windsurf",
+        "name": "Windsurf",
+        "category": "desktop_ide",
+        "website": "https://codeium.com/windsurf",
+        "docs_url": "https://docs.codeium.com/windsurf",
+        "company": "Codeium",
+        "config_format": "ui_settings + env_vars",
+        "config_location": "Settings → AI Provider (or via MITM proxy)",
+        "setup_steps": [
+          "Open Windsurf settings",
+          "Navigate to AI Provider configuration",
+          "Set custom endpoint URL",
+          "Configure API key via environment variables (WIND_SURF_OPENAI_API_KEY, WIND_SURF_ANTHROPIC_API_KEY)",
+          "Restart IDE"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "supports_mcp": true,
+        "notes": "Agentic IDE with Cascade agent. Native Codeium models but supports custom providers. MCP server integration. Community uses MITM proxies for custom backends.",
+        "references": [
+          "https://github.com/tamaxhh/Claude_code_Local_Setup/blob/main/windsurf-config/setup-notes.md",
+          "https://github.com/pqhaz3925/windsurf-proxy",
+          "https://markaicode.com/howto/windsurf-install-and-environment-variables-setup/"
+        ]
+      },
+      {
+        "id": "zed",
+        "name": "Zed",
+        "category": "desktop_ide",
+        "website": "https://zed.dev",
+        "docs_url": "https://zed.dev/docs",
+        "github": "https://github.com/zed-industries/zed",
+        "config_format": "json",
+        "config_location": "~/.config/zed/settings.json (Settings → AI → LLM Providers)",
+        "setup_steps": [
+          "Open Zed settings with 'agent: open settings' command",
+          "Navigate to AI → LLM Providers section",
+          "Add custom provider configuration in JSON format",
+          "Configure api_url, model name, and available_models array",
+          "API keys stored in system keychain"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "supports_mcp": true,
+        "config_example": {
+          "language_models": {
+            "openai-compatible": {
+              "api_url": "https://api.groq.com/openai/v1",
+              "low_speed_timeout_in_seconds": 600,
+              "available_models": [
+                {"name": "llama-3.1-8b-instant", "max_tokens": 10000}
+              ]
+            }
+          }
+        },
+        "notes": "High-performance Rust-based editor. Native MCP support. Custom OpenAI-compatible provider configuration via JSON.",
+        "references": [
+          "https://zed.dev/docs/ai/use-api-access",
+          "https://zed.dev/docs/ai/use-a-gateway",
+          "https://gist.github.com/pchalasani/9e71c58d2f846412b253ae0ecf0ae70e"
+        ]
+      },
+      {
+        "id": "fleet",
+        "name": "Fleet",
+        "category": "desktop_ide",
+        "website": "https://www.jetbrains.com/fleet/",
+        "docs_url": "https://www.jetbrains.com/help/fleet/",
+        "company": "JetBrains",
+        "config_format": "ui_settings",
+        "config_location": "Settings → Tools → AI Assistant",
+        "setup_steps": [
+          "Open Settings (Ctrl+Alt+S)",
+          "Navigate to Tools → AI Assistant → Providers & API keys",
+          "Select provider (OpenAI-compatible, Anthropic, Google, etc.)",
+          "Enter API key and custom endpoint if needed"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Next-gen JetBrains IDE. Shares AI Assistant infrastructure with IntelliJ platform.",
+        "references": [
+          "https://www.jetbrains.com/help/ai-assistant/use-custom-models.html"
+        ]
+      },
+      {
+        "id": "nova",
+        "name": "Nova",
+        "category": "desktop_ide",
+        "website": "https://nova.app",
+        "docs_url": "https://docs.nova.app",
+        "company": "Panic",
+        "config_format": "unknown",
+        "config_location": "No native AI integration found",
+        "setup_steps": [],
+        "supports_streaming": false,
+        "supports_tools": false,
+        "notes": "macOS-native editor. No built-in AI assistant as of 2026. May require extensions or external tools.",
+        "references": []
+      }
+    ],
+    "vscode_extensions": [
+      {
+        "id": "continue",
+        "name": "Continue",
+        "category": "vscode_extension",
+        "website": "https://continue.dev",
+        "docs_url": "https://docs.continue.dev",
+        "github": "https://github.com/continuedev/continue",
+        "marketplace": "https://marketplace.visualstudio.com/items?itemName=Continue.continue",
+        "config_format": "yaml",
+        "config_location": "~/.continue/config.yaml",
+        "setup_steps": [
+          "Install Continue extension from VS Code marketplace",
+          "Open Continue sidebar (Cmd/Ctrl+L)",
+          "Click gear icon → Configure",
+          "Edit config.yaml with custom provider settings",
+          "Add OpenAI-compatible provider with apiBase and apiKey"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "config_example": {
+          "models": [
+            {
+              "title": "Custom Model",
+              "provider": "openai",
+              "model": "gpt-4",
+              "apiBase": "https://your-gateway.com/v1",
+              "apiKey": "your-key"
+            }
+          ]
+        },
+        "notes": "Acquired by Cursor in June 2026. Final v2.0.0 release. Highly flexible config. Supports 100+ providers via OpenAI-compatible API.",
+        "references": [
+          "https://docs.continue.dev/customize/model-providers/top-level/openai",
+          "https://docs.continue.dev/reference",
+          "https://localaimaster.com/blog/continue-dev-ollama-setup"
+        ]
+      },
+      {
+        "id": "cline",
+        "name": "Cline",
+        "category": "vscode_extension",
+        "website": "https://cline.bot",
+        "docs_url": "https://docs.cline.bot",
+        "github": "https://github.com/cline/cline",
+        "marketplace": "https://marketplace.visualstudio.com/items?itemName=cline.cline",
+        "config_format": "ui_settings",
+        "config_location": "Cline sidebar → API Provider dropdown",
+        "setup_steps": [
+          "Install Cline extension",
+          "Open Cline panel in sidebar",
+          "Click API Provider dropdown",
+          "Select 'OpenAI Compatible'",
+          "Enter Base URL and API Key",
+          "Configure model name"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "supports_mcp": true,
+        "notes": "Autonomous coding agent. Supports OpenAI-compatible APIs, MCP servers, custom modes. LiteLLM integration for enterprise.",
+        "references": [
+          "https://docs.cline.bot/provider-config/openai-compatible",
+          "https://docs.cline.bot/sdk/model-providers",
+          "https://github.com/rextanka/zero-cost-cline"
+        ]
+      },
+      {
+        "id": "kilo",
+        "name": "Kilo Code",
+        "category": "vscode_extension",
+        "website": "https://kilo.ai",
+        "docs_url": "https://docs.kilo.ai",
+        "github": "https://github.com/kiloai/kilo",
+        "marketplace": "https://marketplace.visualstudio.com/items?itemName=kilo.kilo",
+        "config_format": "jsonc",
+        "config_location": "Kilo settings (gear icon in Kilo sidebar)",
+        "setup_steps": [
+          "Install Kilo Code extension",
+          "Open settings via gear icon",
+          "Configure API provider and credentials",
+          "Supports reading .roomodes configs from Roo Code"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Fork of Roo Code (shut down May 2026). Maintains compatibility with Roo configs. Active development.",
+        "references": [
+          "https://kilo.ai/articles/roo-to-kilo-migration-guide",
+          "https://kilo.ai/docs/getting-started/settings",
+          "https://blog.kilo.ai/p/thank-you-roo"
+        ]
+      },
+      {
+        "id": "roo-code",
+        "name": "Roo Code",
+        "category": "vscode_extension",
+        "website": "https://roo.codes (archived)",
+        "docs_url": "https://docs.roo.codes (archived)",
+        "github": "https://github.com/RooCodeInc/Roo-Code (archived)",
+        "marketplace": "Removed from marketplace",
+        "config_format": "jsonc",
+        "config_location": "N/A - Shut down May 2026",
+        "setup_steps": [],
+        "supports_streaming": false,
+        "supports_tools": false,
+        "status": "discontinued",
+        "notes": "Shut down April 21, 2026. Team pivoted to Roomote (Slack agent). Recommended migration: Cline or Kilo Code. Extension still runs but no updates.",
+        "references": [
+          "https://kilo.ai/articles/roo-to-kilo-migration-guide",
+          "https://localaimaster.com/blog/roo-code-shutdown-local-alternative",
+          "https://rywalker.com/research/ai-coding-assistants"
+        ]
+      },
+      {
+        "id": "aide",
+        "name": "Aide",
+        "category": "vscode_extension",
+        "website": "https://aide.dev",
+        "docs_url": "https://docs.aide.dev",
+        "marketplace": "https://marketplace.visualstudio.com/items?itemName=aide.aide",
+        "config_format": "ui_settings",
+        "config_location": "Extension settings",
+        "setup_steps": [
+          "Install Aide extension",
+          "Configure via extension settings",
+          "Select API provider and enter credentials"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Limited public documentation on custom API configuration.",
+        "references": []
+      },
+      {
+        "id": "github-copilot",
+        "name": "GitHub Copilot",
+        "category": "vscode_extension",
+        "website": "https://github.com/features/copilot",
+        "docs_url": "https://docs.github.com/copilot",
+        "marketplace": "https://marketplace.visualstudio.com/items?itemName=GitHub.copilot",
+        "config_format": "ui_settings + extensions",
+        "config_location": "Settings → Chat Models (VS Code Insiders) or via extension bridges",
+        "setup_steps": [
+          "Native BYOK: Use VS Code Insiders with Custom Endpoint configuration",
+          "Extension bridges: Install oai-compatible-copilot or similar",
+          "Configure settings.json with copilot.chat.azureModels or custom provider",
+          "Enter endpoint URL and API key"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "supports_vision": true,
+        "notes": "Native GitHub models + BYOK support via Custom Endpoint (Insiders build). Community extensions enable OpenAI/Anthropic/Ollama integration.",
+        "references": [
+          "https://marketplace.visualstudio.com/items?itemName=toannm.personal-openai-chat",
+          "https://github.com/JohnnyZ93/oai-compatible-copilot",
+          "https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models"
+        ]
+      },
+      {
+        "id": "double",
+        "name": "Double",
+        "category": "vscode_extension",
+        "website": "https://double.bot",
+        "docs_url": "https://docs.double.bot",
+        "marketplace": "https://marketplace.visualstudio.com/items?itemName=doublebot.doublebot",
+        "config_format": "ui_settings",
+        "config_location": "Extension settings",
+        "setup_steps": [
+          "Install Double extension",
+          "Select model from built-in providers (OpenAI, Anthropic, DeepSeek, etc.)",
+          "Enter API key if using BYOK"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Performance-focused AI assistant. Supports major LLM providers. 30k token context window.",
+        "references": [
+          "https://double.mintlify.app/",
+          "https://marketplace.visualstudio.com/items?itemName=doublebot.doublebot"
+        ]
+      }
+    ],
+    "jetbrains_plugins": [
+      {
+        "id": "jetbrains-ai-assistant",
+        "name": "JetBrains AI Assistant",
+        "category": "jetbrains_plugin",
+        "website": "https://www.jetbrains.com/ai/",
+        "docs_url": "https://www.jetbrains.com/help/ai-assistant/",
+        "config_format": "ui_settings",
+        "config_location": "Settings → Tools → AI Assistant → Providers & API keys",
+        "setup_steps": [
+          "Install AI Assistant plugin (bundled with 2024.3+)",
+          "Open Settings (Ctrl+Alt+S)",
+          "Navigate to Tools → AI Assistant → Providers & API keys",
+          "Select provider: OpenAI-compatible, Anthropic, Google, Ollama, LM Studio",
+          "Enter API key and optional custom endpoint",
+          "Select models"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "supports_mcp": true,
+        "notes": "Hybrid model system. Supports JetBrains AI subscription, BYOK, local models. MCP integration since 2025.1. Works across all JetBrains IDEs.",
+        "references": [
+          "https://www.jetbrains.com/help/ai-assistant/use-custom-models.html",
+          "https://www.jetbrains.com/help/ai-assistant/settings-reference-providers-and-api-keys.html",
+          "https://blog.jetbrains.com/idea/2025/05/intellij-idea-2025-1-model-context-protocol/"
+        ]
+      },
+      {
+        "id": "tabnine",
+        "name": "Tabnine",
+        "category": "jetbrains_plugin",
+        "website": "https://www.tabnine.com",
+        "docs_url": "https://docs.tabnine.com",
+        "marketplace": "https://plugins.jetbrains.com/plugin/12798-tabnine",
+        "config_format": "ui_settings",
+        "config_location": "Plugin settings",
+        "setup_steps": [
+          "Install Tabnine plugin",
+          "Sign in to Tabnine account",
+          "Configure completion settings",
+          "Enterprise: Can connect to custom LLM endpoints"
+        ],
+        "supports_streaming": true,
+        "supports_tools": false,
+        "notes": "Local + cloud models. Enterprise version supports custom model endpoints. Privacy-focused.",
+        "references": [
+          "https://www.tabnine.com",
+          "https://zencoder.ai/blog/tabnine-vs-codeium"
+        ]
+      },
+      {
+        "id": "codeium-jetbrains",
+        "name": "Codeium",
+        "category": "jetbrains_plugin",
+        "website": "https://codeium.com",
+        "docs_url": "https://docs.codeium.com",
+        "marketplace": "https://plugins.jetbrains.com/plugin/20540-codeium",
+        "config_format": "ui_settings",
+        "config_location": "Plugin settings",
+        "setup_steps": [
+          "Install Codeium plugin",
+          "Sign in or use free tier",
+          "Configure via plugin settings"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Free tier available. Cloud-based completions. Chat and code generation. 70+ languages.",
+        "references": [
+          "https://codeium.com",
+          "https://markaicode.com/howto/codeium-setup-and-configuration-guide/"
+        ]
+      }
+    ],
+    "terminal_agents": [
+      {
+        "id": "aider",
+        "name": "Aider",
+        "category": "terminal_agent",
+        "website": "https://aider.chat",
+        "docs_url": "https://aider.chat/docs/",
+        "github": "https://github.com/paul-gauthier/aider",
+        "config_format": "env_vars + cli_flags",
+        "config_location": "~/.aider.conf.yml or .env file",
+        "setup_steps": [
+          "Install via pip: pip install aider-chat",
+          "Set API key: export OPENAI_API_KEY=sk-...",
+          "For custom endpoints: --openai-api-base https://your-api.com/v1",
+          "Or configure in ~/.aider.conf.yml"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "config_example": {
+          "env": {
+            "OPENAI_API_KEY": "sk-...",
+            "OPENAI_API_BASE": "https://custom.com/v1"
+          },
+          "cli": "aider --model gpt-4 --openai-api-base https://custom.com/v1"
+        },
+        "notes": "Git-native AI pair programmer. Supports any OpenAI-compatible API. Auto-commits changes. 42k+ GitHub stars.",
+        "references": [
+          "https://aider.chat/docs/llms/openai-compat.html",
+          "https://aider.chat/docs/config/api-keys.html",
+          "http://www.enterprisedna.co/resources/guides/guide-aider-tutorial"
+        ]
+      },
+      {
+        "id": "opencode",
+        "name": "OpenCode",
+        "category": "terminal_agent",
+        "website": "https://opencode.ai",
+        "docs_url": "https://opencode-tutorial.com",
+        "github": "https://github.com/opencode-ai/opencode",
+        "config_format": "yaml + env_vars",
+        "config_location": "~/.config/opencode/config.yaml",
+        "setup_steps": [
+          "Install OpenCode CLI",
+          "Set API credentials via environment variables",
+          "Configure config.yaml with provider settings",
+          "Supports Claude, GPT-4, Gemini, Ollama"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "supports_mcp": true,
+        "notes": "Go-based CLI with TUI. LSP support. Multi-session workflows. MCP integration. Editor-agnostic.",
+        "references": [
+          "https://opencode.ai/",
+          "https://opencode-tutorial.com/",
+          "https://github.com/opencode-ai/opencode"
+        ]
+      },
+      {
+        "id": "claude-code",
+        "name": "Claude Code",
+        "category": "terminal_agent",
+        "website": "https://code.claude.com",
+        "docs_url": "https://docs.anthropic.com/en/docs/claude-code",
+        "github": "https://github.com/anthropics/claude-code",
+        "config_format": "env_vars + settings.json",
+        "config_location": "~/.claude/settings.json + ANTHROPIC_BASE_URL env var",
+        "setup_steps": [
+          "Install: npm install -g @anthropic-ai/claude-code",
+          "Set API key: export ANTHROPIC_API_KEY=sk-ant-...",
+          "Custom endpoint: export ANTHROPIC_BASE_URL=https://custom.com",
+          "Or use /config command in interactive session"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "supports_mcp": true,
+        "config_example": {
+          "env": {
+            "ANTHROPIC_API_KEY": "sk-ant-...",
+            "ANTHROPIC_BASE_URL": "https://custom-gateway.com"
+          }
+        },
+        "notes": "Official Anthropic CLI. Native Claude integration. MCP support. LLM gateway routing. Hooks and skills system.",
+        "references": [
+          "https://docs.anthropic.com/en/docs/claude-code/cli-usage",
+          "https://code.claude.com/docs/en/model-config",
+          "https://code.claude.com/docs/en/llm-gateway"
+        ]
+      },
+      {
+        "id": "plandex",
+        "name": "Plandex",
+        "category": "terminal_agent",
+        "website": "https://plandex.ai",
+        "docs_url": "https://docs.plandex.ai",
+        "github": "https://github.com/plandex-ai/plandex",
+        "config_format": "env_vars",
+        "config_location": "Environment variables",
+        "setup_steps": [
+          "Install Plandex CLI",
+          "Set OPENAI_API_KEY or ANTHROPIC_API_KEY",
+          "Run plandex new to start planning",
+          "Supports 2M token context, handles large codebases"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Terminal-based agent for large coding tasks. Client-server architecture. Tree-sitter project maps for 20M+ token codebases.",
+        "references": [
+          "https://github.com/plandex-ai/plandex",
+          "https://railway.com/template/plandex"
+        ]
+      },
+      {
+        "id": "gpt-engineer",
+        "name": "GPT Engineer",
+        "category": "terminal_agent",
+        "website": "https://github.com/gpt-engineer-org/gpt-engineer",
+        "docs_url": "https://github.com/gpt-engineer-org/gpt-engineer/blob/main/README.md",
+        "github": "https://github.com/gpt-engineer-org/gpt-engineer",
+        "config_format": "env_vars",
+        "config_location": ".env file",
+        "setup_steps": [
+          "Install: pip install gpt-engineer",
+          "Set OPENAI_API_KEY in .env",
+          "Run: gpt-engineer <project_dir>",
+          "Custom base URL via standard OpenAI SDK env vars"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Automated codebase generation. Uses OpenAI SDK standard configuration.",
+        "references": [
+          "https://github.com/gpt-engineer-org/gpt-engineer"
+        ]
+      },
+      {
+        "id": "smol-developer",
+        "name": "Smol Developer",
+        "category": "terminal_agent",
+        "website": "https://github.com/smol-ai/developer",
+        "docs_url": "https://github.com/smol-ai/developer/blob/main/README.md",
+        "github": "https://github.com/smol-ai/developer",
+        "config_format": "env_vars",
+        "config_location": ".env file",
+        "setup_steps": [
+          "Install dependencies",
+          "Set OPENAI_API_KEY",
+          "Run smol developer script"
+        ],
+        "supports_streaming": false,
+        "supports_tools": true,
+        "notes": "Minimalist AI developer. Uses OpenAI API. May be deprecated in favor of newer tools.",
+        "references": [
+          "https://github.com/smol-ai/developer"
+        ]
+      },
+      {
+        "id": "orca-agent",
+        "name": "Orca (Agent)",
+        "category": "terminal_agent",
+        "website": "https://orcaagent.dev",
+        "docs_url": "https://orcaagent.dev/docs",
+        "github": "https://github.com/orcaagent/orca",
+        "config_format": "config_file",
+        "config_location": "Project configuration",
+        "setup_steps": [
+          "Install Orca CLI",
+          "Configure DeepSeek or other provider",
+          "Long-context coding with multi-turn tool use"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "DeepSeek-native terminal agent. Rust-based. Prefix-cache friendly. Approval-aware automation.",
+        "references": [
+          "https://orcaagent.dev/",
+          "https://github.com/opencode-ai/opencode"
+        ]
+      }
+    ],
+    "vim_neovim": [
+      {
+        "id": "avante-nvim",
+        "name": "avante.nvim",
+        "category": "neovim_plugin",
+        "website": "https://github.com/yetone/avante.nvim",
+        "docs_url": "https://github.com/yetone/avante.nvim/blob/main/README.md",
+        "github": "https://github.com/yetone/avante.nvim",
+        "config_format": "lua",
+        "config_location": "~/.config/nvim/lua/plugins/avante.lua",
+        "setup_steps": [
+          "Install via plugin manager (lazy.nvim, packer, etc.)",
+          "Configure provider in Lua config",
+          "Set API endpoint and key",
+          "Supports custom OpenAI-compatible providers"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "config_example": {
+          "lua": "{\n  provider = 'openai',\n  openai = {\n    endpoint = 'https://api.openai.com/v1/chat/completions',\n    model = 'gpt-4',\n    api_key = os.getenv('OPENAI_API_KEY')\n  }\n}"
+        },
+        "notes": "Cursor-like behavior in Neovim. AI code suggestions and inline edits. Custom provider support.",
+        "references": [
+          "https://github.com/yetone/avante.nvim",
+          "https://github.com/yetone/avante.nvim/wiki/Custom-providers"
+        ]
+      },
+      {
+        "id": "codecompanion-nvim",
+        "name": "codecompanion.nvim",
+        "category": "neovim_plugin",
+        "website": "https://github.com/olimorris/codecompanion.nvim",
+        "docs_url": "https://github.com/olimorris/codecompanion.nvim/blob/main/README.md",
+        "github": "https://github.com/olimorris/codecompanion.nvim",
+        "config_format": "lua",
+        "config_location": "~/.config/nvim/lua/plugins/codecompanion.lua",
+        "setup_steps": [
+          "Install via plugin manager",
+          "Configure adapters for providers (OpenAI, Anthropic, Gemini, Ollama, Copilot)",
+          "Set API credentials",
+          "Supports agent workflows"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Full-featured AI coding assistant for Neovim. Supports multiple providers. Agent capabilities.",
+        "references": [
+          "https://github.com/olimorris/codecompanion.nvim",
+          "https://github.com/deepseek-ai/awesome-deepseek-integration/blob/main/docs/codecompanion.nvim/README.md"
+        ]
+      },
+      {
+        "id": "chatgpt-nvim",
+        "name": "ChatGPT.nvim",
+        "category": "neovim_plugin",
+        "website": "https://github.com/jackMort/ChatGPT.nvim",
+        "docs_url": "https://github.com/jackMort/ChatGPT.nvim/blob/main/README.md",
+        "github": "https://github.com/jackMort/ChatGPT.nvim",
+        "config_format": "lua",
+        "config_location": "Neovim config",
+        "setup_steps": [
+          "Install via plugin manager",
+          "Set OPENAI_API_KEY environment variable",
+          "Configure via Lua",
+          "Use :ChatGPT commands"
+        ],
+        "supports_streaming": true,
+        "supports_tools": false,
+        "notes": "OpenAI ChatGPT integration for Neovim. Simple chat interface.",
+        "references": [
+          "https://github.com/jackMort/ChatGPT.nvim"
+        ]
+      },
+      {
+        "id": "vim-ai",
+        "name": "vim-ai",
+        "category": "vim_plugin",
+        "website": "https://github.com/madox2/vim-ai",
+        "docs_url": "https://github.com/madox2/vim-ai/blob/main/README.md",
+        "github": "https://github.com/madox2/vim-ai",
+        "config_format": "vimscript",
+        "config_location": ".vimrc or init.vim",
+        "setup_steps": [
+          "Install plugin",
+          "Set g:vim_ai_openai_api_key",
+          "Optionally set custom endpoint",
+          "Use :AI commands"
+        ],
+        "supports_streaming": true,
+        "supports_tools": false,
+        "notes": "Lightweight AI integration for Vim and Neovim. OpenAI API support.",
+        "references": [
+          "https://github.com/madox2/vim-ai"
+        ]
+      },
+      {
+        "id": "coc-ai",
+        "name": "coc-ai",
+        "category": "neovim_plugin",
+        "website": "https://github.com/Kuro96/coc-ai",
+        "docs_url": "https://github.com/Kuro96/coc-ai/blob/main/README.md",
+        "github": "https://github.com/Kuro96/coc-ai",
+        "config_format": "json",
+        "config_location": "coc-settings.json",
+        "setup_steps": [
+          "Install coc.nvim",
+          "Install coc-ai extension",
+          "Configure in coc-settings.json",
+          "Supports OpenAI, DeepSeek, and compatible APIs"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "AI assistant built on coc.nvim extension system. Supports reasoning models like DeepSeek-R1.",
+        "references": [
+          "https://github.com/Kuro96/coc-ai"
+        ]
+      }
+    ],
+    "emacs": [
+      {
+        "id": "gptel",
+        "name": "gptel",
+        "category": "emacs_package",
+        "website": "https://github.com/karthink/gptel",
+        "docs_url": "https://github.com/karthink/gptel/blob/master/README.md",
+        "github": "https://github.com/karthink/gptel",
+        "config_format": "elisp",
+        "config_location": "init.el or .emacs",
+        "setup_steps": [
+          "Install via package manager (MELPA)",
+          "Configure with (setq gptel-api-key \"sk-...\")",
+          "Set custom backend with gptel-make-openai",
+          "Optionally use auth-source for key management"
+        ],
+        "supports_streaming": true,
+        "supports_tools": false,
+        "config_example": {
+          "elisp": "(gptel-make-openai \"Custom\"\n  :host \"custom-api.com\"\n  :endpoint \"/v1/chat/completions\"\n  :stream t\n  :key \"your-api-key\"\n  :models '(\"gpt-4\" \"gpt-3.5-turbo\"))"
+        },
+        "notes": "No-frills ChatGPT client for Emacs. Supports multiple backends. Clean interface.",
+        "references": [
+          "https://github.com/karthink/gptel"
+        ]
+      },
+      {
+        "id": "chatgpt-shell",
+        "name": "chatgpt-shell",
+        "category": "emacs_package",
+        "website": "https://github.com/xenodium/chatgpt-shell",
+        "docs_url": "https://github.com/xenodium/chatgpt-shell/blob/main/README.md",
+        "github": "https://github.com/xenodium/chatgpt-shell",
+        "config_format": "elisp",
+        "config_location": "init.el",
+        "setup_steps": [
+          "Install from MELPA",
+          "Set chatgpt-shell-openai-key",
+          "Optionally configure custom endpoint",
+          "Run M-x chatgpt-shell"
+        ],
+        "supports_streaming": true,
+        "supports_tools": false,
+        "notes": "ChatGPT shell interface for Emacs. Simple and effective.",
+        "references": [
+          "https://github.com/xenodium/chatgpt-shell"
+        ]
+      },
+      {
+        "id": "org-ai",
+        "name": "org-ai",
+        "category": "emacs_package",
+        "website": "https://github.com/rksm/org-ai",
+        "docs_url": "https://github.com/rksm/org-ai/blob/master/README.md",
+        "github": "https://github.com/rksm/org-ai",
+        "config_format": "elisp",
+        "config_location": "init.el",
+        "setup_steps": [
+          "Install from MELPA",
+          "Set org-ai-openai-api-token",
+          "Configure in org-mode documents",
+          "Supports text generation, DALL-E, speech"
+        ],
+        "supports_streaming": true,
+        "supports_tools": false,
+        "notes": "Org-mode integration for LLMs. ChatGPT, LLaMA, DALL-E, Stable Diffusion support. Speech I/O.",
+        "references": [
+          "https://github.com/rksm/org-ai"
+        ]
+      }
+    ],
+    "standalone_desktop": [
+      {
+        "id": "orca-ade",
+        "name": "Orca (ADE)",
+        "category": "standalone_desktop",
+        "website": "https://www.onorca.dev",
+        "docs_url": "https://www.onorca.dev/docs",
+        "github": "https://github.com/stablyai/orca",
+        "config_format": "ui_settings",
+        "config_location": "App settings",
+        "setup_steps": [
+          "Download Orca for macOS/Windows/Linux",
+          "Configure API credentials for agents (Claude Code, Codex, OpenCode)",
+          "Each agent runs in isolated worktree",
+          "Mobile companion apps available"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Agent Development Environment. Runs multiple coding agents in parallel. Ghostty-inspired terminals. Git worktree isolation.",
+        "references": [
+          "https://www.onorca.dev/",
+          "https://github.com/stablyai/orca",
+          "https://agmazon.com/blog/articles/technology/202607/orca-ade-guide-en.html"
+        ]
+      }
+    ],
+    "web_ide": [
+      {
+        "id": "replit",
+        "name": "Replit",
+        "category": "web_ide",
+        "website": "https://replit.com",
+        "docs_url": "https://docs.replit.com",
+        "config_format": "secrets + replit_ai_integrations",
+        "config_location": "Replit Secrets (🔒 icon) + AI Integrations",
+        "setup_steps": [
+          "Create Replit account",
+          "Store API keys in Secrets (lock icon)",
+          "Use Replit AI Integrations for managed access (no API key needed)",
+          "Or install SDK and use custom OpenAI-compatible endpoint"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Cloud IDE with built-in AI integrations. Replit AI Integrations provides 300+ models without API keys. Also supports BYOK via Secrets.",
+        "references": [
+          "https://docs.replit.com/features/integrations/replit-ai-integrations",
+          "https://www.rapidevelopers.com/replit-integration/openai-gpt",
+          "https://openrouter.ai/docs/guides/community/replit"
+        ]
+      },
+      {
+        "id": "codesandbox",
+        "name": "CodeSandbox",
+        "category": "web_ide",
+        "website": "https://codesandbox.io",
+        "docs_url": "https://codesandbox.io/docs",
+        "config_format": "sdk",
+        "config_location": "CodeSandbox SDK (programmatic)",
+        "setup_steps": [
+          "Use CodeSandbox web IDE",
+          "For AI agents: Use CodeSandbox SDK (acquired by Together AI)",
+          "Programmatically create sandboxes for code execution",
+          "Forking, snapshots, hibernation support"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Cloud IDE for collaborative development. CodeSandbox SDK for AI agents (now part of Together AI). MicroVM environments.",
+        "references": [
+          "https://codesandbox.io/blog/codesandbox-sdk",
+          "https://github.com/codesandbox/codesandbox-sdk",
+          "https://rywalker.com/research/codesandbox-sdk"
+        ]
+      },
+      {
+        "id": "stackblitz",
+        "name": "StackBlitz",
+        "category": "web_ide",
+        "website": "https://stackblitz.com",
+        "docs_url": "https://developer.stackblitz.com",
+        "config_format": "webcontainer",
+        "config_location": "WebContainer API",
+        "setup_steps": [
+          "Use StackBlitz web IDE",
+          "Instant dev environments in browser",
+          "WebContainer technology for full Node.js runtime"
+        ],
+        "supports_streaming": true,
+        "supports_tools": false,
+        "notes": "Instant full-stack environments in browser. WebContainer technology. No native AI features but can be integrated via bolt.new forks.",
+        "references": [
+          "https://stackblitz.com",
+          "https://github.com/stackblitz/bolt.new"
+        ]
+      }
+    ],
+    "browser_based": [
+      {
+        "id": "bolt-new",
+        "name": "bolt.new",
+        "category": "browser_based",
+        "website": "https://bolt.new",
+        "docs_url": "https://support.bolt.new",
+        "github": "https://github.com/stackblitz/bolt.new",
+        "config_format": "ui_settings",
+        "config_location": "Model selector in UI",
+        "setup_steps": [
+          "Visit bolt.new",
+          "Select model from built-in providers",
+          "For self-hosted: Use bolt.diy fork with custom models",
+          "Configure .env with provider credentials"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "AI-powered full-stack web app builder. Official version uses StackBlitz models. bolt.diy fork supports 20+ providers (OpenAI, Anthropic, Ollama, OpenRouter, etc.).",
+        "references": [
+          "https://bolt.new",
+          "https://github.com/stackblitz/bolt.new",
+          "https://github.com/stackblitz-labs/bolt.diy"
+        ]
+      },
+      {
+        "id": "lovable",
+        "name": "Lovable",
+        "category": "browser_based",
+        "website": "https://lovable.dev",
+        "docs_url": "https://docs.lovable.dev",
+        "config_format": "managed",
+        "config_location": "Managed service",
+        "setup_steps": [
+          "Create Lovable account",
+          "Use built-in AI features (no API key needed)",
+          "Generate full-stack apps via chat or visual editor",
+          "One-click publishing"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "notes": "Full-stack app builder with built-in AI. No custom API configuration (managed service). Visual edits, backend generation, publishing.",
+        "references": [
+          "https://lovable.dev",
+          "https://docs.lovable.dev/features/ai",
+          "https://lovable.dev/guides/lovable-vs-bolt-vs-v0"
+        ]
+      },
+      {
+        "id": "v0",
+        "name": "v0",
+        "category": "browser_based",
+        "website": "https://v0.dev",
+        "docs_url": "https://v0.dev/docs",
+        "config_format": "managed",
+        "config_location": "Managed service (Vercel)",
+        "setup_steps": [
+          "Visit v0.dev",
+          "Describe UI component",
+          "Generate React/Next.js components",
+          "Export to existing projects"
+        ],
+        "supports_streaming": true,
+        "supports_tools": false,
+        "notes": "Vercel's AI component generator. Focused on UI components, not full apps. No custom API configuration.",
+        "references": [
+          "https://v0.dev",
+          "https://lovable.dev/guides/lovable-vs-bolt-vs-v0"
+        ]
+      }
+    ],
+    "local_model_servers": [
+      {
+        "id": "ollama",
+        "name": "Ollama",
+        "category": "local_model_server",
+        "website": "https://ollama.com",
+        "docs_url": "https://github.com/ollama/ollama/blob/main/README.md",
+        "github": "https://github.com/ollama/ollama",
+        "config_format": "cli",
+        "config_location": "Command line + API server",
+        "setup_steps": [
+          "Install Ollama",
+          "Run: ollama serve (starts API server on localhost:11434)",
+          "Pull models: ollama pull llama3",
+          "OpenAI-compatible API at http://localhost:11434/v1"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "api_endpoint": "http://localhost:11434/v1",
+        "notes": "Local LLM runtime. OpenAI-compatible API. Used by Continue, Cursor, Zed, JetBrains AI, and many others for local models.",
+        "references": [
+          "https://ollama.com",
+          "https://ollama.com/blog/continue-code-assistant",
+          "https://localaimaster.com/blog/continue-dev-ollama-setup"
+        ]
+      },
+      {
+        "id": "lm-studio",
+        "name": "LM Studio",
+        "category": "local_model_server",
+        "website": "https://lmstudio.ai",
+        "docs_url": "https://lmstudio.ai/docs",
+        "config_format": "desktop_app",
+        "config_location": "LM Studio app → Local Server tab",
+        "setup_steps": [
+          "Download and install LM Studio",
+          "Download models via UI",
+          "Start local server (port 1234 by default)",
+          "OpenAI-compatible API at http://localhost:1234/v1",
+          "Also supports Anthropic-compatible endpoints"
+        ],
+        "supports_streaming": true,
+        "supports_tools": true,
+        "api_endpoint": "http://localhost:1234/v1",
+        "notes": "Desktop app for running local LLMs. OpenAI and Anthropic-compatible APIs. Supports Responses API. Native tool use.",
+        "references": [
+          "https://lmstudio.ai/docs/app/api",
+          "https://lmstudio.ai/docs/api/openai-api",
+          "https://markaicode.com/lm-studio-api-server-openai-compatible/"
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "total_researched": 45,
+    "by_category": {
+      "desktop_ide": 5,
+      "vscode_extension": 7,
+      "jetbrains_plugin": 3,
+      "terminal_agent": 7,
+      "neovim_plugin": 5,
+      "vim_plugin": 2,
+      "emacs_package": 3,
+      "standalone_desktop": 1,
+      "web_ide": 3,
+      "browser_based": 3,
+      "local_model_server": 2
+    },
+    "openai_compatible_support": 43,
+    "custom_api_support": 38,
+    "discontinued": 1
+  },
+  "sources": [
+    "https://gist.github.com/seven7763/2c7bee16eeeae260db5e26c3ab48d626",
+    "https://docs.merge.dev/merge-gateway/features/use-in-your-ide/cursor",
+    "https://docs.continue.dev/customize/model-providers/top-level/openai",
+    "https://zed.dev/docs/ai/use-api-access",
+    "https://docs.cline.bot/provider-config/openai-compatible",
+    "https://aider.chat/docs/llms/openai-compat.html",
+    "https://docs.anthropic.com/en/docs/claude-code/cli-usage",
+    "https://github.com/yetone/avante.nvim",
+    "https://github.com/olimorris/codecompanion.nvim",
+    "https://www.jetbrains.com/help/ai-assistant/use-custom-models.html",
+    "https://lmstudio.ai/docs/api/openai-api",
+    "https://ollama.com/blog/continue-code-assistant",
+    "https://github.com/stackblitz-labs/bolt.diy"
+  ]
+}
