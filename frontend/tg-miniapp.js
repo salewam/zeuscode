@@ -7,12 +7,12 @@
   const SS_KEY = "zc_raw_key";
 
   const MODEL_SHOW = "ZeusCode";
-  const MODEL_TECH = "zeuscode";
+  const MODEL_TECH = "gpt-5.5";
 
   /** Model id as the client expects (Aider needs openai/ prefix via LiteLLM). */
   function clientModelHint(platform) {
     const kind = (platform && platform.configKind) || "";
-    if (kind === "aider") return "openai/zeuscode";
+    if (kind === "aider") return "openai/gpt-5.5";
     return MODEL_TECH;
   }
 
@@ -20,23 +20,23 @@
     "Сделай лендинг автосервиса: витрина 3 фото, 6 услуг с ценами, " +
     "форма записи POST /api/booking, отзывы и FAQ. Асфальт/янтарь, без indigo.";
 
-  /* Какие три нейронки в пресетах (без жаргона в подписях) */
+  /* Standard ZeusCode stack; manual picks 1–3 */
   const PRESET = {
-    simple: ["deepseek-v4-flash", "gemini-3-pro", "claude-haiku-4-5"],
-    power: [
-      "claude-opus-4-6",
-      "gpt-5.4",
-      "deepseek-v4-pro",
-      "gemini-3.1-pro",
-    ],
+    standard: ["claude-opus-4-6", "gpt-5.5", "gpt-5.6-sol"],
+  };
+
+  const ROLE_BY_ARCH = {
+    solo: ["Solo"],
+    combo3: ["Architect", "Builder", "Finalizer"],
   };
 
   const state = {
     route: "learn",
-    mode: "power",
+    mode: "standard",
     selected: new Set(),
     catalog: [],
     modes: [],
+    architecture: "combo3",
     me: null,
     learnStep: 0,
     track: "unknown",
@@ -62,30 +62,43 @@
     );
   }
 
-  /** Same 3 modes as Mini App tab «Модели» — titles + hints 1:1. */
+  /** Same product modes as Mini App tab «Модели». */
   function botFusionModes() {
     const modes =
       state.modes && state.modes.length
         ? state.modes
         : [
-            { id: "simple", title: "Пользовательский", hint: "Три лёгкие нейронки · сами переключаются" },
-            { id: "power", title: "Продвинутый", hint: "Три сильные нейронки · сами переключаются" },
-            { id: "custom", title: "Набор", hint: "Собери до трёх нейронок сам" },
+            {
+              id: "standard",
+              title: "ZeusCode",
+              hint: "Стандартный стек · роли по силе моделей",
+            },
+            {
+              id: "manual",
+              title: "Ручной",
+              hint: "Свой выбор: 1 модель (соло) или 3 модели (Combo-3)",
+            },
           ];
     const byId = Object.fromEntries(modes.map((m) => [m.id, m]));
-    const customIds = [...(state.selected || [])].slice(0, 3);
-    const customHint =
-      customIds.length > 0
-        ? customIds.join(" + ")
-        : "отметь до 3 во вкладке «Модели»";
+    const selectedIds = [...(state.selected || [])].slice(0, 3);
+    const stackHint =
+      selectedIds.length > 0
+        ? selectedIds.join(" + ")
+        : "отметь 1–3 во вкладке «Модели»";
     return {
-      simple: byId.simple || modes[0],
-      power: byId.power || modes[1],
-      custom: byId.custom || modes[2],
-      simpleStack: PRESET.simple,
-      powerStack: PRESET.power,
-      customStack: customIds,
-      customHint,
+      standard: byId.standard || modes[0],
+      manual: byId.manual || modes[1],
+      standardStack: PRESET.standard,
+      selectedStack: selectedIds,
+      stackHint,
+      // legacy keys for older advisor prompts
+      simple: byId.manual || modes[1],
+      power: byId.standard || modes[0],
+      custom: byId.manual || modes[1],
+      simpleStack: selectedIds,
+      powerStack: PRESET.standard,
+      customStack: selectedIds,
+      customHint: stackHint,
     };
   }
 
@@ -109,7 +122,7 @@
     );
     for (const m of rows) {
       const id = String(m.id);
-      if (id === "zeuscode" || id.startsWith("zeuscode")) continue;
+      if (id === "gpt-5.5" || id.startsWith("zeuscode")) continue;
       if (id.startsWith("studio-") || id === "ultra-mode") continue;
       const noTools =
         id === "claude-fable-5" ||
@@ -655,7 +668,7 @@
   function setRoute(route, { push = true } = {}) {
     const prev = state.route;
     if (route === "fusion") state.route = "fusion";
-    else if (route === "advisor") state.route = "advisor";
+    else if (route === "subscription") state.route = "subscription";
     else state.route = "learn";
     if (push) {
       const url = new URL(location.href);
@@ -671,7 +684,7 @@
     }
     $("view-learn")?.classList.toggle("hidden", state.route !== "learn");
     $("view-fusion")?.classList.toggle("hidden", state.route !== "fusion");
-    $("view-advisor")?.classList.toggle("hidden", state.route !== "advisor");
+    $("view-subscription")?.classList.toggle("hidden", state.route !== "subscription");
     document.querySelectorAll(".seg-btn").forEach((btn) => {
       btn.classList.toggle("on", btn.dataset.route === state.route);
       btn.setAttribute("aria-selected", btn.dataset.route === state.route ? "true" : "false");
@@ -719,15 +732,37 @@
   }
 
   /* —— Models —— */
+  function architectureForCount(n) {
+    if (n === 1) return "solo";
+    if (n === 3) return "combo3";
+    return n === 2 ? "invalid" : "combo3";
+  }
+
+  function normalizeUiMode(mode) {
+    if (mode === "standard" || mode === "manual") return mode;
+    if (mode === "power" || mode === "combo3") return "standard";
+    return "manual";
+  }
+
   function renderModes() {
     const box = $("modes");
     if (!box) return;
     const fallback = [
-      { id: "simple", title: "Пользовательский", hint: "Три лёгкие нейронки · сами переключаются" },
-      { id: "power", title: "Продвинутый", hint: "Три сильные нейронки · сами переключаются" },
-      { id: "custom", title: "Набор", hint: "Собери до трёх нейронок сам" },
+      {
+        id: "standard",
+        title: "ZeusCode",
+        hint: "Стандартный стек · роли по силе моделей",
+      },
+      {
+        id: "manual",
+        title: "Ручной",
+        hint: "Свой выбор: 1 модель (соло) или 3 модели (Combo-3)",
+      },
     ];
-    box.innerHTML = (state.modes.length ? state.modes : fallback)
+    const modes = (state.modes.length ? state.modes : fallback).filter((m) =>
+      ["standard", "manual"].includes(m.id)
+    );
+    box.innerHTML = modes
       .map(
         (m) => `<button type="button" class="mode${state.mode === m.id ? " on" : ""}" data-mode="${m.id}">
           <span class="mode-t">${escapeHtml(m.title)}</span>
@@ -738,6 +773,10 @@
     box.querySelectorAll("[data-mode]").forEach((btn) => {
       btn.onclick = () => {
         state.mode = btn.dataset.mode;
+        if (state.mode === "standard") {
+          state.selected = new Set(PRESET.standard);
+          state.architecture = "combo3";
+        }
         renderModes();
         renderModels();
         syncFusionMainButton();
@@ -753,23 +792,25 @@
     const search = $("search-wrap");
     if (!box) return;
 
-    if (state.mode !== "custom") {
+    state.mode = normalizeUiMode(state.mode);
+    state.architecture = architectureForCount(state.selected.size || PRESET.standard.length);
+
+    if (state.mode === "standard") {
       search?.classList.add("hidden");
-      const ids = PRESET[state.mode] || PRESET.power;
+      const ids = [...state.selected].length ? [...state.selected] : PRESET.standard;
+      const roles = ROLE_BY_ARCH.combo3;
       if (hint) {
         hint.textContent =
-          state.mode === "simple"
-            ? "Сейчас включены эти три — лёгкие и быстрые."
-            : "Сейчас включены эти три — посильнее для сложных задач.";
+          "Стандартный ZeusCode: роли (Architect / Builder / Finalizer) назначает сервер по силе моделей.";
       }
-      if ($("pick-n")) $("pick-n").textContent = "3";
+      if ($("pick-n")) $("pick-n").textContent = String(ids.length);
       box.innerHTML = ids
         .map(
           (id, i) => `<div class="model locked">
           <span class="check on-dot">${i + 1}</span>
           <span>
-            <div class="model-t">${escapeHtml(friendlyTitle(id))}</div>
-            <div class="model-id">включена</div>
+            <div class="model-t">${escapeHtml(friendlyTitle(id))}${roles[i] ? ` · ${escapeHtml(roles[i])}` : ""}</div>
+            <div class="model-id">в стеке ZeusCode</div>
           </span>
         </div>`
         )
@@ -778,9 +819,16 @@
     }
 
     search?.classList.remove("hidden");
-    if (hint) hint.textContent = "Отметь до трёх нейронок — они будут работать вместе.";
+    const arch = architectureForCount(state.selected.size);
+    const roles = ROLE_BY_ARCH[arch] || [];
+    if (hint) {
+      hint.textContent =
+        "Отметь 1 или 3 модели. 1 = соло, 3 = Combo-3. Роли по силе моделей.";
+    }
+    if ($("pick-n")) $("pick-n").textContent = `${state.selected.size}/3`;
+
     const q = ($("q")?.value || "").trim().toLowerCase();
-    let rows = state.catalog.filter((m) => m.id !== MODEL_TECH && !String(m.id).startsWith("zeuscode"));
+    let rows = state.catalog.filter((m) => m.id !== MODEL_TECH && !String(m.id).startsWith("gpt-5.5") && !String(m.id).startsWith("zeuscode"));
     if (q) {
       rows = rows.filter(
         (m) =>
@@ -789,14 +837,16 @@
           (m.provider || "").toLowerCase().includes(q)
       );
     }
-    if ($("pick-n")) $("pick-n").textContent = `${state.selected.size}/3`;
     if (!rows.length) {
       box.innerHTML = `<div class="hint">Ничего не найдено</div>`;
       return;
     }
+    const selectedOrder = [...state.selected];
     box.innerHTML = rows
       .map((m) => {
         const on = state.selected.has(m.id);
+        const idx = selectedOrder.indexOf(m.id);
+        const role = idx >= 0 ? roles[idx] || "" : "";
         const inn = m.pricing?.input_per_1m;
         const out = m.pricing?.output_per_1m;
         const price =
@@ -804,9 +854,9 @@
             ? `${Number(inn).toFixed(2)} / ${Number(out || 0).toFixed(2)} ₽ за миллион`
             : "";
         return `<button type="button" class="model${on ? " on" : ""}" data-mid="${escapeHtml(m.id)}">
-          <span class="check">${on ? "✓" : ""}</span>
+          <span class="check">${on ? String(idx + 1) : ""}</span>
           <span>
-            <div class="model-t">${escapeHtml(m.title || m.id)}</div>
+            <div class="model-t">${escapeHtml(m.title || m.id)}${role ? ` · ${escapeHtml(role)}` : ""}</div>
             ${price ? `<div class="model-p">${escapeHtml(price)}</div>` : ""}
           </span>
         </button>`;
@@ -818,12 +868,16 @@
         if (state.selected.has(id)) state.selected.delete(id);
         else {
           if (state.selected.size >= 3) {
-            showErr("Можно выбрать максимум три");
+            showErr("Максимум три модели");
             tg?.HapticFeedback?.notificationOccurred?.("error");
             return;
           }
+          if (state.selected.size === 1) {
+            // Jumping 1→2 is invalid product; keep allowing selection to 3.
+          }
           state.selected.add(id);
         }
+        state.architecture = architectureForCount(state.selected.size);
         showErr("");
         renderModels();
         syncFusionMainButton();
@@ -839,27 +893,33 @@
     tg.MainButton.enable();
   }
 
-  function modeLabel(mode) {
-    if (mode === "simple") return "пользовательский";
-    if (mode === "custom") return "набор";
-    return "продвинутый";
+  function modeLabel(mode, architecture) {
+    if (mode === "standard") return "ZeusCode";
+    if (architecture === "solo") return "ручной · соло";
+    if (architecture === "combo3") return "ручной · Combo-3";
+    return "ручной";
   }
 
   async function saveFusion() {
     showErr("");
     try {
-      if (state.mode === "custom" && state.selected.size < 1) {
-        throw new Error("Выбери хотя бы одну нейронку");
+      state.mode = normalizeUiMode(state.mode);
+      if (state.mode === "manual" && state.selected.size !== 1 && state.selected.size !== 3) {
+        throw new Error("Выбери 1 модель (соло) или ровно 3 (Combo-3)");
       }
       tg?.MainButton?.showProgress?.();
+      const body =
+        state.mode === "standard"
+          ? { mode: "standard", models: PRESET.standard }
+          : { mode: "manual", models: [...state.selected].slice(0, 3) };
       const data = await api("/tg/fusion", {
         method: "PUT",
-        body: {
-          mode: state.mode,
-          models: [...state.selected].slice(0, 3),
-        },
+        body,
       });
-      showOk(`Сохранено: ${modeLabel(data.mode)}`);
+      state.mode = data.mode || state.mode;
+      state.architecture = data.architecture || architectureForCount((data.models || []).length);
+      if (Array.isArray(data.models)) state.selected = new Set(data.models);
+      showOk(`Сохранено: ${modeLabel(data.mode, data.architecture)}`);
       tg?.HapticFeedback?.notificationOccurred?.("success");
       tg?.MainButton?.hideProgress?.();
     } catch (e) {
@@ -1209,7 +1269,8 @@
           <ul>
             <li><b>Пользовательский</b> — три лёгкие, для обычных дел</li>
             <li><b>Продвинутый</b> — три сильные, для сложных</li>
-            <li><b>Набор</b> — сам отметь до трёх</li>
+            <li><b>ZeusCode</b> — стандартный стек из 3 моделей</li>
+            <li><b>Ручной</b> — 1 соло или 3 Combo-3</li>
           </ul>
         </div>
         <button type="button" class="btn-soft primary" data-act="open-fusion">Открыть модели</button>`,
@@ -1567,9 +1628,14 @@
       const name = me.telegram?.first_name || me.telegram?.username || "друг";
       $("hello").textContent = `${name} · ${me.balance_rub ?? "—"} ₽`;
       state.modes = me.fusion?.modes || [];
-      state.mode = me.fusion?.mode || "power";
+      state.mode = normalizeUiMode(me.fusion?.mode || "standard");
       state.catalog = me.catalog || [];
-      state.selected = new Set(me.fusion?.models || []);
+      state.architecture = me.fusion?.architecture || architectureForCount((me.fusion?.models || []).length);
+      if (Array.isArray(me.fusion?.models) && me.fusion.models.length) {
+        state.selected = new Set(me.fusion.models);
+      } else {
+        state.selected = new Set(PRESET.standard);
+      }
       {
         const migrate = {
           vscode: "continue",
