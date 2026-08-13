@@ -19,19 +19,27 @@ def resolve_model_id(model: str | None) -> str:
         m = m[len(ZEUS_ANTHROPIC_PREFIX) :]
     key = m.lower()
     aliases = {
+        # OpenAI aliases → ZeusCode (для Orca совместимости)
+        "gpt-4": "zeuscode",
+        "gpt-4-turbo": "zeuscode",
+        "gpt-4o": "zeuscode",
+        "gpt-3.5-turbo": "studio-light",
+        # Gemini aliases
         "gemini 2.5 flash": "gemini-2.5-flash",
         "gemini-flash": "gemini-2.5-flash",
         "flash": "gemini-2.5-flash",
+        # ZeusCode aliases
         "zeus fusion": "zeuscode",
         "zeuscode fusion": "zeuscode",
         "zeuscode": "zeuscode",
         "fusion": "zeuscode",
         "zeus/fusion": "zeuscode",
+        # Claude aliases
         "claude-opus-4": "claude-opus-4-8",
         "claude-sonnet-4": "claude-sonnet-4-6",
         "claude-sonnet-4-5": "claude-sonnet-4-6",
         "claude-3-5-sonnet-latest": "claude-sonnet-4-6",
-        "claude-3-5-haiku-latest": "claude-haiku-4-5",
+        "claude-3-5-haiku-latest": "gemini-3.5-flash",
     }
     m = aliases.get(key, m)
     try:

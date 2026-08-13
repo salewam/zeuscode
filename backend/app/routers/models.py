@@ -106,18 +106,55 @@ async def list_models(
         "count": len(rows),
         "model_family": (getattr(user, "model_family", None) or "") if user else "",
         "data": [
+            # OpenAI aliases для Orca совместимости
             {
-                "id": r["id"],
+                "id": "gpt-4",
                 "object": "model",
-                "owned_by": r["provider"].lower(),
-                "display_name": (
-                    r["title"]
-                    if str(r.get("title") or "").startswith("ZeusCode")
-                    else f"ZeusCode · {r.get('title') or r['id']}"
-                ),
-                **r,
-            }
-            for r in rows
+                "owned_by": "zeuscode",
+                "display_name": "ZeusCode · GPT-4 (3 models)",
+                "title": "GPT-4 (ZeusCode)",
+                "provider": "zeuscode",
+                "ready": True,
+                "modality": "chat",
+                "supported_endpoint_types": ["openai"],
+            },
+            {
+                "id": "gpt-4-turbo",
+                "object": "model",
+                "owned_by": "zeuscode",
+                "display_name": "ZeusCode · GPT-4 Turbo (3 models)",
+                "title": "GPT-4 Turbo (ZeusCode)",
+                "provider": "zeuscode",
+                "ready": True,
+                "modality": "chat",
+                "supported_endpoint_types": ["openai"],
+            },
+            {
+                "id": "gpt-4o",
+                "object": "model",
+                "owned_by": "zeuscode",
+                "display_name": "ZeusCode · GPT-4o (3 models)",
+                "title": "GPT-4o (ZeusCode)",
+                "provider": "zeuscode",
+                "ready": True,
+                "modality": "chat",
+                "supported_endpoint_types": ["openai"],
+            },
+            # Остальные модели из каталога
+            *[
+                {
+                    "id": r["id"],
+                    "object": "model",
+                    "owned_by": r["provider"].lower(),
+                    "display_name": (
+                        r["title"]
+                        if str(r.get("title") or "").startswith("ZeusCode")
+                        else f"ZeusCode · {r.get('title') or r['id']}"
+                    ),
+                    **r,
+                }
+                for r in rows
+            ],
         ],
     }
 

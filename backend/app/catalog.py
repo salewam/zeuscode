@@ -241,6 +241,11 @@ _FUSION_ALIASES: dict[str, str] = {
     "zeus-fusion": "zeuscode",
     "fusion": "zeuscode",
     "zeuscode": "zeuscode",
+    # OpenAI aliases для Orca совместимости
+    "gpt-4": "zeuscode",
+    "gpt-4-turbo": "zeuscode",
+    "gpt-4o": "zeuscode",
+    "gpt-3.5-turbo": "studio-light",
 }
 
 # Spelling-only legacy ids (hyphen ↔ dot). Never swap to a different model.

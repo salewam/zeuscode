@@ -148,9 +148,9 @@ _SIMPLE_PANEL = (
     "gpt-5.4-mini",
     "deepseek-v4-pro",
     "grok-4.5",
-    "claude-haiku-4-5",
+    "gemini-3.5-flash",
 )
-_SIMPLE_JUDGE = "claude-haiku-4-5"
+_SIMPLE_JUDGE = "gemini-3.5-flash"
 
 # Мощный — меню бригады (на turn режется до FUSION_MAX_PANEL=3)
 _POWER_PANEL = (
@@ -161,7 +161,7 @@ _POWER_PANEL = (
     "deepseek-v4-pro",
     "grok-4.5",
     "grok-4.3",
-    "claude-haiku-4-5",
+    "gemini-3.5-flash",
 )
 _POWER_JUDGE = "claude-opus-4-6"
 
@@ -421,7 +421,7 @@ _MODEL_STRENGTH: dict[str, int] = {
     "gpt-5.4": 82,
     "gemini-3.5-flash": 78,
     "gemini-2.5-pro": 77,
-    "claude-haiku-4-5": 72,
+    "gemini-3.5-flash": 72,
     "deepseek-v4-flash": 70,
     "deepseek-chat": 68,
     "gemini-2.5-flash": 66,
@@ -444,11 +444,11 @@ _TASK_BONUS: dict[str, dict[str, int]] = {
         "gemini-3.1-pro": 16,
         "gemini-3-pro": 14,
         "deepseek-v4-pro": 12,
-        "claude-haiku-4-5": 6,
+        "gemini-3.5-flash": 6,
         "deepseek-v4-flash": 4,
     },
     "ui": {
-        "claude-haiku-4-5": 18,
+        "gemini-3.5-flash": 18,
         "gemini-3-pro": 14,
         "gemini-3.1-pro": 12,
         "deepseek-v4-flash": 10,
@@ -474,7 +474,7 @@ _TASK_BONUS: dict[str, dict[str, int]] = {
         "deepseek-v4-flash": 30,
         "deepseek-chat": 22,
         "deepseek-v4-pro": 18,
-        "claude-haiku-4-5": 16,
+        "gemini-3.5-flash": 16,
         "gemini-3-flash": 14,
         "gemini-2.5-flash": 12,
     },
@@ -507,7 +507,7 @@ def classify_task(user_q: str) -> str:
 _TASK_KINDS = frozenset(
     {"light", "ui", "tests", "review", "architecture", "code", "general"}
 )
-_CLASSIFIER_MODELS = ("claude-haiku-4-5", "gpt-5.4-mini")
+_CLASSIFIER_MODELS = ("gemini-3.5-flash", "gpt-5.4-mini")
 _CLASSIFIER_MODEL = _CLASSIFIER_MODELS[0]
 _CLASSIFIER_TIMEOUT_S = 2.4
 _CLASSIFIER_MIN_CONF = 0.6
@@ -1152,12 +1152,13 @@ def resolve_panel(
 
     if not panel:
         # standard / combo presets: fill recommended when models omitted.
-        if prod in ("standard", "combo2", "combo3", "simple", "power"):
+        # ADDED: "manual" теперь тоже заполняет дефолтные модели если models не передан
+        if prod in ("standard", "combo2", "combo3", "simple", "power", "manual"):
             from app.fusion.combo import STANDARD_MODELS, recommended_models
 
             preset = (
                 list(STANDARD_MODELS)
-                if prod in ("standard", "power", "combo3")
+                if prod in ("standard", "power", "combo3", "manual")
                 else list(recommended_models("combo2"))
             )
             for mid in preset:
@@ -1173,10 +1174,11 @@ def resolve_panel(
                     422,
                     "ZeusCode: стандартный стек недоступен — выбери модели вручную",
                 )
-        elif prod in ("manual", "custom"):
+        elif prod in ("custom",):
+            # custom остаётся strict — требует явный models[]
             raise HTTPException(
                 400,
-                f"ZeusCode: manual mode requires models[] (1–{_cap}) from your stack",
+                f"ZeusCode: custom mode requires models[] (1–{_cap}) from your stack",
             )
         else:
             # Soft-fill exclusive menu: resolve aliases, skip unavailable ids.
@@ -1667,6 +1669,11 @@ async def iter_fusion(
             panel=panel,
             custom_models=_rr_custom,
             unhealthy=_unhealthy or None,
+            crew_assignment=(
+                (zeus or {}).get("crew_assignment")
+                if isinstance(zeus, dict) and isinstance((zeus or {}).get("crew_assignment"), dict)
+                else None
+            ),
         )
         if _combo_state is not None:
             # Override role map with score-assigned ComboDefinition positions.
